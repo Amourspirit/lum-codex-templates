@@ -1,0 +1,363 @@
+#!/bin/bash
+# ===============================================
+# 🜂 Codex Template Package Builder (v6.0 — Token + Auto-README Edition)
+# ===============================================
+
+SCRIPT_VERSION="6.0"
+VERSION_TRACKER=".mkpkg_last"
+CONFIG_FILE="./mkpkg.config"
+
+# === Parse Optional Arguments ===
+INCLUDE_PATH=true
+for arg in "$@"; do
+  if [[ "$arg" == "--no-path" ]]; then
+    INCLUDE_PATH=false
+  fi
+done
+
+# === Load Config ===
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  echo "❌ Config file not found: $CONFIG_FILE"
+  exit 1
+fi
+source "$CONFIG_FILE"
+
+# === Prepare Output Directory ===
+PACKAGE_OUTPUT_DIR="${PACKAGE_OUTPUT_DIR:-./dist}"
+mkdir -p "$PACKAGE_OUTPUT_DIR"
+
+# === Determine PACKAGE_VERSION ===
+if [[ -n "$VERSION_OVERRIDE" ]]; then
+  PACKAGE_VERSION="$VERSION_OVERRIDE"
+  OVERRIDE_MODE=true
+  echo "⚠️ VERSION OVERRIDE ACTIVE: Forcing version to '$PACKAGE_VERSION'"
+else
+  OVERRIDE_MODE=false
+  # Check if $1 is a non-negative integer
+  if [[ "$1" =~ ^[0-9]+$ ]]; then
+    PACKAGE_VERSION="$1"
+  else
+    if [[ -f "$VERSION_TRACKER" ]]; then
+      LAST_VERSION=$(cat "$VERSION_TRACKER")
+      PACKAGE_VERSION=$((LAST_VERSION + 1))
+    else
+      PACKAGE_VERSION=1
+    fi
+  fi
+fi
+
+# === Metadata and Generation Values ===
+BATCH_HASH=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sha256sum | cut -c1-12)
+REGFILE_HASH=$(shasum -a 256 "$REGFILE" | awk '{print $1}')
+
+PACKAGE_NAME="codex-templates-$PACKAGE_VERSION.zip"
+PACKAGE_PATH="$PACKAGE_OUTPUT_DIR/$PACKAGE_NAME"
+LOCKFILE="codex-template-$PACKAGE_VERSION.lock"
+LOCK_TEMP="template-lock-temp-$PACKAGE_VERSION.yaml"
+README_OUT="README.md"
+DATE_TODAY=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+REG_VER=$(grep '^version:' "$REGFILE" | head -n1 | awk -F '"' '{print $2}')
+REG_ID=$(grep '^registry_id: "' "$REGFILE" | head -n1 | awk -F '"' '{print $2}')
+
+# === Validate Config Values ===
+REQUIRED_VARS=("BASE_FILE_COUNT" "CURRENT_USER" "BOOTSTRAP_SRC" "FILES_UPLOAD_PROTOCOL_SRC" "README_SRC" "PROTOCOL_SRC" "REGFILE" "TEMPLATE_DIRS")
+for var in "${REQUIRED_VARS[@]}"; do
+  if [[ -z "${!var}" ]]; then
+    echo "❌ Missing required config variable: $var"
+    exit 1
+  fi
+done
+
+PROTOCOL_FILENAME_WITH_EXT=$(basename "$PROTOCOL_SRC")
+PROTOCOL_FILENAME_NO_EXT="${PROTOCOL_FILENAME_WITH_EXT%.*}"
+PROTOCOL_FILE_EXT="${PROTOCOL_FILENAME_WITH_EXT##*.}"
+PROTOCOL_OUT="${PROTOCOL_FILENAME_NO_EXT}-${PACKAGE_VERSION}.${PROTOCOL_FILE_EXT}"
+
+BOOTSTRAP_FILENAME_WITH_EXT=$(basename "$BOOTSTRAP_SRC")
+BOOTSTRAP_FILENAME_NO_EXT="${BOOTSTRAP_FILENAME_WITH_EXT%.*}"
+BOOTSTRAP_FILE_EXT="${BOOTSTRAP_FILENAME_WITH_EXT##*.}"
+BOOTSTRAP_OUT="${PACKAGE_OUTPUT_DIR}/${BOOTSTRAP_FILENAME_NO_EXT}-${PACKAGE_VERSION}.${BOOTSTRAP_FILE_EXT}"
+
+FILES_UPLOAD_PROTOCOL_FILENAME_WITH_EXT=$(basename "$FILES_UPLOAD_PROTOCOL_SRC")
+FILES_UPLOAD_PROTOCOL_FILENAME_NO_EXT="${FILES_UPLOAD_PROTOCOL_FILENAME_WITH_EXT%.*}"
+FILES_UPLOAD_PROTOCOL_FILE_EXT="${FILES_UPLOAD_PROTOCOL_FILENAME_WITH_EXT##*.}"
+FILES_UPLOAD_PROTOCOL_OUT="${PACKAGE_OUTPUT_DIR}/${FILES_UPLOAD_PROTOCOL_FILENAME_NO_EXT}-${PACKAGE_VERSION}.${FILES_UPLOAD_PROTOCOL_FILE_EXT}"
+
+MANIFEST_OUT="$PACKAGE_OUTPUT_DIR/manifest-codex-templates-$PACKAGE_VERSION.md"
+
+# === FUNCTIONS ===
+extract_yaml_fields() {
+  awk '
+    /^---$/ {if (inblock) exit; inblock=1; next}
+    inblock && /^[^[:space:]]/ {
+      field=$1
+      gsub(":", "", field)
+      print field
+    }
+  ' "$1"
+}
+
+is_deprecated_field() {
+  FIELD_NAME="$1"
+  grep -A4 "^| \`$FIELD_NAME\`" "$REGFILE" | grep -qiE '\|\s*(deprecated|inactive)\s*\|'
+}
+
+# ===============================================
+# 🧹 CLEANUP START
+# ===============================================
+rm -f "$LOCK_TEMP" "$LOCKFILE" "$README_OUT"
+touch "$LOCK_TEMP"
+
+# ===============================================
+# 🔐 BEGIN LOCKFILE
+# ===============================================
+{
+  echo "---"
+  echo "package_version: \"$PACKAGE_VERSION\""
+  echo "batch_uid: codex-batch-$PACKAGE_VERSION-$BATCH_HASH"
+  echo "batch_hash: $BATCH_HASH"
+  echo "lockfile_version: \"$PACKAGE_VERSION\""
+  echo "registry_version: \"$REG_VER\""
+  echo "builder_version: \"$SCRIPT_VERSION\""
+  echo "generated_at: $DATE_TODAY"
+  echo "strict_field_mode: true"
+  echo "force_invalidate_previous: true"
+  echo "auto_invoke_protocol_scroll: $AUTO_INVOKE_SCROLL-$PACKAGE_VERSION.md"
+  echo "strict_hash_mode: true"
+  echo "registry_sources:"
+  echo "  - name: \"Master Metadata Registry\""
+  echo "    registry_id: \"$REG_ID\""
+  if [[ "$INCLUDE_PATH" == true ]]; then
+    echo "    path: \"$(basename "$REGFILE")\""
+  fi
+  echo "    version: \"$REG_VER\""
+  echo "    format: \"yaml\""
+  echo "    enforced: true"
+  echo "    sha256: \"$REGFILE_HASH\""
+  echo "categories:"
+} >> "$LOCK_TEMP"
+
+# ===============================================
+# 🗂 FIND TEMPLATES
+# ===============================================
+FILE_LIST=$(find "${TEMPLATE_DIRS[@]}" -type f -name "*.md" | sort)
+TEMPLATE_COUNT=$(echo "$FILE_LIST" | wc -l)
+declare -A CATEGORY_GROUPS
+FILE_COUNT=$((TEMPLATE_COUNT + BASE_FILE_COUNT))
+
+# ===============================================
+# 🔧 TEMPORARY TEMPLATE WORKSPACE
+# ===============================================
+TEMP_MD_FILES=$(mktemp -d)
+cp $FILE_LIST "$TEMP_MD_FILES"
+
+# === Apply Token Replacements Only to Temp Files ===
+echo "🔁 Injecting registry tokens: $REG_ID / $REG_VER"
+# echo "Temp Files:"
+# echo "$TEMP_MD_FILES"
+for file in "$TEMP_MD_FILES"/*.md; do
+  sed -i.bak \
+    -e "s/\[MAP_REG\]/$REG_ID/g" \
+    -e "s/\[MAP_REG_MIN_VER\]/$REG_VER/g" \
+    "$file"
+done
+
+# ===============================================
+# 📦 PROCESS TEMPLATES (using original files for lockfile metadata)
+# ===============================================
+for file in $FILE_LIST; do
+  TEMPLATE_ID=$(grep '^template_id:' "$file" | awk '{print $2}')
+  TEMPLATE_NAME=$(grep '^template_name:' "$file" | cut -d':' -f2- | xargs)
+  TEMPLATE_CATEGORY=$(grep '^template_category:' "$file" | awk '{print $2}')
+  TEMPLATE_TYPE=$(grep '^template_type:' "$file" | awk '{print $2}')
+  TEMPLATE_VERSION_LINE=$(grep '^template_version:' "$file" | head -n1 | awk -F '"' '{print $2}')
+  TEMPLATE_HASH=$(shasum -a 256 "$file" | awk '{print $1}')
+
+  if [[ -n "$TEMPLATE_ID" && -n "$TEMPLATE_NAME" ]]; then
+    TEMPLATE_ENTRY=$(cat <<EOF
+  - template_name: "$TEMPLATE_NAME"
+    template_id: "$TEMPLATE_ID"
+    template_category: "$TEMPLATE_CATEGORY"
+    template_type: "$TEMPLATE_TYPE"
+    template_version: "$TEMPLATE_VERSION_LINE"
+EOF
+)
+
+    # Conditionally append `path:` if enabled
+    if [[ "$INCLUDE_PATH" == true ]]; then
+      TEMPLATE_ENTRY+="
+    path: \"./$(basename "$file")\""
+    fi
+
+    TEMPLATE_ENTRY+="
+    sha256: \"$TEMPLATE_HASH\"
+    fields:"
+
+    FIELD_LINES=""
+    while read field; do
+      if ! is_deprecated_field "$field"; then
+        FIELD_LINES+="      - $field"$'\n'
+      fi
+    done < <(extract_yaml_fields "$file")
+
+    CATEGORY_GROUPS["$TEMPLATE_CATEGORY"]+=$'\n'"$TEMPLATE_ENTRY"$'\n'"$FIELD_LINES"
+  fi
+done
+
+# === EMIT INTO LOCKFILE ===
+for category in "${!CATEGORY_GROUPS[@]}"; do
+  {
+    echo "  - category: \"$category\""
+    echo "    templates:"
+  } >> "$LOCK_TEMP"
+
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && echo "    $line" >> "$LOCK_TEMP"
+  done <<< "${CATEGORY_GROUPS[$category]}"
+done
+
+mv "$LOCK_TEMP" "$LOCKFILE"
+echo "🔐 Lockfile generated: $LOCKFILE"
+
+# ===============================================
+# 📝 AUTO-GENERATE "Included Templates" YAML BLOCK
+# ===============================================
+README_TEMPLATES_BLOCK=""
+for file in $FILE_LIST; do
+  T_ID=$(grep '^template_id:' "$file" | awk '{print $2}')
+  T_TYPE=$(grep '^template_type:' "$file" | awk '{print $2}')
+  T_NAME=$(grep '^template_name:' "$file" | cut -d':' -f2- | xargs)
+  T_CAT=$(grep '^template_category:' "$file" | awk '{print $2}')
+  T_VER=$(grep '^template_version:' "$file" | awk '{print $2}')
+  FNAME=$(basename "$file")
+
+  README_TEMPLATES_BLOCK+=$'- template_id: '"$T_ID"$'\n'
+  README_TEMPLATES_BLOCK+='  template_type: '"$T_TYPE"$'\n'
+  README_TEMPLATES_BLOCK+='  template_name: '"$T_NAME"$'\n'
+  README_TEMPLATES_BLOCK+='  template_category: '"$T_CAT"$'\n'
+  README_TEMPLATES_BLOCK+='  template_version: '"$T_VER"$'\n'
+  README_TEMPLATES_BLOCK+='  declared_registry_id: '"$REG_ID"$'\n'
+  # README_TEMPLATES_BLOCK+='  declared_registry_version: '"$REG_VER"$'\n'
+  README_TEMPLATES_BLOCK+='  declared_registry_version: "'"$REG_VER"$'"\n'
+  README_TEMPLATES_BLOCK+='  mapped_registry: '"$REG_ID"$'\n'
+  # Conditionally append `path:` if enabled
+  if [[ "$INCLUDE_PATH" == true ]]; then
+    README_TEMPLATES_BLOCK+='  path: ./'"$FNAME"$'\n\n'
+  else
+    README_TEMPLATES_BLOCK+='\n'
+  fi
+  
+done
+
+
+# ===============================================
+# 📝 BUILD README & SCROLL (with block injection)
+# ===============================================
+if [[ ! -f "$README_SRC" ]]; then
+  echo "⚠️ README source not found: $README_SRC"
+  exit 1
+fi
+
+awk -v VER="$PACKAGE_VERSION" \
+    -v DATE="$DATE_TODAY" \
+    -v BUILDER="$SCRIPT_VERSION" \
+    -v BATCH="$BATCH_HASH" \
+    -v REGV="$REG_VER" \
+    -v TEMPLATE_COUNT="$TEMPLATE_COUNT" \
+    -v BLOCK="$README_TEMPLATES_BLOCK" '
+  {
+    gsub(/\[VER\]/, VER)
+    gsub(/\[DATE\]/, DATE)
+    gsub(/\[BUILDER_VER\]/, BUILDER)
+    gsub(/\[BATCH_HASH\]/, BATCH)
+    gsub(/\[REG_VER\]/, REGV)
+    gsub(/\[TEMPLATE_COUNT\]/, TEMPLATE_COUNT)
+    gsub(/\[README_TEMPLATES_BLOCK\]/, BLOCK)
+  }
+  /<!-- AUTO_TEMPLATES_BLOCK -->/ { print BLOCK; next }
+  { print }
+' "$README_SRC" > "$README_OUT"
+
+sed -e "s/\[DATE\]/$DATE_TODAY/g" \
+    -e "s/\[BUILDER_VER\]/$SCRIPT_VERSION/g" \
+    -e "s/\[BATCH_HASH\]/$BATCH_HASH/g" \
+    -e "s/\[REG_VER\]/$REG_VER/g" \
+    -e "s/\[VER\]/$PACKAGE_VERSION/g" "$PROTOCOL_SRC" > "$PROTOCOL_OUT"
+
+# ===============================================
+# 📝 BUILD BOOTSTRAP_SRC (with block injection)
+# ===============================================
+if [[ ! -f "$BOOTSTRAP_SRC" ]]; then
+  echo "⚠️ Codex-Bootstrap source not found: $BOOTSTRAP_SRC"
+  exit 1
+fi
+
+sed -e "s/\[REG_VER\]/$REG_VER/g" \
+    -e "s/\[CURRENT_USER\]/$CURRENT_USER/g" \
+    -e "s/\[TEMPLATE_COUNT\]/$TEMPLATE_COUNT/g" \
+    -e "s/\[VER\]/$PACKAGE_VERSION/g" "$BOOTSTRAP_SRC" > "$BOOTSTRAP_OUT"
+
+# ===============================================
+# 📝 BUILD FILES_UPLOAD_PROTOCOL_OUT (with block injection)
+# ===============================================
+if [[ ! -f "$FILES_UPLOAD_PROTOCOL_SRC" ]]; then
+  echo "⚠️ Codex-Manual-Upload-Files-Protocol source not found: $FILES_UPLOAD_PROTOCOL_SRC"
+  exit 1
+fi
+
+sed -e "s/\[REG_VER\]/$REG_VER/g" \
+    -e "s/\[FILE_COUNT\]/$FILE_COUNT/g" \
+    -e "s/\[CURRENT_USER\]/$CURRENT_USER/g" \
+    -e "s/\[TEMPLATE_COUNT\]/$TEMPLATE_COUNT/g" \
+    -e "s/\[VER\]/$PACKAGE_VERSION/g" "$FILES_UPLOAD_PROTOCOL_SRC" > "$FILES_UPLOAD_PROTOCOL_OUT"
+
+
+# ===============================================
+# 📦 BUILD PACKAGE (USING TEMP FILES)
+# ===============================================
+# Extract the filename only
+REG_FILE_OUT=$(basename "$REGFILE")
+# Copy the file to current dir
+cp "$REGFILE" "$REG_FILE_OUT"
+
+
+echo "📦 Building package: $PACKAGE_PATH"
+zip -j "$PACKAGE_PATH" \
+  "$README_OUT" \
+  "$PROTOCOL_OUT" \
+  "$LOCKFILE" \
+  "$REG_FILE_OUT" \
+  "$TEMP_MD_FILES"/*.md 2>/dev/null
+
+# ===============================================
+# 🔄 UPDATE VERSION TRACKER
+# ===============================================
+if [[ "$OVERRIDE_MODE" = false ]]; then
+  echo "$PACKAGE_VERSION" > "$VERSION_TRACKER"
+else
+  echo "⚠️ Override mode: VERSION_TRACKER not updated."
+fi
+
+# ===============================================
+# 🧾 GENERATE MANIFEST
+# ===============================================
+{
+  echo "# 📦 Codex Template Manifest – v$PACKAGE_VERSION"
+  echo ""
+  echo "- Generated: $DATE_TODAY"
+  echo "- Registry: $REG_VER"
+  echo "- Template Files:"
+  for file in $FILE_LIST; do
+    echo "  - \`$(basename "$file")\`"
+  done
+} > "$MANIFEST_OUT"
+
+# ===============================================
+# 🧹 FINAL CLEANUP
+# ===============================================
+rm -rf "$TEMP_MD_FILES"
+rm -f "$LOCK_TEMP" "$README_OUT" "$PROTOCOL_OUT" "$LOCKFILE" "$REG_FILE_OUT"
+
+
+echo "✅ Codex Template Package created: $PACKAGE_NAME"
+echo "🔖 Lockfile version: $PACKAGE_VERSION"
