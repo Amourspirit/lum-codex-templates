@@ -2,8 +2,6 @@
 import sys
 import argparse
 
-
-from src.config.pkg_config import PkgConfig
 from src.builder.default_builder import DefaultBuilder
 
 
@@ -28,5 +26,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.argv.append("1.0.0")  # Example version argument for testing
+    sys.argv.append("444")  # Example version argument for testing
     main()

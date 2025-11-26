@@ -19,15 +19,28 @@ class DefaultBuilder(BuilderBase):
 
     def build_package(self):
         # === Initialize Lockfile ===
+        batch_hash = self.compute_time_hash()
         lockfile = {
             "package_version": self._build_version,
+            "batch_uid": f"{self.config.batch_prefix}-{self._build_version}-{batch_hash}",
+            "batch_hash": batch_hash,
             "lockfile_version": self._build_version,
             "registry_version": self._main_registry.reg_version,
             "builder_version": self.config.version,
             "generated_at": datetime.now().astimezone().isoformat(),
+            "strict_field_mode": self.config.strict_field_mode,
             "force_invalidate_previous": self.config.force_invalidate_previous,
-            "auto_invoke_protocol_scroll": self.config.auto_invoke_scroll,
+            "auto_invoke_protocol_scroll": f"{self.config.auto_invoke_scroll}-{self._build_version}.md",
             "strict_hash_mode": self.config.strict_hash_mode,
+            "registry_sources": {
+                "registry_id": self._main_registry.reg_id,
+                "name": self._main_registry.reg_name,
+                "path": self._main_registry.file_name,
+                "version": self._main_registry.reg_version,
+                "format": "yaml",
+                "enforced": True,
+                "sha256": self.compute_sha256(self._main_registry.reg_path),
+            },
             "categories": [],
         }
 
@@ -63,7 +76,7 @@ class DefaultBuilder(BuilderBase):
                             "template_category": fm.template_category,
                             "template_type": fm.template_type,
                             "template_version": fm.template_version,
-                            "path": str(file_path),
+                            "path": f"./{file_path.name}",
                             "sha256": self.compute_sha256(file_path),
                             "fields": fm.get_keys(),
                         }

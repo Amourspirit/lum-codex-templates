@@ -1,6 +1,7 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "2.5"
+version: "2.6"
+registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
 entry_date: 2025-11-17 18:54:33

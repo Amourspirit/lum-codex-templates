@@ -24,6 +24,10 @@ class PkgConfig(metaclass=SingletonMeta):
             str,
             self._cfg["tool"]["project"]["config"]["batch_txt_protocol_src"],
         )
+        self._batch_prefix = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["batch_prefix"],
+        )
         self._bootstrap_src = cast(
             str, self._cfg["tool"]["project"]["config"]["bootstrap_src"]
         )
@@ -59,6 +63,9 @@ class PkgConfig(metaclass=SingletonMeta):
             str, self._cfg["tool"]["project"]["config"]["readme_src"]
         )
         self._reg_file = cast(str, self._cfg["tool"]["project"]["config"]["reg_file"])
+        self._strict_field_mode = cast(
+            bool, self._cfg["tool"]["project"]["config"]["strict_field_mode"]
+        )
         self._strict_hash_mode = cast(
             bool, self._cfg["tool"]["project"]["config"]["strict_hash_mode"]
         )
@@ -101,6 +108,10 @@ class PkgConfig(metaclass=SingletonMeta):
             assert batch_path.exists(), (
                 f"batch_txt_protocol_src file does not exist: {batch_path}"
             )
+
+        assert isinstance(self._batch_prefix, str), "batch_prefix must be a string"
+        if not self._batch_prefix:
+            raise ValueError("batch_prefix cannot be empty")
 
         assert isinstance(self._bootstrap_src, str), "bootstrap_src must be a string"
         if self._bootstrap_src:
@@ -164,6 +175,9 @@ class PkgConfig(metaclass=SingletonMeta):
             assert reg_path.exists(), f"reg_file does not exist: {reg_path}"
         else:
             raise ValueError("reg_file cannot be empty")
+        assert isinstance(self._strict_field_mode, bool), (
+            "strict_field_mode must be a boolean"
+        )
         assert isinstance(self._strict_hash_mode, bool), (
             "strict_hash_mode must be a boolean"
         )
@@ -218,6 +232,19 @@ class PkgConfig(metaclass=SingletonMeta):
             str: The batch text protocol source value.
         """
         return self._batch_txt_protocol_src
+
+    @property
+    def batch_prefix(self) -> str:
+        """
+        Return the cached batch prefix string, loading it from configuration on first access.
+        If self._batch_prefix is already set, that value is returned. Otherwise the method
+        retrieves the value at self._cfg["tool"]["project"]["batch_prefix"], casts it to str, stores it
+        in self._batch_prefix for future calls, and returns it.
+
+        Returns:
+            str: The batch prefix value.
+        """
+        return self._batch_prefix
 
     @property
     def bootstrap_src(self) -> str:
@@ -394,6 +421,19 @@ class PkgConfig(metaclass=SingletonMeta):
             reg_file_path = self._root_path / self._reg_file
             self._reg_file_name = reg_file_path.name
         return self._reg_file_name
+
+    @property
+    def strict_field_mode(self) -> bool:
+        """
+        Return the cached strict field mode boolean, loading it from configuration on first access.
+        If self._strict_field_mode is already set, that value is returned. Otherwise the method
+        retrieves the value at self._cfg["tool"]["project"]["strict_field_mode"], casts it to bool, stores it
+        in self._strict_field_mode for future calls, and returns it.
+
+        Returns:
+            bool: The strict field mode value.
+        """
+        return self._strict_field_mode
 
     @property
     def strict_hash_mode(self) -> bool:

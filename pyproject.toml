@@ -12,6 +12,7 @@ dependencies = [
 [tool.project.config]
 auto_invoke_scroll_name="SCROLL-TEMPLATE-UPLOAD"
 base_file_count=4
+batch_prefix="codex-batch"
 batch_txt_protocol_src="Assets/Batch-Text-Upload_Protocol.md"
 bootstrap_src="Assets/Codex-Bootstrap-Declaration.md"
 current_user="Soluun"
@@ -25,6 +26,7 @@ pkg_out_dir="dist"
 protocol_src="Assets/SCROLL-TEMPLATE-UPLOAD.md"
 readme_src="Readme.md"
 reg_file="Metadata/00-Master_Metadata_Registry.yml"
+strict_field_mode=true
 strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
 version_override=""
