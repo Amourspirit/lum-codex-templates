@@ -2,11 +2,11 @@ from pathlib import Path
 import yaml
 
 
-class FrontMatterReader:
+class ObsidianEditor:
     def __init__(self):
         pass
 
-    def read_frontmatter(self, file_path: Path | str) -> tuple[dict | None, str]:
+    def read_template(self, file_path: Path | str) -> tuple[dict | None, str]:
         """
         Return (frontmatter_dict or None, remaining_markdown_text).
         Expects YAML frontmatter fenced with '---' (start and end) at the top of the file.
@@ -43,3 +43,24 @@ class FrontMatterReader:
             fm = None
 
         return fm, content
+
+    def write_template(
+        self, file_path: Path | str, frontmatter: dict, content: str
+    ) -> Path:
+        """
+        Write the given frontmatter dict and content string to the specified file.
+        The frontmatter is written as YAML fenced with '---' at the top of the file.
+
+        Args:
+            file_path (Path | str): The path to the file where the template will be written.
+            frontmatter (dict): The frontmatter data to write as YAML.
+            content (str): The markdown content to write after the frontmatter.
+
+        Returns:
+            Path: The path to the file that was written.
+        """
+        path = Path(file_path)
+        fm_text = yaml.dump(frontmatter, Dumper=yaml.Dumper, sort_keys=False)
+        full_text = f"---\n{fm_text}---\n{content}"
+        path.write_text(full_text, encoding="utf-8")
+        return path

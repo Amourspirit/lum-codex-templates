@@ -1,12 +1,14 @@
 from pathlib import Path
 from typing import Any
-from .front_matter_reader import FrontMatterReader
+from .obsidian_editor import ObsidianEditor
 
 
 class FrontMatterMeta:
     def __init__(self, file_path: str | Path):
         self.file_path = file_path
-        self.frontmatter, _ = FrontMatterReader().read_frontmatter(file_path)
+        self._frontmatter, _ = ObsidianEditor().read_template(file_path)
+        if self._frontmatter is None:
+            self._frontmatter = {}
 
     def get_field(self, field_name: str, default: Any = None) -> Any:
         """Retrieve a value from the object's frontmatter mapping.
@@ -35,13 +37,24 @@ class FrontMatterMeta:
             'Unknown'
         """
 
-        if self.frontmatter and field_name in self.frontmatter:
-            return self.frontmatter[field_name]
+        if self._frontmatter and field_name in self._frontmatter:
+            return self._frontmatter[field_name]
         return default
 
     def has_field(self, field_name: str) -> bool:
         """Check if the instance's frontmatter contains a specific key."""
-        return self.frontmatter is not None and field_name in self.frontmatter
+        return self._frontmatter is not None and field_name in self._frontmatter
+
+    def set_field(self, field_name: str, value: Any) -> None:
+        """Set a value in the instance's frontmatter mapping.
+
+        Args:
+            field_name (str): The key to set in `self.frontmatter`.
+            value (Any): The value to associate with `field_name`.
+        """
+        if self._frontmatter is None:
+            self._frontmatter = {}
+        self._frontmatter[field_name] = value
 
     def get_keys(self) -> list[str]:
         """Return a sorted list of keys from the instance's frontmatter.
@@ -58,11 +71,15 @@ class FrontMatterMeta:
             ['template_id', 'template_typeb']
         """
 
-        if self.frontmatter:
-            return sorted(self.frontmatter.keys())
+        if self._frontmatter:
+            return sorted(self._frontmatter.keys())
         return []
 
     # region Properties
+    @property
+    def frontmatter(self) -> dict:
+        return self._frontmatter  # type: ignore
+
     @property
     def template_id(self) -> str:
         return self.get_field("template_id", "")
@@ -87,4 +104,59 @@ class FrontMatterMeta:
     def template_origin(self) -> str:
         return self.get_field("template_origin", "")
 
+    @property
+    def declared_registry_id(self) -> str:
+        return self.get_field("declared_registry_id", "")
+
+    @declared_registry_id.setter
+    def declared_registry_id(self, value: str) -> None:
+        self.set_field("declared_registry_id", value)
+
+    @property
+    def declared_registry_version(self) -> str:
+        return self.get_field("declared_registry_version", "")
+
+    @declared_registry_version.setter
+    def declared_registry_version(self, value: str) -> None:
+        self.set_field("declared_registry_version", value)
+
+    @property
+    def mapped_registry(self) -> str:
+        return self.get_field("mapped_registry", "")
+
+    @mapped_registry.setter
+    def mapped_registry(self, value: str) -> None:
+        self.set_field("mapped_registry", value)
+
+    @property
+    def mapped_registry_minimum_version(self) -> str:
+        return self.get_field("mapped_registry_minimum_version", "")
+
+    @mapped_registry_minimum_version.setter
+    def mapped_registry_minimum_version(self, value: str) -> None:
+        self.set_field("mapped_registry_minimum_version", value)
+
     # endregion Properties
+
+    # region Static Methods
+    @staticmethod
+    def from_frontmatter_dict(
+        file_path: str | Path, fm_dict: dict
+    ) -> "FrontMatterMeta":
+        """Create a FrontMatterMeta instance from a frontmatter dictionary.
+
+        Args:
+            file_path (str | Path): The path to the file associated with the frontmatter.
+            fm_dict (dict): The frontmatter dictionary to use for initialization.
+        Returns:
+            FrontMatterMeta: An instance of FrontMatterMeta initialized with the
+            provided frontmatter dictionary.
+        """
+        instance = FrontMatterMeta.__new__(FrontMatterMeta)
+        instance._frontmatter = fm_dict
+        if instance._frontmatter is None:
+            instance._frontmatter = {}
+        instance.file_path = file_path  # or set to a default value if needed
+        return instance
+
+    # endregion Static Methods

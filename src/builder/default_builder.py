@@ -1,3 +1,4 @@
+import tempfile
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -17,8 +18,7 @@ class DefaultBuilder(BuilderBase):
         self._destination_path = self.config.root_path / self.config.pkg_out_dir
         self._destination_path.mkdir(parents=True, exist_ok=True)
 
-    def build_package(self):
-        # === Initialize Lockfile ===
+    def _build_lockfile(self):
         batch_hash = self.compute_time_hash()
         lockfile = {
             "package_version": self._build_version,
@@ -43,6 +43,36 @@ class DefaultBuilder(BuilderBase):
             },
             "categories": [],
         }
+        return lockfile
+
+    def _build_lockfile_categories(
+        self, file_path: Path, fm: FrontMatterMeta, categories_map: dict
+    ) -> None:
+        template_meta = {
+            "template_name": fm.template_name,
+            "template_id": fm.template_id,
+            "template_category": fm.template_category,
+            "template_type": fm.template_type,
+            "template_version": fm.template_version,
+            "path": f"./{file_path.name}",
+            "sha256": self.compute_sha256(file_path),
+            "fields": fm.get_keys(),
+        }
+
+        # Group by fm.template_category
+        cat_key = (
+            fm.template_category.lower() if fm.template_category else "uncategorized"
+        )
+        if cat_key not in categories_map:
+            categories_map[cat_key] = {
+                "category": cat_key,
+                "templates": [],
+            }
+        categories_map[cat_key]["templates"].append(template_meta)
+
+    def build_package(self):
+        # === Initialize Lockfile ===
+        lockfile = self._build_lockfile()
 
         # === Paths ===
         output_zip_name = f"{self.config.package_output_name}-{self._build_version}.zip"
@@ -61,7 +91,7 @@ class DefaultBuilder(BuilderBase):
             categories_map = {}
 
             for dir_name in self.config.template_dirs:
-                dir_path = Path(dir_name)
+                dir_path = self.config.root_path / dir_name
                 if dir_path.exists() and dir_path.is_dir():
                     for file_path in dir_path.glob("*.md"):
                         fm = FrontMatterMeta(file_path)
@@ -70,35 +100,19 @@ class DefaultBuilder(BuilderBase):
 
                         zipf.write(file_path, arcname=file_path.name)
 
-                        template_meta = {
-                            "template_name": fm.template_name,
-                            "template_id": fm.template_id,
-                            "template_category": fm.template_category,
-                            "template_type": fm.template_type,
-                            "template_version": fm.template_version,
-                            "path": f"./{file_path.name}",
-                            "sha256": self.compute_sha256(file_path),
-                            "fields": fm.get_keys(),
-                        }
-
-                        # Group by fm.template_category
-                        cat_key = (
-                            fm.template_category.lower()
-                            if fm.template_category
-                            else "uncategorized"
-                        )
-                        if cat_key not in categories_map:
-                            categories_map[cat_key] = {
-                                "category": cat_key,
-                                "templates": [],
-                            }
-                        categories_map[cat_key]["templates"].append(template_meta)
+                        # Build lockfile categories and templates
+                        self._build_lockfile_categories(file_path, fm, categories_map)
 
                 # Convert map back to list for lockfile
                 lockfile["categories"] = list(categories_map.values())
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                temp_lockfile = Path(tmp_dir) / lock_file_name
+                with open(temp_lockfile, "w") as lockfile_f:
+                    yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
+                zipf.write(temp_lockfile, arcname=lock_file_name)
 
         # === Write Lockfile ===
-        with open(lockfile_path, "w") as lockfile_f:
-            yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
+        # with open(lockfile_path, "w") as lockfile_f:
+        #     yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
         # with open(lockfile_path.with_suffix(".json"), "w") as lockfile_json_f:
         #     json.dump(lockfile, lockfile_json_f, indent=4)
