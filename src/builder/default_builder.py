@@ -2,15 +2,20 @@ import zipfile
 from datetime import datetime
 from pathlib import Path
 import yaml
-from ..config.pkg_config import PkgConfig
+
+# import json
+from .builderbase import BuilderBase
 from ..template.main_registery import MainRegistry
+from ..template.front_mater_meta import FrontMatterMeta
 
 
-class DefaultBuilder:
+class DefaultBuilder(BuilderBase):
     def __init__(self, build_version: str):
-        self.config = PkgConfig()
+        super().__init__()
         self._build_version = build_version
         self._main_registry = MainRegistry()
+        self._destination_path = self.config.root_path / self.config.pkg_out_dir
+        self._destination_path.mkdir(parents=True, exist_ok=True)
 
     def build_package(self):
         # === Initialize Lockfile ===
@@ -19,43 +24,68 @@ class DefaultBuilder:
             "lockfile_version": self._build_version,
             "registry_version": self._main_registry.reg_version,
             "builder_version": self.config.version,
-            "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "force_invalidate_previous": True,
+            "generated_at": datetime.now().astimezone().isoformat(),
+            "force_invalidate_previous": self.config.force_invalidate_previous,
             "auto_invoke_protocol_scroll": self.config.auto_invoke_scroll,
-            "strict_hash_mode": True,
+            "strict_hash_mode": self.config.strict_hash_mode,
             "categories": [],
         }
 
         # === Paths ===
-        output_zip_path = Path(self.config.output_zip)
-        lockfile_path = Path(self.config.lockfile)
+        output_zip_name = f"{self.config.package_output_name}-{self._build_version}.zip"
+        output_zip_path = self._destination_path / output_zip_name
+        if output_zip_path.exists():
+            output_zip_path.unlink()
+
+        lock_file_name = f"{self.config.lock_file_name}-{self._build_version}{self.config.lock_file_ext}"
+        lockfile_path = self._destination_path / lock_file_name
+        if lockfile_path.exists():
+            lockfile_path.unlink()
 
         # === Create ZIP and Lockfile Metadata ===
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            # Dictionary to group templates by category dynamically
+            categories_map = {}
+
             for dir_name in self.config.template_dirs:
                 dir_path = Path(dir_name)
                 if dir_path.exists() and dir_path.is_dir():
-                    category_templates = {"category": dir_name.lower(), "templates": []}
                     for file_path in dir_path.glob("*.md"):
+                        fm = FrontMatterMeta(file_path)
+                        if not fm.has_field("template_id"):
+                            continue
+
                         zipf.write(file_path, arcname=file_path.name)
+
                         template_meta = {
-                            "template_name": file_path.stem,
-                            "template_id": f"TEMPLATE-{file_path.stem.upper()}",
-                            "template_category": dir_name.lower(),
-                            "template_type": dir_name.lower(),
-                            "template_version": "unknown",
+                            "template_name": fm.template_name,
+                            "template_id": fm.template_id,
+                            "template_category": fm.template_category,
+                            "template_type": fm.template_type,
+                            "template_version": fm.template_version,
                             "path": str(file_path),
-                            "sha256": "uncomputed",  # To be added later
-                            "fields": [
-                                "template_id",
-                                "template_type",
-                                "template_category",
-                                "template_name",
-                            ],
+                            "sha256": self.compute_sha256(file_path),
+                            "fields": fm.get_keys(),
                         }
-                        category_templates["templates"].append(template_meta)
-                    lockfile["categories"].append(category_templates)
+
+                        # Group by fm.template_category
+                        cat_key = (
+                            fm.template_category.lower()
+                            if fm.template_category
+                            else "uncategorized"
+                        )
+                        if cat_key not in categories_map:
+                            categories_map[cat_key] = {
+                                "category": cat_key,
+                                "templates": [],
+                            }
+                        categories_map[cat_key]["templates"].append(template_meta)
+
+                # Convert map back to list for lockfile
+                lockfile["categories"] = list(categories_map.values())
 
         # === Write Lockfile ===
         with open(lockfile_path, "w") as lockfile_f:
-            yaml.dump(lockfile, lockfile_f)
+            yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
+        # with open(lockfile_path.with_suffix(".json"), "w") as lockfile_json_f:
+        #     json.dump(lockfile, lockfile_json_f, indent=4)
