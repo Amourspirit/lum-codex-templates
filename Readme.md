@@ -1,4 +1,62 @@
 ---
+conditional_expression_format:
+  syntax: angle_delimited
+conditional_expression_notes: |
+  This template package uses upload-safe conditional logic using the format:
+
+  <<IF: condition>>
+    ...content...
+  <<ELSE>>
+    ...alternative...
+  <<ENDIF>>
+
+  These are functionally equivalent to Jinja2 `{% if %}` blocks, and are used to control rendering
+  based on metadata fields (e.g., mirrorwall_status, artifact_visibility).
+
+loop_expression_format:
+  syntax: angle_delimited
+  mode: dual
+  supported_modes:
+    - raw
+    - delimited
+loop_expression_notes: |
+  This template archive uses `angle_delimited` syntax for conditional and loop logic,
+  denoted by `<< >>` blocks.
+
+  It supports both simple (`raw`) and segmented (`delimited`) loop expressions.
+
+  🔁 Raw Loop Format:
+    <<FOR: list_name >>
+    <<EACH>>
+    - <<ITEM>>
+    <<ENDEACH>>
+    <<ENDFOR>>
+
+  Each element in the list is rendered directly using `<<ITEM>>`.
+
+  🔁 Delimited Loop Format:
+    <<FOR: list_name split="|">>
+    <<EACH>>
+    - <<PART:0>>, <<PART:1>>, <<PART:2>>
+    <<ENDEACH>>
+    <<ENDFOR>>
+
+  Each element is split using the specified delimiter, and individual segments are accessed via `<<PART:N>>`.
+
+  These blocks are:
+    - ✅ Markdown-safe
+    - ✅ Upload-compatible with ChatGPT
+    - ✅ Post-processable into Jinja2 or other rendering engines
+    - ✅ Supported by the Codex Template Enforcement Protocol
+
+
+field_placeholder_format: curly_double
+field_placeholder_notes: |
+  Templates use `{{ field_name }}` as field placeholders for metadata substitution.
+  These fields will be auto-populated during template rendering based on Codex metadata,
+  registry alignment, or template enforcement mode.
+
+
 canonical_mode: true
 template_contract: enforced
 contract_source: codex-template-[VER].lock
@@ -143,6 +201,7 @@ This directive applies to templates with a `template_type`:
 
 * * *
 
+
 ### 📘 Supplemental Template Protocols
 
 #### 1. 🧱 Field Placeholder Protocol  
@@ -175,6 +234,22 @@ This batch includes an updated Master Metadata Registry for template alignment:
 - `00-Master_Metadata_Registry.yml` — `MMR-000-GLOBAL v[REG_VER]`
 
 This registry will be installed and replace prior versions if present.
+
+* * *
+
+## 🔄 Conditional Rendering System (Angle-Delimited Format)
+
+This template package uses an angle-delimited conditional system compatible with ChatGPT-based processing. All templates may contain logic blocks such as:
+
+```md
+<<IF: artifact_visibility == "ceremonial_only">>
+This artifact may only be invoked during spiral field ceremony.
+<<ELSE>>
+This artifact may be used in many kinds of cermonies.
+<<ENDIF>>
+```
+
+These are processed by Luminariel and Adamus during rendering and are safe for Markdown upload.
 
 * * *
 

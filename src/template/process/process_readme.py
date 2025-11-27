@@ -3,11 +3,11 @@ from ...template.front_mater_meta import FrontMatterMeta
 
 
 class ProcessReadme:
-    def __init__(self, config: PkgConfig):
-        self.config = config
-        self.readme_src = config.readme_src
+    def __init__(self):
+        self.config = PkgConfig()
+        self.readme_src = self.config.root_path / self.config.readme_src
 
-    def _build_readme_templates_block(self) -> list:
+    def _build_readme_templates_block(self) -> list[dict]:
         templates_block = []
         for dir_name in self.config.template_dirs:
             dir_path = self.config.root_path / dir_name
@@ -24,19 +24,18 @@ class ProcessReadme:
                             "template_category": fm.template_category,
                             "template_version": fm.template_version,
                             "declared_registry_id": fm.declared_registry_id,
+                            "mapped_registry": fm.mapped_registry,
                             "path": f"./{file_path.name}",
-                            "fields": fm.get_keys(),
                         }
                     )
         return templates_block
 
     def process(self) -> str:
         """Process the README source file and return its content as a string."""
-        readme_path = self.config.root_path / self.readme_src
-        if not readme_path.exists():
-            raise FileNotFoundError(f"README source file not found: {readme_path}")
+        if not self.readme_src.exists():
+            raise FileNotFoundError(f"README source file not found: {self.readme_src}")
 
-        with open(readme_path, "r", encoding="utf-8") as f:
+        with open(self.readme_src, "r", encoding="utf-8") as f:
             content = f.read()
 
         return content

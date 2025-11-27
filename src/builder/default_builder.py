@@ -8,6 +8,7 @@ import yaml
 from .builderbase import BuilderBase
 from ..template.main_registery import MainRegistry
 from ..template.front_mater_meta import FrontMatterMeta
+from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 
 
 class DefaultBuilder(BuilderBase):
@@ -89,27 +90,34 @@ class DefaultBuilder(BuilderBase):
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
             categories_map = {}
+            processs_templates = ProcessObsidianTemplates()
+            with processs_templates.process(
+                {
+                    "declared_registry_id": self._main_registry.reg_id,
+                    "declared_registry_version": self._main_registry.reg_version,
+                    "mapped_registry": self._main_registry.reg_id,
+                    "mapped_registry_minimum_version": self._main_registry.reg_version,
+                }
+            ) as processed_template_paths:
+                for file_path in processed_template_paths:
+                    fm = FrontMatterMeta(file_path)
+                    if not fm.has_field("template_id"):
+                        continue
 
-            for dir_name in self.config.template_dirs:
-                dir_path = self.config.root_path / dir_name
-                if dir_path.exists() and dir_path.is_dir():
-                    for file_path in dir_path.glob("*.md"):
-                        fm = FrontMatterMeta(file_path)
-                        if not fm.has_field("template_id"):
-                            continue
+                    zipf.write(file_path, arcname=file_path.name)
 
-                        zipf.write(file_path, arcname=file_path.name)
+                    # Build lockfile categories and templates
+                    self._build_lockfile_categories(file_path, fm, categories_map)
 
-                        # Build lockfile categories and templates
-                        self._build_lockfile_categories(file_path, fm, categories_map)
-
-                # Convert map back to list for lockfile
-                lockfile["categories"] = list(categories_map.values())
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                temp_lockfile = Path(tmp_dir) / lock_file_name
-                with open(temp_lockfile, "w") as lockfile_f:
-                    yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
-                zipf.write(temp_lockfile, arcname=lock_file_name)
+                    # Convert map back to list for lockfile
+                    lockfile["categories"] = list(categories_map.values())
+                with tempfile.TemporaryDirectory() as tmp_dir:
+                    temp_lockfile = Path(tmp_dir) / lock_file_name
+                    with open(temp_lockfile, "w") as lockfile_f:
+                        yaml.dump(
+                            lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False
+                        )
+                    zipf.write(temp_lockfile, arcname=lock_file_name)
 
         # === Write Lockfile ===
         # with open(lockfile_path, "w") as lockfile_f:
