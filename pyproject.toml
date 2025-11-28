@@ -30,3 +30,28 @@ strict_field_mode=true
 strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
 version_override=""
+
+[tool.project.config.template]
+field_placeholder_format = "double_square_prefixed"
+placeholder_examples=[
+    "[[field:mirrorwall_status]]",
+    "[[field:entry_date]]",
+    "[[prompt:Describe the symbolic gestures used]]",
+    "[[prompt:List any energetic or dreamline consequences]]"
+]
+
+[tool.project.config.template.field_placeholder_delimiters]
+open="[["
+close="]]"
+
+[tool.project.config.template.placeholder_prefix_semantics]
+required=true
+allowed_prefixes=["field", "prompt"]
+
+[tool.project.config.template.placeholder_prefix_semantics.enforcement]
+field="must be resolved before final render"
+prompt="optional, flagged only in strict audit"
+
+[tool.project.config.template.placeholder_autofill_policy]
+unresolved_field="fail (strict), infer (autofill), warn (audit)"
+unresolved_prompt="retain (default), flag (audit), none (strict)"

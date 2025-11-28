@@ -33,6 +33,7 @@ class ProcessObsidianTemplates:
                     for key, value in key_values.items():
                         fm.set_field(key, value)
                     new_file_path = tmp_dir / file_path.name
+                    self.config.template_config.update_yaml_dict(fm.frontmatter)
                     ObsidianEditor().write_template(
                         new_file_path, fm.frontmatter, clean_content
                     )

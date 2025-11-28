@@ -1,7 +1,6 @@
 import zipfile
 from datetime import datetime
 
-# import json
 from .builderbase import BuilderBase
 from ..template.main_registery import MainRegistry
 from ..template.front_mater_meta import FrontMatterMeta
@@ -31,7 +30,7 @@ class DefaultBuilder(BuilderBase):
         if lockfile_path.exists():
             lockfile_path.unlink()
 
-        # === Create ZIP and Lockfile Metadata ===
+        # === Create ZIP ===
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
             processs_templates = ProcessObsidianTemplates()

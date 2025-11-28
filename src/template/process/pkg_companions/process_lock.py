@@ -52,8 +52,9 @@ class ProcessLock(ProtocolProcess):
                 "enforced": True,
                 "sha256": kw["SHA256"],
             },
-            "categories": [],
         }
+        self.config.template_config.update_yaml_dict(lockfile)
+        lockfile["categories"] = []
         return lockfile
 
     def _build_lockfile_categories(

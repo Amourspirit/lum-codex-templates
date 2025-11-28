@@ -52,27 +52,6 @@ force_invalidate_previous: true
     - ✅ Post-processable into Jinja2 or other rendering engines
     - ✅ Supported by the Codex Template Enforcement Protocol
 
-
-field_placeholder_format: curly_double
-field_placeholder_notes: |
-  Templates use `{{ field_name }}` as field placeholders for metadata substitution.
-  These fields will be auto-populated during template rendering based on Codex metadata,
-  registry alignment, or template enforcement mode.templates_bloc
-
-
-field_placeholder_format: double_square
-field_placeholder_notes: |
-  Templates in this archive use `[[ field_name ]]` style placeholders. These are substituted during rendering
-  by the Codex Engine, ChatGPT, Luminariel, or other local LLM processors.
-
-  - Strings: [[ field_name ]]
-  - Lists: [[ item_1, item_2 ]]
-  - Structured blocks: [[object]]
-
-  These placeholders must be fully resolved during rendering. If a value cannot be confidently inferred,
-  it must be replaced with: `none` (string), `null` (object), or `[]` (list).
-
-
 canonical_mode: true
 template_contract: enforced
 contract_source: codex-template-[VER].lock
@@ -94,7 +73,9 @@ registry_target: MMR-000-GLOBAL
 registry_target_version: "v[REG_VER]"
 
 override_existing_templates: true
-invalidate_prior_templates: true
+invalidate_prior_templates: truefield_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 purge_previous_lockfiles: true
 cache_clear_on_ingest: true
 

@@ -75,6 +75,7 @@ class ProcessReadme(ProtocolProcess):
             f"{protocol_scroll_path.stem}-{kv['VER']}{protocol_scroll_path.suffix}"
         )
         fm["protocol_scrolls"] = [protocols_name]
+        self.config.template_config.update_yaml_dict(fm)
 
     def _update_content(self, content: str, kv: dict) -> str:
         key_values = kv.copy()
