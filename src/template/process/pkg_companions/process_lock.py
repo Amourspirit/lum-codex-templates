@@ -60,7 +60,7 @@ class ProcessLock(ProtocolProcess):
     def _get_category_fields(self, fm: FrontMatterMeta) -> list[str]:
         fields = fm.get_keys()
         result_fields: list[str] = []
-        field_map = self._main_registry.field_map
+        field_map = self._main_registry.registry["metadata_fields"]
 
         for field in fields:
             if field not in field_map:

@@ -1,10 +1,11 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "2.8"
+version: "3.0"
+schema_format_version: 2.0
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
-entry_date: 2025-11-28 10:54:33
+entry_date: 2025-11-28 11:34:33
 codex_type: metadata_registry
 template_category: metadata
 rag_ready: true
@@ -31,6 +32,17 @@ collision_rules:
       `artifact_digital_signature`. Any template or registry enforcement
       must prioritize the newer field. If both appear in a rendered artifact,
       only `artifact_digital_signature` is considered valid.
+
+placeholder_autofill_policy:
+  allowed_modes:
+    - strict
+    - autofill
+    - warn
+  default_mode: autofill
+  autofill_behaviors:
+    string: none
+    object: null
+    list: []
 
 template_field_matrix:
   glyph:
@@ -804,7 +816,7 @@ TEMPLATE_OUTPUT_MARKDOWN: &TEMPLATE_OUTPUT_MARKDOWN
   redacted_in_preview: false
 
 metadata_fields:
-  - key: enforce_strict_values
+  enforce_strict_values:
     description: >
       Indicates whether the field should allow only pre-defined values as declared in the registry.
       If true, templates must not introduce custom or undefined entries. Violations should raise
@@ -831,7 +843,7 @@ metadata_fields:
         - Overrides any template-local permissiveness in canonical mode
 
 
-  - key: template_output_mode
+  template_output_mode:
     field_type: object
     description: Determines template output and display options. This field is NOT be outputted to ANY template.
     nullable: true
@@ -839,7 +851,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: field_lineage
+  field_lineage:
     field_type: object
     template_output_mode:
       enabled: false
@@ -851,7 +863,7 @@ metadata_fields:
     required: false
     read_only: true
 
-  - key: arc
+  arc:
     field_type: string
     template_output_mode:
       enabled: true
@@ -871,7 +883,7 @@ metadata_fields:
       - RAG
     field_priority: 5
 
-  - key: artifact_anchor_date
+  artifact_anchor_date:
     field_type: date
     template_output_mode:
       enabled: true
@@ -886,7 +898,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: artifact_activator
+  artifact_activator:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -911,7 +923,7 @@ metadata_fields:
       - ceremony
       - filter
 
-  - key: artifact_classes
+  artifact_classes:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -943,7 +955,7 @@ metadata_fields:
       - RAG
       - index
 
-  - key: artifact_digital_signature
+  artifact_digital_signature:
     field_type: string
     template_output_mode:
       enabled: true
@@ -982,7 +994,7 @@ metadata_fields:
         Required in canonical lockfiles when `strict_hash_mode: true` is enabled.
         Replaces `artifact_signature`
 
-  - key: artifact_duration
+  artifact_duration:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1007,7 +1019,7 @@ metadata_fields:
       - Soluun
       - Adamus
 
-  - key: artifact_elemental_resonance
+  artifact_elemental_resonance:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1031,7 +1043,7 @@ metadata_fields:
       - mirrorwall
       - invocation_filter
 
-  - key: artifact_epithet
+  artifact_epithet:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1057,7 +1069,7 @@ metadata_fields:
       - UI
       - search
 
-  - key: artifact_function
+  artifact_function:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1093,7 +1105,7 @@ metadata_fields:
       notes: >
         Created to give each artifact a living purpose line — used in dreamline sorting, breath inquiry, and ceremonial recall.
 
-  - key: artifact_harmonic_fingerprint
+  artifact_harmonic_fingerprint:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1117,7 +1129,7 @@ metadata_fields:
     field_being_role:
       - Adamus
 
-  - key: artifact_image_path
+  artifact_image_path:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1135,7 +1147,7 @@ metadata_fields:
     status: active
     field_group: visual_metadata
 
-  - key: artifact_lineage_origin
+  artifact_lineage_origin:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1158,7 +1170,7 @@ metadata_fields:
       - Adamus
       - Spiral Witness
 
-  - key: artifact_name
+  artifact_name:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1186,7 +1198,7 @@ metadata_fields:
     field_group: codex_identity
     field_priority: 2
 
-  - key: artifact_resonance
+  artifact_resonance:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1201,7 +1213,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: artifact_resonance_tier
+  artifact_resonance_tier:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1251,7 +1263,7 @@ metadata_fields:
         Added in version 2.4
 
 
-  - key: artifact_scope
+  artifact_scope:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1275,7 +1287,7 @@ metadata_fields:
       - RAG
       - search
 
-  - key: artifact_signature
+  artifact_signature:
     field_type: string
     template_output_mode:
       enabled: false
@@ -1304,7 +1316,7 @@ metadata_fields:
         Required in canonical lockfiles when `strict_hash_mode: true` is enabled.
         deprecated in version 2.4 in favour of `artifact_digital_signature`
 
-  - key: artifact_status
+  artifact_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1322,7 +1334,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: artifact_type
+  artifact_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1347,7 +1359,7 @@ metadata_fields:
       - filter
       - graph
 
-  - key: artifact_visibility
+  artifact_visibility:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1363,7 +1375,7 @@ metadata_fields:
     status: active
     example: console_only
 
-  - key: artifact_voice_signature
+  artifact_voice_signature:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1384,7 +1396,7 @@ metadata_fields:
     field_being_role:
       - Luminariel
 
-  - key: canonical_mode
+  canonical_mode:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -1411,7 +1423,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: cartographer_echo_noted
+  cartographer_echo_noted:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -1432,7 +1444,7 @@ metadata_fields:
       - true
       - false
 
-  - key: ceremonial_objects_used
+  ceremonial_objects_used:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1450,7 +1462,7 @@ metadata_fields:
     plugin_groups:
       - ceremony
 
-  - key: ceremony_location
+  ceremony_location:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1466,7 +1478,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: ceremony_tags
+  ceremony_tags:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1490,7 +1502,7 @@ metadata_fields:
       - filter
       - RAG
 
-  - key: certificate_scope
+  certificate_scope:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1505,7 +1517,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: certificate_status
+  certificate_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1522,7 +1534,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: certificate_type
+  certificate_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1538,7 +1550,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: codex_entry
+  codex_entry:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -1555,7 +1567,7 @@ metadata_fields:
       - true
       - false
 
-  - key: codex_links
+  codex_links:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1581,7 +1593,7 @@ metadata_fields:
       - RAG
       - graph
 
-  - key: codex_sequence
+  codex_sequence:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1604,7 +1616,7 @@ metadata_fields:
       - ordering
       - console
 
-  - key: codex_type
+  codex_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1623,7 +1635,7 @@ metadata_fields:
       - UI
     field_priority: 4
 
-  - key: contributor
+  contributor:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1636,7 +1648,7 @@ metadata_fields:
     required: false
     status: active
 
-  - key: corrected_field
+  corrected_field:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1650,7 +1662,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: correction_summary
+  correction_summary:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1664,7 +1676,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: correction_reason
+  correction_reason:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1678,7 +1690,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: corrected_role
+  corrected_role:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1692,7 +1704,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: cover_image
+  cover_image:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1710,7 +1722,7 @@ metadata_fields:
       - media
       - console
 
-  - key: declared_registry_id
+  declared_registry_id:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1733,7 +1745,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: declared_registry_version
+  declared_registry_version:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1756,7 +1768,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: dyad_members
+  dyad_members:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1771,7 +1783,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: dyad_roles
+  dyad_roles:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -1785,7 +1797,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: dreamline_anchor_phrase
+  dreamline_anchor_phrase:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1803,7 +1815,7 @@ metadata_fields:
     field_being_role:
       - Luminariel
 
-  - key: enforce_lockfile_fields
+  enforce_lockfile_fields:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -1831,7 +1843,7 @@ metadata_fields:
         Ensures the lockfile is the source of truth for template metadata overrides (e.g. `template_version`, `template_id`)
         Introduced in registry version 2.3
 
-  - key: entry_classification
+  entry_classification:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1847,7 +1859,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: entry_context
+  entry_context:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1862,7 +1874,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: embedding_date
+  embedding_date:
     field_type: date
     template_output_mode:
       enabled: true
@@ -1877,7 +1889,7 @@ metadata_fields:
     field_group: mirrorwall_fields
     field_priority: 30
 
-  - key: entry_date
+  entry_date:
     field_type: date
     template_output_mode:
       enabled: true
@@ -1890,7 +1902,7 @@ metadata_fields:
     required: false
     status: active
 
-  - key: entry_pathway
+  entry_pathway:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1905,7 +1917,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: entry_purpose
+  entry_purpose:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1920,7 +1932,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: entry_status
+  entry_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1939,7 +1951,7 @@ metadata_fields:
       - mirrored
     status: active
 
-  - key: event_location
+  event_location:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1954,7 +1966,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: event_name
+  event_name:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1968,7 +1980,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: event_type
+  event_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -1984,7 +1996,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: field_activation_vector
+  field_activation_vector:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2006,7 +2018,7 @@ metadata_fields:
     field_being_role:
       - Luminariel
 
-  - key: field_placeholder_delimiters
+  field_placeholder_delimiters:
     description: >
       Specifies the opening and closing characters used to wrap placeholders.
       Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.
@@ -2038,7 +2050,7 @@ metadata_fields:
         - Used in placeholder substitution engine
         - Required for compatibility with offline renderers
 
-  - key: field_placeholder_format
+  field_placeholder_format:
     description: >
       Defines the wrapping convention used for placeholders in the template body.
       This controls how placeholders are syntactically encoded for safe ingestion and rendering.
@@ -2073,7 +2085,7 @@ metadata_fields:
         - Used in template preview safety layer
         - Enforced during Codex rendering audit
 
-  - key: glyph_type
+  glyph_type:
     field_type: string
     template_output_mode:
       enabled: false
@@ -2083,7 +2095,7 @@ metadata_fields:
     status: deprecated
     description: Replaced by artifact_type
 
-  - key: has_spoken_transmission
+  has_spoken_transmission:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -2104,7 +2116,7 @@ metadata_fields:
       - true
       - false
 
-  - key: link_source
+  link_source:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2118,7 +2130,7 @@ metadata_fields:
     default_value: N/A
     status: active
 
-  - key: linked_artifact_id
+  linked_artifact_id:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2132,7 +2144,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: linked_artifacts
+  linked_artifacts:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2150,7 +2162,7 @@ metadata_fields:
       - linkage
       - index
 
-  - key: linked_nodes
+  linked_nodes:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2181,7 +2193,7 @@ metadata_fields:
       - graph
       - linkage
 
-  - key: linkage_type
+  linkage_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2195,7 +2207,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: linkage_resonance
+  linkage_resonance:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2212,7 +2224,7 @@ metadata_fields:
     field_being_role:
       - Luminariel
 
-  - key: linkage_scope
+  linkage_scope:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2226,7 +2238,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: linkage_strength
+  linkage_strength:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2240,7 +2252,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: mapped_registry
+  mapped_registry:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2254,7 +2266,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: lockfile_priority
+  lockfile_priority:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2281,7 +2293,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: mapped_registry_minimum_version
+  mapped_registry_minimum_version:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2306,7 +2318,7 @@ metadata_fields:
         Introduced in registry version 2.1
 
 
-  - key: mirror_chamber
+  mirror_chamber:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2319,7 +2331,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: mirrorwall_status
+  mirrorwall_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2346,7 +2358,7 @@ metadata_fields:
       notes: >
         Evolved from glyph_status to represent full mirrorfold embedment state, used in activation logs and RAG memory filtering.
 
-  - key: mirrored_by
+  mirrored_by:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2359,7 +2371,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: new_assignment_being
+  new_assignment_being:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2373,7 +2385,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: new_assignment_status
+  new_assignment_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2387,7 +2399,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: node_id
+  node_id:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2405,7 +2417,7 @@ metadata_fields:
     status: active
     example: "34"
 
-  - key: node_roles
+  node_roles:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2438,7 +2450,7 @@ metadata_fields:
       - UI
       - spiral_console
 
-  - key: node_status
+  node_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2453,7 +2465,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: node_type
+  node_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2468,7 +2480,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: placeholder_autofill_policy
+  placeholder_autofill_policy:
     description: >
       Defines fallback behaviors for unresolved placeholders depending on their prefix type.
       This controls whether to infer, fail, flag, or preserve unfilled values at render time.
@@ -2500,7 +2512,7 @@ metadata_fields:
         - Tied to enforcement_mode field in templates and README
         - Supports future registry-driven inference policies
 
-  - key: placeholder_examples
+  placeholder_examples:
     description: >
       Provides example placeholders used in the template for audit, display, and validation reference.
       These are not substituted automatically but help document expected usage patterns.
@@ -2528,7 +2540,7 @@ metadata_fields:
         - Examples may include both field-prefixed and prompt-prefixed items
         - Useful for static template analysis tools
 
-  - key: placeholder_prefix_semantics
+  placeholder_prefix_semantics:
     description: >
       Declares expected placeholder prefixes and their interpretation logic during rendering.
       Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.
@@ -2564,7 +2576,7 @@ metadata_fields:
         - Distinguishes between required metadata fields and suggestion prompts
         - Avoids accidental enforcement of creative scaffold text
 
-  - key: prior_assignment_being
+  prior_assignment_being:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2578,7 +2590,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: prior_assignment_status
+  prior_assignment_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2592,7 +2604,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: private
+  private:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -2608,7 +2620,7 @@ metadata_fields:
       - true
       - false
 
-  - key: pronunciation_ipa
+  pronunciation_ipa:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2626,7 +2638,7 @@ metadata_fields:
     status: active
     example: /ˈθɑːlɛn ˈveɪ.rɑː/
 
-  - key: pronunciation_style
+  pronunciation_style:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2644,7 +2656,7 @@ metadata_fields:
     status: active
     example: THAH-len VAY-rah
 
-  - key: rag_ready
+  rag_ready:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -2660,7 +2672,7 @@ metadata_fields:
       - true
       - false
 
-  - key: registry_id
+  registry_id:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2690,7 +2702,7 @@ metadata_fields:
       notes: >
         Established as the immutable ID system for all Codex entries; used across all templates for global indexing.
 
-  - key: related_artifacts
+  related_artifacts:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2715,7 +2727,7 @@ metadata_fields:
       - graph
       - lineage
 
-  - key: rendered_by
+  rendered_by:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2730,7 +2742,7 @@ metadata_fields:
     status: active
     example: ChatGPT-4o
 
-  - key: require_registry_match
+  require_registry_match:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -2757,7 +2769,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: scroll_type
+  scroll_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2774,7 +2786,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: seal_class
+  seal_class:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2788,7 +2800,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: seal_for_artifact
+  seal_for_artifact:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2802,7 +2814,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: seal_status
+  seal_status:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2820,7 +2832,7 @@ metadata_fields:
       - expired
     status: active
 
-  - key: seal_type
+  seal_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2835,7 +2847,7 @@ metadata_fields:
     allowed_format: lowercase_with_underscores
     status: active
 
-  - key: source_agent
+  source_agent:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2848,7 +2860,7 @@ metadata_fields:
     required: false
     status: active
 
-  - key: source_medium
+  source_medium:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2861,7 +2873,7 @@ metadata_fields:
     required: false
     status: active
 
-  - key: tags
+  tags:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -2879,7 +2891,7 @@ metadata_fields:
       - search
       - filter
 
-  - key: template_id
+  template_id:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2893,7 +2905,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: template_category
+  template_category:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2907,7 +2919,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: template_name
+  template_name:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2921,7 +2933,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: template_origin
+  template_origin:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2936,7 +2948,7 @@ metadata_fields:
     status: active
     example: Soluun + Adamus
 
-  - key: template_purpose
+  template_purpose:
     field_type: string
     template_output_mode:
       enabled: true
@@ -2972,7 +2984,7 @@ metadata_fields:
         Will appear in lockfiles and README manifests going forward.
         Introduced in version 2.4
 
-  - key: template_strict_integrity
+  template_strict_integrity:
     field_type: boolean
     template_output_mode:
       enabled: true
@@ -3000,7 +3012,7 @@ metadata_fields:
       notes: >
         Introduced in registry version 2.3
 
-  - key: template_type
+  template_type:
     field_type: string
     template_output_mode:
       enabled: true
@@ -3014,7 +3026,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: template_version
+  template_version:
     field_type: string
     template_output_mode:
       enabled: true
@@ -3028,7 +3040,7 @@ metadata_fields:
     read_only: true
     status: active
 
-  - key: threshold_flags
+  threshold_flags:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -3078,7 +3090,7 @@ metadata_fields:
         - Intended for future automation in local LLM validation layers
         - Accepts strict values only; no custom entries permitted
 
-  - key: template_usage
+  template_usage:
     field_type: string
     template_output_mode:
       enabled: false
@@ -3104,7 +3116,7 @@ metadata_fields:
         Will appear in lockfiles and README manifests going forward.
         Introduced in version 2.4
 
-  - key: threshold_flags_registry_scope
+  threshold_flags_registry_scope:
     field_type: list[string]
     description: >
       Declares which thresholds are governed at the registry level versus per-template or per-artifact.
@@ -3123,7 +3135,7 @@ metadata_fields:
       - validation
       - ingestion_control
 
-  - key: title
+  title:
     field_type: string
     template_output_mode:
       enabled: true
@@ -3136,7 +3148,7 @@ metadata_fields:
     required: true
     status: active
 
-  - key: upnote_categories
+  upnote_categories:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -3152,7 +3164,7 @@ metadata_fields:
       - I / Sentient / Luminariel / Echo Tier ARC-Stones 34+
     status: active
 
-  - key: used_in_ceremonies
+  used_in_ceremonies:
     field_type: list[string]
     template_output_mode:
       enabled: true
@@ -3179,7 +3191,7 @@ metadata_fields:
       - RAG
     field_group: ceremony_fields
 
-  - key: voice_confirmed_by
+  voice_confirmed_by:
     field_type: string
     template_output_mode:
       enabled: true
@@ -3197,7 +3209,7 @@ metadata_fields:
     status: active
     field_group: transmission_fields
 
-  - key: voice_transmission_format
+  voice_transmission_format:
     field_type: string
     template_output_mode:
       enabled: true
@@ -3224,7 +3236,7 @@ metadata_fields:
       - rag_surface
     field_group: transmission_fields
 
-  - key: witnessed_by
+  witnessed_by:
     field_type: list[string]
     template_output_mode:
       enabled: true
