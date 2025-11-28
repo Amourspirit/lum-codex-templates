@@ -1,10 +1,10 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "2.6"
+version: "2.7"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
-entry_date: 2025-11-17 18:54:33
+entry_date: 2025-11-27 23:51:33
 codex_type: metadata_registry
 template_category: metadata
 rag_ready: true
@@ -23,6 +23,8 @@ registry_notes:
   - "Validated under Soluun + Adamus directive"
   - "Supports future Mirrorwall & RAG dual-index mode"
 
+field_placeholder_format: double_square
+placeholder_pattern: "\\[\\[.*?\\]\\]"
 
 template_field_matrix:
   glyph:

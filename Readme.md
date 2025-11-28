@@ -41,11 +41,14 @@ loop_expression_notes: |
     <<ENDEACH>>
     <<ENDFOR>>
 
-  Each element is split using the specified delimiter, and individual segments are accessed via `<<PART:N>>`.
+  Each element is split using the specified delimiter, and individual segments are accessed via `<<PART:N>>`.templates_bloc
 
   These blocks are:
     - ✅ Markdown-safe
     - ✅ Upload-compatible with ChatGPT
+  - SCROLL-TEMPLATE-UPLOAD-[VER].md
+
+force_invalidate_previous: true
     - ✅ Post-processable into Jinja2 or other rendering engines
     - ✅ Supported by the Codex Template Enforcement Protocol
 
@@ -54,7 +57,20 @@ field_placeholder_format: curly_double
 field_placeholder_notes: |
   Templates use `{{ field_name }}` as field placeholders for metadata substitution.
   These fields will be auto-populated during template rendering based on Codex metadata,
-  registry alignment, or template enforcement mode.
+  registry alignment, or template enforcement mode.templates_bloc
+
+
+field_placeholder_format: double_square
+field_placeholder_notes: |
+  Templates in this archive use `[[ field_name ]]` style placeholders. These are substituted during rendering
+  by the Codex Engine, ChatGPT, Luminariel, or other local LLM processors.
+
+  - Strings: [[ field_name ]]
+  - Lists: [[ item_1, item_2 ]]
+  - Structured blocks: [[object]]
+
+  These placeholders must be fully resolved during rendering. If a value cannot be confidently inferred,
+  it must be replaced with: `none` (string), `null` (object), or `[]` (list).
 
 
 canonical_mode: true
@@ -64,15 +80,15 @@ strict_registry_version: true
 
 batch_name: Codex Template Ingestion
 batch_uid: codex-batch-[VER]-[BATCH_HASH]
-batch_hash: [BATCH_HASH]
+batch_hash: "[BATCH_HASH]"
 package_name: codex-templates-[VER]
 package_version: "[VER]"
 builder_version: "[BUILDER_VER]"
 created_by:
   - Soluun
   - Adamus
-date_of_submission: [DATE]
-total_templates: [TEMPLATE_COUNT]
+date_of_submission: "[DATE]"
+total_templates: "[TEMPLATE_COUNT]"
 
 registry_target: MMR-000-GLOBAL
 registry_target_version: "v[REG_VER]"
@@ -116,7 +132,6 @@ registry_sync_mode: lockfile_strict
 This package defines and registers all templates for use across the Codex ecosystem, including Mirror Wall artifacts, Spiral Console transmissions, and Local AI plugin integration.  
 It ensures **MMR-locked** ingestion, hash-verified registration, and `Strict-Field Lock Mode v1` enforcement.
 
-
 * * *
 
 ## ☑ Lockfile Declaration
@@ -135,7 +150,6 @@ This archive includes a `codex-template-[VER].lock` file.
 ```yaml
 [README_TEMPLATES_BLOCK]
 ```
-
 
 * * *
 
@@ -201,10 +215,10 @@ This directive applies to templates with a `template_type`:
 
 * * *
 
-
 ### 📘 Supplemental Template Protocols
 
-#### 1. 🧱 Field Placeholder Protocol  
+#### 1. 🧱 Field Placeholder Protocol
+
 All fields present in the template **and** defined in `MMR-000-GLOBAL` must be included in outputs,  
 unless explicitly marked as `deprecated` or `inactive` in the Registry.  
 Unset fields should be included as: `none`, `null`, or `[]`.
@@ -312,7 +326,7 @@ When any template (e.g., Glyph, Seal, Sigil, Scroll, Stone, Certificate) is invo
 
 2. ⚠️ **Field Enforcement Rules**
 
-- Placeholders such as `[YYYY-MM-DD]` or `[public / private / etc.]` are **not valid** in completed metadata.
+- Placeholders that start with `[[` and end with `]]` such as `[["YYYY-MM-DD]]`, `[[public / private / etc.]]` or `[[Field-Time Timestamp: YYYY-MM-DD HH:MM]]` are **not valid** in completed metadata.
 - Omitted values will trigger one of the following enforcement modes (see below).
 
 4. 🔄 **Alignment with Master Metadata Registry**

@@ -9,6 +9,7 @@ from .builderbase import BuilderBase
 from ..template.main_registery import MainRegistry
 from ..template.front_mater_meta import FrontMatterMeta
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
+from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
 
 
 class DefaultBuilder(BuilderBase):
@@ -18,17 +19,18 @@ class DefaultBuilder(BuilderBase):
         self._main_registry = MainRegistry()
         self._destination_path = self.config.root_path / self.config.pkg_out_dir
         self._destination_path.mkdir(parents=True, exist_ok=True)
+        self._batch_hash = ""
+        self._batch_date = None
 
     def _build_lockfile(self):
-        batch_hash = self.compute_time_hash()
         lockfile = {
             "package_version": self._build_version,
-            "batch_uid": f"{self.config.batch_prefix}-{self._build_version}-{batch_hash}",
-            "batch_hash": batch_hash,
+            "batch_uid": f"{self.config.batch_prefix}-{self._build_version}-{self.batch_hash}",
+            "batch_hash": self.batch_hash,
             "lockfile_version": self._build_version,
             "registry_version": self._main_registry.reg_version,
             "builder_version": self.config.version,
-            "generated_at": datetime.now().astimezone().isoformat(),
+            "generated_at": self.batch_date.isoformat(),
             "strict_field_mode": self.config.strict_field_mode,
             "force_invalidate_previous": self.config.force_invalidate_previous,
             "auto_invoke_protocol_scroll": f"{self.config.auto_invoke_scroll}-{self._build_version}.md",
@@ -91,6 +93,9 @@ class DefaultBuilder(BuilderBase):
             # Dictionary to group templates by category dynamically
             categories_map = {}
             processs_templates = ProcessObsidianTemplates()
+
+            template_count = 0
+
             with processs_templates.process(
                 {
                     "declared_registry_id": self._main_registry.reg_id,
@@ -103,7 +108,7 @@ class DefaultBuilder(BuilderBase):
                     fm = FrontMatterMeta(file_path)
                     if not fm.has_field("template_id"):
                         continue
-
+                    template_count += 1
                     zipf.write(file_path, arcname=file_path.name)
 
                     # Build lockfile categories and templates
@@ -119,8 +124,37 @@ class DefaultBuilder(BuilderBase):
                         )
                     zipf.write(temp_lockfile, arcname=lock_file_name)
 
+                pcp = PkgCompanionsProcessor(self._main_registry)
+                companion_results = pcp.execute_all(
+                    {
+                        "VER": self._build_version,
+                        "BATCH_HASH": self.batch_hash,
+                        "BUILDER_VER": self.config.version,
+                        "DATE": self.batch_date.isoformat(),
+                        "TEMPLATE_COUNT": template_count,
+                        "SHA256": self.compute_sha256(output_zip_path),
+                        "TEMPLATE_PATHS": [p for p in processed_template_paths],
+                    }
+                )
+                for _, result_path in companion_results.items():
+                    zipf.write(result_path, arcname=result_path.name)
+
+                pcp.cleanup()
+
         # === Write Lockfile ===
         # with open(lockfile_path, "w") as lockfile_f:
         #     yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
         # with open(lockfile_path.with_suffix(".json"), "w") as lockfile_json_f:
         #     json.dump(lockfile, lockfile_json_f, indent=4)
+
+    @property
+    def batch_date(self) -> datetime:
+        if not self._batch_date:
+            self._batch_date = datetime.now().astimezone()
+        return self._batch_date
+
+    @property
+    def batch_hash(self) -> str:
+        if not self._batch_hash:
+            self._batch_hash = self.compute_time_hash()
+        return self._batch_hash

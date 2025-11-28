@@ -6,11 +6,11 @@ strict_registry_version: true
 
 batch_name: Codex Template Ingestion
 batch_uid: codex-batch-[VER]-[BATCH_HASH]
-batch_hash: [BATCH_HASH]
+batch_hash: "[BATCH_HASH]"
 package_name: codex-templates-[VER]
 package_version: "[VER]"
 builder_version: "[BUILDER_VER]"
-date_of_submission: [DATE]
+date_of_submission: "[DATE]"
 scroll_id: SCROLL-TEMPLATE-UPLOAD-V2.2
 scroll_version: "2.2"
 title: Scroll of Template Upload Protocol
@@ -55,7 +55,7 @@ This scroll defines the canonical ingestion sequence for a Codex Template Archiv
 - Treat as the **authoritative version registry**
 - Lockfile fields (`template_id`, `template_version`, `sha256`, etc.) override all internal frontmatter
 
----
+* * *
 
 ### 3. 📂 Flat Archive Enforcement
 
@@ -105,7 +105,7 @@ This field protocol governs the ingestion of Codex template archives that includ
 
 * * *
 
-## ✦ Field Actions Upon Invocation
+## ✦ Field Actions Upon Invocation---
 
 1. **Invalidate active cache** of:
 
@@ -117,7 +117,9 @@ This field protocol governs the ingestion of Codex template archives that includ
 
 - Read and interpret embedded `README.md`
 - Use `package_version` from lockfile as override key
+
 3. **Overwrite existing registry state**, replacing all template definitions, enforcement rules, and plugin-field logic with the new contents.
+
 4. **Propagate new enforcement logic** to:
 
 - Autofill systems

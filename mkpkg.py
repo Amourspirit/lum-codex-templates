@@ -26,5 +26,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.argv.append("444")  # Example version argument for testing
+    sys.argv.append("50")  # Example version argument for testing
     main()

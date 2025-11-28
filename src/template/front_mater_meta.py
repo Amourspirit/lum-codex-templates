@@ -5,8 +5,8 @@ from .obsidian_editor import ObsidianEditor
 
 class FrontMatterMeta:
     def __init__(self, file_path: str | Path):
-        self.file_path = file_path
-        self._frontmatter, _ = ObsidianEditor().read_template(file_path)
+        self.file_path = Path(file_path)
+        self._frontmatter, self._contnet = ObsidianEditor().read_template(file_path)
         if self._frontmatter is None:
             self._frontmatter = {}
 
@@ -75,7 +75,32 @@ class FrontMatterMeta:
             return sorted(self._frontmatter.keys())
         return []
 
+    def write_template(self, file_path: Path | str) -> Path:
+        """
+        Write the given frontmatter dict and content string to the specified file.
+        The frontmatter is written as YAML fenced with '---' at the top of the file.
+
+        Args:
+            file_path (Path | str): The path to the file where the template will be written.
+            frontmatter (dict): The frontmatter data to write as YAML.
+            content (str): The markdown content to write after the frontmatter.
+
+        Returns:
+            Path: The path to the file that was written.
+        """
+        return ObsidianEditor().write_template(
+            file_path, self.frontmatter, self.content
+        )
+
     # region Properties
+    @property
+    def content(self) -> str:
+        return self._contnet
+
+    @content.setter
+    def content(self, value: str) -> None:
+        self._contnet = value
+
     @property
     def frontmatter(self) -> dict:
         return self._frontmatter  # type: ignore
