@@ -57,6 +57,22 @@ class ProcessLock(ProtocolProcess):
         lockfile["categories"] = []
         return lockfile
 
+    def _get_category_fields(self, fm: FrontMatterMeta) -> list[str]:
+        fields = fm.get_keys()
+        result_fields: list[str] = []
+        field_map = self._main_registry.field_map
+
+        for field in fields:
+            if field not in field_map:
+                continue
+            field_info = field_map[field]
+            # Skip deprecated fields
+            # can alos be inactive but we only care about deprecated here
+            if "status" in field_info and field_info["status"] == "deprecated":
+                continue
+            result_fields.append(field)
+        return result_fields
+
     def _build_lockfile_categories(
         self, file_path: Path, fm: FrontMatterMeta, categories_map: dict, kw: dict
     ) -> None:
@@ -68,7 +84,7 @@ class ProcessLock(ProtocolProcess):
             "template_version": fm.template_version,
             "path": f"./{file_path.name}",
             "sha256": kw["SHA256"],
-            "fields": fm.get_keys(),
+            "fields": self._get_category_fields(fm),
         }
 
         # Group by fm.template_category

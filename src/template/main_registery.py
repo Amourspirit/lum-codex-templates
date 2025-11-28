@@ -6,10 +6,12 @@ from ..config.pkg_config import PkgConfig
 class MainRegistry:
     def __init__(self):
         self.config = PkgConfig()
-        self._reg = self.load_registry()
+        self._reg: dict = self.load_registry()
         self._reg_id = ""
         self._reg_version = ""
         self._reg_name = ""
+        metadata_fields = self._reg.get("metadata_fields", {})
+        self._field_map = {item["key"]: item for item in metadata_fields}
 
     def load_registry(self):
         self._registry_path = self.config.root_path / self.config.reg_file
@@ -18,6 +20,11 @@ class MainRegistry:
         return registry_data
 
     # region Properties
+    @property
+    def field_map(self) -> dict:
+        """Gets the field map for metadata fields from the registry."""
+        return self._field_map
+
     @property
     def file_name(self) -> str:
         """Gets the registry file name from the configuration."""

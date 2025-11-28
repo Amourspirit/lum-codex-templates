@@ -4,6 +4,7 @@ from .protocol_process import ProtocolProcess
 from .process_readme import ProcessReadme
 from .process_template_scroll import ProcessTemplateScroll
 from .process_lock import ProcessLock
+from .process_registry import ProcessRegistry
 from ...main_registery import MainRegistry
 
 
@@ -137,10 +138,12 @@ class PkgCompanionsProcessor:
             self._workspace_dir, self._main_registry
         )
         lock_processor = ProcessLock(self._workspace_dir, self._main_registry)
+        registry_processor = ProcessRegistry(self._workspace_dir, self._main_registry)
 
         self.register_process(readme_processor)
         self.register_process(template_scroll_processor)
         self.register_process(lock_processor)
+        self.register_process(registry_processor)
 
     def cleanup(self) -> None:
         """
