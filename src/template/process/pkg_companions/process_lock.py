@@ -83,7 +83,6 @@ class ProcessLock(ProtocolProcess):
 
     def _process_template_paths(self, categories_map: dict, kw: dict):
         paths = cast(list[Path], kw["TEMPLATE_PATHS"])
-        categories_map = {}
         for file_path in paths:
             if not file_path.exists():
                 raise FileNotFoundError(f"Template file not found: {file_path}")
@@ -110,10 +109,8 @@ class ProcessLock(ProtocolProcess):
             self._workspace_dir
             / f"{self.config.lock_file_name}-{tokens['VER']}{self.config.lock_file_ext}"
         )
-        fm = FrontMatterMeta(file_path)
         categories_map = {}
         lockfile = self._build_lockfile(tokens)
-        self._build_lockfile_categories(file_path, fm, categories_map, tokens)
         self._process_template_paths(categories_map, tokens)
 
         # Convert map back to list for lockfile
