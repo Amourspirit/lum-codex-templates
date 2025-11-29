@@ -85,6 +85,7 @@ class PkgCompanionsProcessor:
             )
         results = {}
         for process in self._processes:
+            print(f"Processing Package Companion: {process.get_process_name()}")
             result_path = process.process(tokens)
             results[process.get_process_name()] = result_path
         return results

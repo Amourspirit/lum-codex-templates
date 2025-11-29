@@ -26,7 +26,9 @@ class ProcessObsidianTemplates:
                     clean_content = self.remove_line_comments(content)
                     clean_content = clean_content.lstrip()
                     if fm_dict is None:
+                        print(f"Skipping file without frontmatter: {file_path.name}")
                         continue
+                    print(f"Processing template: {file_path.name}")
                     fm = FrontMatterMeta.from_frontmatter_dict(file_path, fm_dict)
                     if not fm.has_field("template_id"):
                         continue

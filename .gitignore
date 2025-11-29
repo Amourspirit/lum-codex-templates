@@ -10,3 +10,6 @@ temp/
 
 # Virtual environments
 .venv
+
+# project specific
+.mkpkg_last

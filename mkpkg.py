@@ -3,9 +3,14 @@ import sys
 import argparse
 
 from src.builder.default_builder import DefaultBuilder
+from src.cmd_args.cmd_processor import CmdProcessor
 
 
-def main():
+def main() -> int:
+    cp = CmdProcessor()
+    cp_result = cp.process()
+
+    return cp_result
     parser = argparse.ArgumentParser(
         description="Build a Codex Template Package with metadata lockfile."
     )
@@ -26,5 +31,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.argv.append("50")  # Example version argument for testing
-    main()
+    # sys.argv.append("50")
+    sys.exit(main())

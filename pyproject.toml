@@ -29,7 +29,7 @@ reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
-version_override=""
+version_override=0
 
 [tool.project.config.template]
 field_placeholder_format = "double_square_prefixed"

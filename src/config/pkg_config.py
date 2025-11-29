@@ -74,7 +74,7 @@ class PkgConfig(metaclass=SingletonMeta):
             list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
         )
         self._version_override = cast(
-            str, self._cfg["tool"]["project"]["config"]["version_override"]
+            int, self._cfg["tool"]["project"]["config"]["version_override"]
         )
         self._version = cast(str, self._cfg["project"]["version"])
         # endregion read config values
@@ -195,8 +195,8 @@ class PkgConfig(metaclass=SingletonMeta):
             assert isinstance(dir_name, str), (
                 "each item in template_dirs must be a string"
             )
-        assert isinstance(self._version_override, str), (
-            "version_override must be a string"
+        assert isinstance(self._version_override, int), (
+            "version_override must be an integer"
         )
         assert isinstance(self._version, str), "version must be a string"
         if not self._version:
@@ -485,15 +485,15 @@ class PkgConfig(metaclass=SingletonMeta):
         return self._template_dirs
 
     @property
-    def version_override(self) -> str:
+    def version_override(self) -> int:
         """
-        Return the cached version override string, loading it from configuration on first access.
+        Return the version override string, loading it from configuration on first access.
         If self._version_override is already set, that value is returned. Otherwise the method
         retrieves the value at self._cfg["tool"]["project"]["config"], casts it to str, stores it
         in self._version_override for future calls, and returns it.
 
         Returns:
-            str: The version override value.
+            int: The version override value.
 
         Raises:
             KeyError: If the expected keys ("tool", "project", "config") are missing from self._cfg.
