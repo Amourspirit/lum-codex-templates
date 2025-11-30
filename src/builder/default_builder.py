@@ -3,22 +3,29 @@ import zipfile
 from datetime import datetime
 
 from .builderbase import BuilderBase
+from .build_ver_mgr import BuildVerMgr
 from ..template.main_registery import MainRegistry
 from ..template.front_mater_meta import FrontMatterMeta
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
-from .build_ver_mgr import BuildVerMgr
+from ..template.process.prompt.prompt_bootstrap import PromptBootstrap
+from ..config.pkg_config import PkgConfig
 
 
 class DefaultBuilder(BuilderBase):
     def __init__(self, build_version: int = 0):
         super().__init__()
+        self.config = PkgConfig()
         self._build_version = build_version
         self._main_registry = MainRegistry()
         self._destination_path = self.config.root_path / self.config.pkg_out_dir
         self._destination_path.mkdir(parents=True, exist_ok=True)
         self._batch_hash = ""
         self._batch_date = None
+        if os.getenv("CURRENT_USER") is None:
+            self._current_user = self.config.current_user
+        else:
+            self._current_user = os.getenv("CURRENT_USER")
 
         # if VERSION_OVERRIDE in in the environment, use it
         env_version = os.getenv("VERSION_OVERRIDE")
@@ -45,12 +52,11 @@ class DefaultBuilder(BuilderBase):
         if lockfile_path.exists():
             lockfile_path.unlink()
 
+        template_count = 0
         # === Create ZIP ===
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
             processs_templates = ProcessObsidianTemplates()
-
-            template_count = 0
 
             with processs_templates.process(
                 {
@@ -83,6 +89,16 @@ class DefaultBuilder(BuilderBase):
                     zipf.write(result_path, arcname=result_path.name)
 
                 pcp.cleanup()
+
+        pb = PromptBootstrap(self._main_registry)
+        pb.process(
+            {
+                "CURRENT_USER": self._current_user,
+                "TEMPLATE_COUNT": template_count,
+                "VER": str(self._build_version),
+            }
+        )
+        print(f"Built package: {output_zip_path}")
 
     @property
     def batch_date(self) -> datetime:

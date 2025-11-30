@@ -2,7 +2,7 @@
 name = "templates"
 version = "7.0.0"
 description = "Add your description here"
-readme = "Readme.md"
+readme = "README.md"
 requires-python = ">=3.14.0"
 dependencies = [
     "pyyaml>=6.0.3",
@@ -24,7 +24,7 @@ non_template_patterns=["README.md", "codex-template-*.md", "SCROLL-TEMPLATE-UPLO
 package_output_name="codex-templates"
 pkg_out_dir="dist"
 protocol_src="Assets/SCROLL-TEMPLATE-UPLOAD.md"
-readme_src="Readme.md"
+readme_src="Assets/pkg_readme.md"
 reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
