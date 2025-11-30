@@ -73,7 +73,8 @@ registry_target: MMR-000-GLOBAL
 registry_target_version: "v[REG_VER]"
 
 override_existing_templates: true
-invalidate_prior_templates: truefield_placeholder_delimiters:
+invalidate_prior_templates: true
+field_placeholder_delimiters:
   open: '[['
   close: ']]'
 purge_previous_lockfiles: true
