@@ -11,6 +11,19 @@ class ProcessRegistry(ProtocolProcess):
         self.config = PkgConfig()
         self.file_src = self.config.root_path / self.config.reg_file
 
+    def get_dest_path(self, tokens: dict) -> Path:
+        """
+        Gets the Destination Path for the Manifest
+
+        Args:
+            tokens (dict): tokens, not currently used but here for future usage and consistency.
+
+        Returns:
+            Path: Path of the file
+        """
+        dest_path = self._workspace_dir / self.file_src.name
+        return dest_path
+
     def process(self, tokens: dict) -> Path:
         """
         Process the Registry source file and return its content as a string.

@@ -23,6 +23,7 @@ class PromptBootstrap:
         key_values = kv.copy()
         key_values["REG_VER"] = self._main_registry.reg_version
         key_values["REG_ID"] = self._main_registry.reg_id
+        key_values["MANIFFEST"] = self.config.template_manifest_name
         s = content.lstrip()
         for key, value in key_values.items():
             s = s.replace(f"[{key}]", str(value))

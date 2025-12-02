@@ -2,9 +2,12 @@ from pathlib import Path
 from typing import cast
 import yaml
 from .protocol_process import ProtocolProcess
+from .process_registry import ProcessRegistry
+from .process_template_registry import ProcessTemplateRegistry
 from ....config.pkg_config import PkgConfig
 from ...front_mater_meta import FrontMatterMeta
 from ...main_registery import MainRegistry
+from ....util import sha
 
 
 class ProcessLock(ProtocolProcess):
@@ -12,7 +15,6 @@ class ProcessLock(ProtocolProcess):
         self._workspace_dir = Path(worksapce_dir)
         self._main_registry = registry
         self.config = PkgConfig()
-        self.file_src = self.config.root_path / self.config.readme_src
 
     def _validate_tokens(self, kw: dict) -> None:
         required_tokens = set(
@@ -23,7 +25,6 @@ class ProcessLock(ProtocolProcess):
                 "BUILDER_VER",
                 "TEMPLATE_COUNT",
                 "TEMPLATE_PATHS",
-                "SHA256",
             ]
         )
         for token in required_tokens:
@@ -43,6 +44,9 @@ class ProcessLock(ProtocolProcess):
             "force_invalidate_previous": self.config.force_invalidate_previous,
             "auto_invoke_protocol_scroll": f"{self.config.auto_invoke_scroll}-{kw['VER']}.md",
             "strict_hash_mode": self.config.strict_hash_mode,
+            "enforce_strict_bundle_boundary": True,
+            "template_version_scope": "locked_only",
+            "manifest_sha256": None,
             "registry_sources": {
                 "registry_id": self._main_registry.reg_id,
                 "name": self._main_registry.reg_name,
@@ -50,12 +54,38 @@ class ProcessLock(ProtocolProcess):
                 "version": self._main_registry.reg_version,
                 "format": "yaml",
                 "enforced": True,
-                "sha256": kw["SHA256"],
+                "sha256": None,
             },
         }
+
+        self._update_manifest_sha(tokens=kw, lockfile=lockfile)
+        self._update_registry_sha(tokens=kw, lockfile=lockfile)
+
         self.config.template_config.update_yaml_dict(lockfile)
         lockfile["categories"] = []
         return lockfile
+
+    def _update_registry_sha(self, tokens: dict, lockfile: dict) -> None:
+        reg = ProcessRegistry(self._workspace_dir, self._main_registry)
+        reg_path = reg.get_dest_path(tokens=tokens)
+        if reg_path.exists():
+            lockfile["registry_sources"]["sha256"] = sha.compute_sha256(reg_path)
+        else:
+            del lockfile[["registry_sources"]]["sha256"]
+            print(
+                f"Unable to calculate sha256 for registry file. File {reg_path.name} not found!"
+            )
+
+    def _update_manifest_sha(self, tokens: dict, lockfile: dict) -> None:
+        reg = ProcessTemplateRegistry(self._workspace_dir, self._main_registry)
+        manifest_path = reg.get_dest_path(tokens=tokens)
+        if manifest_path.exists():
+            lockfile["manifest_sha256"] = sha.compute_sha256(manifest_path)
+        else:
+            del lockfile["manifest_sha256"]
+            print(
+                f"Unable to calculate sha256 for manifest. File {manifest_path.name} not found!"
+            )
 
     def _get_category_fields(self, fm: FrontMatterMeta) -> list[str]:
         fields = fm.get_keys()
@@ -74,7 +104,7 @@ class ProcessLock(ProtocolProcess):
         return result_fields
 
     def _build_lockfile_categories(
-        self, file_path: Path, fm: FrontMatterMeta, categories_map: dict, kw: dict
+        self, file_path: Path, fm: FrontMatterMeta, categories_map: dict, sha: str
     ) -> None:
         template_meta = {
             "template_name": fm.template_name,
@@ -82,8 +112,8 @@ class ProcessLock(ProtocolProcess):
             "template_category": fm.template_category,
             "template_type": fm.template_type,
             "template_version": fm.template_version,
-            "path": f"./{file_path.name}",
-            "sha256": kw["SHA256"],
+            "path": file_path.name,
+            "sha256": sha,
             "fields": self._get_category_fields(fm),
         }
 
@@ -99,15 +129,15 @@ class ProcessLock(ProtocolProcess):
         categories_map[cat_key]["templates"].append(template_meta)
 
     def _process_template_paths(self, categories_map: dict, kw: dict):
-        paths = cast(list[Path], kw["TEMPLATE_PATHS"])
-        for file_path in paths:
+        paths = cast(dict[str, Path], kw["TEMPLATE_PATHS"])
+        for sha, file_path in paths.items():
             if not file_path.exists():
                 raise FileNotFoundError(f"Template file not found: {file_path}")
             fm = FrontMatterMeta(file_path)
             if not fm.has_field("template_id"):
                 raise ValueError(f"Template missing 'template_id': {file_path}")
 
-            self._build_lockfile_categories(file_path, fm, categories_map, kw)
+            self._build_lockfile_categories(file_path, fm, categories_map, sha)
 
     def process(self, tokens: dict) -> Path:
         """
@@ -117,8 +147,6 @@ class ProcessLock(ProtocolProcess):
         Returns:
             Path: The path to the processed README file.
         """
-        if not self.file_src.exists():
-            raise FileNotFoundError(f"README source file not found: {self.file_src}")
 
         self._validate_tokens(tokens)
 

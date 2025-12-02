@@ -73,6 +73,10 @@ class PkgConfig(metaclass=SingletonMeta):
         self._template_dirs = cast(
             list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
         )
+        self._template_manifest_name = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_manifest_name"],
+        )
         self._version_override = cast(
             int, self._cfg["tool"]["project"]["config"]["version_override"]
         )
@@ -195,9 +199,16 @@ class PkgConfig(metaclass=SingletonMeta):
             assert isinstance(dir_name, str), (
                 "each item in template_dirs must be a string"
             )
+        assert isinstance(self._template_manifest_name, str), (
+            "template_manifest_name must be a str"
+        )
+        if not self._template_manifest_name:
+            raise ValueError("template_manifest_name cannot be empty")
+
         assert isinstance(self._version_override, int), (
             "version_override must be an integer"
         )
+
         assert isinstance(self._version, str), "version must be a string"
         if not self._version:
             raise ValueError("version cannot be empty")
@@ -466,6 +477,10 @@ class PkgConfig(metaclass=SingletonMeta):
             Path: The root path of the project.
         """
         return self._root_path
+
+    @property
+    def template_manifest_name(self) -> str:
+        return self._template_manifest_name
 
     @property
     def template_dirs(self) -> list[str]:

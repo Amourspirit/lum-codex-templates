@@ -1,7 +1,6 @@
 from pathlib import Path
-import hashlib
-import datetime
 from ..config.pkg_config import PkgConfig
+from ..util import sha
 
 
 class BuilderBase:
@@ -21,14 +20,7 @@ class BuilderBase:
             FileNotFoundError: If the provided path does not exist or is not a file.
         """
 
-        path = Path(file_path)
-        if not path.is_file():
-            raise FileNotFoundError(f"File not found: {path}")
-        hasher = hashlib.sha256()
-        with path.open("rb") as f:
-            for chunk in iter(lambda: f.read(8192), b""):
-                hasher.update(chunk)
-        return hasher.hexdigest()
+        return sha.compute_sha256(file_path=file_path)
 
     def compute_time_hash(self) -> str:
         """
@@ -56,12 +48,4 @@ class BuilderBase:
         - If you need sub-second uniqueness or stronger collision resistance, include
         additional entropy (e.g., a random salt) or use a UUID/secure RNG approach.
         """
-
-        # Get current UTC time, explicitly
-        timestamp = datetime.datetime.now(datetime.timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        )
-
-        # The rest of the conversion is identical
-        full_hash = hashlib.sha256(timestamp.encode("utf-8")).hexdigest()
-        return full_hash[:12]
+        return sha.compute_time_hash()

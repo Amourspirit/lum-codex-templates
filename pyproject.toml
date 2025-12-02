@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "7.0.0"
+version = "7.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -29,6 +29,7 @@ reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
+template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"
 version_override=0
 
 [tool.project.config.template]

@@ -66,12 +66,14 @@ class DefaultBuilder(BuilderBase):
                     "mapped_registry_minimum_version": self._main_registry.reg_version,
                 }
             ) as processed_template_paths:
-                for file_path in processed_template_paths:
+                template_paths = {}
+                for key, file_path in processed_template_paths.items():
                     fm = FrontMatterMeta(file_path)
                     if not fm.has_field("template_id"):
                         continue
                     template_count += 1
                     zipf.write(file_path, arcname=file_path.name)
+                    template_paths[key] = file_path
 
                 pcp = PkgCompanionsProcessor(self._main_registry)
                 companion_results = pcp.execute_all(
@@ -81,8 +83,7 @@ class DefaultBuilder(BuilderBase):
                         "BUILDER_VER": self.config.version,
                         "DATE": self.batch_date.isoformat(),
                         "TEMPLATE_COUNT": template_count,
-                        "SHA256": self.compute_sha256(output_zip_path),
-                        "TEMPLATE_PATHS": [p for p in processed_template_paths],
+                        "TEMPLATE_PATHS": template_paths,
                     }
                 )
                 for _, result_path in companion_results.items():

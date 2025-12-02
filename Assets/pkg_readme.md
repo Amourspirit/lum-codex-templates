@@ -49,9 +49,6 @@ loop_expression_notes: |
   - SCROLL-TEMPLATE-UPLOAD-[VER].md
 
 force_invalidate_previous: true
-    - ✅ Post-processable into Jinja2 or other rendering engines
-    - ✅ Supported by the Codex Template Enforcement Protocol
-
 canonical_mode: true
 template_contract: enforced
 contract_source: codex-template-[VER].lock
@@ -105,6 +102,27 @@ protocol_scrolls:
 
 force_invalidate_previous: true
 registry_sync_mode: lockfile_strict
+bundle_boundary_policy:
+  expiration_mode: implicit
+  rule: "Only templates declared in this bundle’s lockfile are valid"
+  override_allowed: false
+
+bundle_manifest_file: TEMPLATE-MANIFEST-REGISTRY-[VER].yaml
+manifest_scope: locked_only
+manifest_keyed_by: template_id
+
+manifest_tracking_policy:
+  enabled: true
+  update_on_session_apply: true
+  update_on_mirrorwall_embed: true
+  mutate_application_state: true
+manifest_output_policy:
+  structure: key_value_map
+  keyed_by: template_id
+  scope: locked_only
+  hash_mode: strict
+  include_application_state: true
+
 ---
 
 # 📦 Codex Template Package - Batch [VER]

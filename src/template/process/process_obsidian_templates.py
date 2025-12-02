@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from ...config.pkg_config import PkgConfig
 from ..obsidian_editor import ObsidianEditor
 from ..front_mater_meta import FrontMatterMeta
+from ...util import sha
 
 
 class ProcessObsidianTemplates:
@@ -63,21 +64,27 @@ class ProcessObsidianTemplates:
         return cleaned_content
 
     @contextmanager
-    def process(self, key_values: dict[str, Any]) -> Generator[list[Path], Any, Any]:
+    def process(
+        self, key_values: dict[str, Any]
+    ) -> Generator[dict[str, Path], Any, Any]:
         """Process templates by updating their frontmatter with the provided key-values.
 
         Args:
             key_values (dict[str, Any]): A dictionary of key-value pairs to update in the frontmatter.
 
         Returns:
-            list: A list of Paths to the processed template files.
+            dict: Dictionary of file hash values as key and Path a value
         """
         tmp_dir = None
         try:
             tmp_dir = tempfile.TemporaryDirectory()
             tmp_path = Path(tmp_dir.name)
-            result = self._process_templates(tmp_path, key_values)
-            yield result
+            paths = self._process_templates(tmp_path, key_values)
+            results: dict[str, Path] = {}
+            for p in paths:
+                hash = sha.compute_sha256(p)
+                results[hash] = p
+            yield results
         except Exception as e:
             raise e
         finally:

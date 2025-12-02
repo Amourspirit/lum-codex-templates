@@ -39,7 +39,7 @@ class ProcessReadme(ProtocolProcess):
                             "template_version": fm.template_version,
                             "declared_registry_id": self._main_registry.reg_id,
                             "mapped_registry": self._main_registry.reg_id,
-                            "path": f"./{file_path.name}",
+                            "path": file_path.name,
                         }
                     )
         return templates_block
@@ -64,6 +64,9 @@ class ProcessReadme(ProtocolProcess):
         fm["registry_target_version"] = f"v{self._main_registry.reg_version}"
         fm["declared_in"] = lock_file_name
         fm["lockfile_name"] = lock_file_name
+        fm["bundle_manifest_file"] = (
+            f"{self.config.template_manifest_name}-{kv['VER']}.yaml"
+        )
 
         protocol_scroll_path = self.config.root_path / self.config.protocol_src
         if not protocol_scroll_path.exists():
@@ -111,7 +114,7 @@ class ProcessReadme(ProtocolProcess):
         self._update_front_matter(fm.frontmatter, tokens)
         fm.content = self._update_content(fm.content, tokens)
 
-        file_path = self._workspace_dir / "README.md"
+        file_path = self._workspace_dir / f"README-{tokens['VER']}.md"
         fm.write_template(file_path)
         return file_path
 

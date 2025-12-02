@@ -5,6 +5,7 @@ from .process_readme import ProcessReadme
 from .process_template_scroll import ProcessTemplateScroll
 from .process_lock import ProcessLock
 from .process_registry import ProcessRegistry
+from .process_template_registry import ProcessTemplateRegistry
 from ...main_registery import MainRegistry
 
 
@@ -140,11 +141,14 @@ class PkgCompanionsProcessor:
         )
         lock_processor = ProcessLock(self._workspace_dir, self._main_registry)
         registry_processor = ProcessRegistry(self._workspace_dir, self._main_registry)
-
+        manifest = ProcessTemplateRegistry(self._workspace_dir, self._main_registry)
         self.register_process(readme_processor)
         self.register_process(template_scroll_processor)
-        self.register_process(lock_processor)
         self.register_process(registry_processor)
+        self.register_process(manifest)
+        # Lock file must be process after manifest because it includes
+        # the sha256 for the manifest
+        self.register_process(lock_processor)
 
     def cleanup(self) -> None:
         """
