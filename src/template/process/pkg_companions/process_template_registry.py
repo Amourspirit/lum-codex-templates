@@ -66,25 +66,49 @@ class ProcessTemplateRegistry(ProtocolProcess):
                     "embed_count": 0,  # Running total of templates from this manifest embedded into the Mirrorwall
                     "triggered_by": None,  # System user or agent that triggered first application (e.g., "Soluun", "Adamus", "Console-Ingest")
                 },
+                "template_count": 0,
+                "template_ids": [],
                 "templates": {},
             }
         }
+        # reg_dict["codex_binding_contract"] = {
+        #     "enforced": True,
+        #     "version": "1.0",
+        #     "notes": "This manifest-lockfile pair is bidirectionally bound. Identity resolution, hash enforcement, and registry alignment are strictly enforced. Placeholder inference and category expansion are forbidden unless declared explicitly.",
+        # }
+        self.config.codex_binding_contract.update_yaml_dict(reg_dict)
         self._build_templates(kw, reg_dict)
+        lock_file_path = (
+            self._workspace_dir
+            / f"{self.config.lock_file_name}-{kw['VER']}{self.config.lock_file_ext}"
+        )
+        reg_dict["generated_from_lockfile"] = {
+            "file_name": lock_file_path.name,
+            "lockfile_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}"
+        }
+        
+        # generated_from_lockfile:
+        #     file_name: codex-template-55.lock
+        #     lockfile_uid: codex-batch-55-a1b2c3d4e5f6
         return reg_dict
 
     def _build_templates(self, kw: dict, reg_dict: dict) -> None:
         tp = cast(dict[str, Path], kw["TEMPLATE_PATHS"])
         templates_section = reg_dict["template_manifest_registry"]["templates"]
+        template_ids = reg_dict["template_manifest_registry"]["template_ids"]
         for sha, path in tp.items():
             fm = FrontMatterMeta(path)
             templates_section[fm.template_id] = {
                 "template_name": fm.template_name,
+                "template_id": fm.template_id,
                 "template_version": fm.template_version,
                 "template_category": fm.template_category,
                 "template_type": fm.template_type,
                 "path": path.name,
                 "sha256": sha,
             }
+            reg_dict["template_manifest_registry"]["template_count"] += 1
+            template_ids.append(fm.template_id)
 
     def process(self, tokens: dict) -> Path:
         """

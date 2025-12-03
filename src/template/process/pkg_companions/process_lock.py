@@ -34,10 +34,11 @@ class ProcessLock(ProtocolProcess):
     def _build_lockfile(self, kw: dict) -> dict:
         lockfile = {
             "package_version": str(kw["VER"]),
+            "templates_keyed_by": "template_id",
+            "registry_version": self._main_registry.reg_version,
             "batch_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}",
             "batch_hash": kw["BATCH_HASH"],
             "lockfile_version": str(kw["VER"]),
-            "registry_version": self._main_registry.reg_version,
             "builder_version": self.config.version,
             "generated_at": kw["DATE"],
             "strict_field_mode": self.config.strict_field_mode,
@@ -46,6 +47,8 @@ class ProcessLock(ProtocolProcess):
             "strict_hash_mode": self.config.strict_hash_mode,
             "enforce_strict_bundle_boundary": True,
             "template_version_scope": "locked_only",
+            "template_index_scope": "flat",
+            "template_count": 0,
             "manifest_sha256": None,
             "registry_sources": {
                 "registry_id": self._main_registry.reg_id,
@@ -62,7 +65,14 @@ class ProcessLock(ProtocolProcess):
         self._update_registry_sha(tokens=kw, lockfile=lockfile)
 
         self.config.template_config.update_yaml_dict(lockfile)
-        lockfile["categories"] = []
+        lockfile["template_ids"] = []
+        # lockfile["codex_binding_contract"] = {
+        #     "enforced": True,
+        #     "version": "1.0",
+        #     "notes": "This manifest-lockfile pair is bidirectionally bound. Identity resolution, hash enforcement, and registry alignment are strictly enforced. Placeholder inference and category expansion are forbidden unless declared explicitly.",
+        # }
+        self.config.codex_binding_contract.update_yaml_dict(lockfile)
+        lockfile["templates"] = {}
         return lockfile
 
     def _update_registry_sha(self, tokens: dict, lockfile: dict) -> None:
@@ -87,7 +97,7 @@ class ProcessLock(ProtocolProcess):
                 f"Unable to calculate sha256 for manifest. File {manifest_path.name} not found!"
             )
 
-    def _get_category_fields(self, fm: FrontMatterMeta) -> list[str]:
+    def _get_template_fields(self, fm: FrontMatterMeta) -> list[str]:
         fields = fm.get_keys()
         result_fields: list[str] = []
         field_map = self._main_registry.registry["metadata_fields"]
@@ -103,8 +113,8 @@ class ProcessLock(ProtocolProcess):
             result_fields.append(field)
         return result_fields
 
-    def _build_lockfile_categories(
-        self, file_path: Path, fm: FrontMatterMeta, categories_map: dict, sha: str
+    def _build_lockfile_templates(
+        self, file_path: Path, fm: FrontMatterMeta, lockfile: dict, sha: str
     ) -> None:
         template_meta = {
             "template_name": fm.template_name,
@@ -114,21 +124,13 @@ class ProcessLock(ProtocolProcess):
             "template_version": fm.template_version,
             "path": file_path.name,
             "sha256": sha,
-            "fields": self._get_category_fields(fm),
+            "fields": self._get_template_fields(fm),
         }
+        lockfile["template_count"] += 1
+        lockfile["template_ids"].append(fm.template_id)
+        lockfile["templates"][fm.template_id] = template_meta
 
-        # Group by fm.template_category
-        cat_key = (
-            fm.template_category.lower() if fm.template_category else "uncategorized"
-        )
-        if cat_key not in categories_map:
-            categories_map[cat_key] = {
-                "category": cat_key,
-                "templates": [],
-            }
-        categories_map[cat_key]["templates"].append(template_meta)
-
-    def _process_template_paths(self, categories_map: dict, kw: dict):
+    def _process_template_paths(self, lockfile: dict, kw: dict):
         paths = cast(dict[str, Path], kw["TEMPLATE_PATHS"])
         for sha, file_path in paths.items():
             if not file_path.exists():
@@ -137,7 +139,7 @@ class ProcessLock(ProtocolProcess):
             if not fm.has_field("template_id"):
                 raise ValueError(f"Template missing 'template_id': {file_path}")
 
-            self._build_lockfile_categories(file_path, fm, categories_map, sha)
+            self._build_lockfile_templates(file_path, fm, lockfile, sha)
 
     def process(self, tokens: dict) -> Path:
         """
@@ -154,12 +156,8 @@ class ProcessLock(ProtocolProcess):
             self._workspace_dir
             / f"{self.config.lock_file_name}-{tokens['VER']}{self.config.lock_file_ext}"
         )
-        categories_map = {}
         lockfile = self._build_lockfile(tokens)
-        self._process_template_paths(categories_map, tokens)
-
-        # Convert map back to list for lockfile
-        lockfile["categories"] = list(categories_map.values())
+        self._process_template_paths(lockfile, tokens)
 
         with open(file_path, "w") as lockfile_f:
             yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)

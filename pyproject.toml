@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "7.1.0"
+version = "7.2.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -31,6 +31,15 @@ strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
 template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"
 version_override=0
+
+[tool.project.config.codex_binding_contract]
+enforced = true
+version = "1.0"
+notes = """
+This manifest-lockfile pair is bidirectionally bound. Identity resolution,
+hash enforcement, and registry alignment are strictly enforced. Placeholder inference
+and category expansion are forbidden unless declared explicitly.
+"""
 
 [tool.project.config.template]
 field_placeholder_format = "double_square_prefixed"
