@@ -13,3 +13,4 @@ temp/
 
 # project specific
 .mkpkg_last
+.python-version
