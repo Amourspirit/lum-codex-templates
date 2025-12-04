@@ -1,17 +1,15 @@
 import tempfile
 from pathlib import Path
-from .protocol_process import ProtocolProcess
-from .process_readme import ProcessReadme
-from .process_template_scroll import ProcessTemplateScroll
-from .process_lock import ProcessLock
-from .process_registry import ProcessRegistry
-from .process_template_registry import ProcessTemplateRegistry
+from .protocol_support import ProtocolSupport
+
+from .prompt_bootstrap import PromptBootstrap
+from .prompt_template_field_beings import PromptTemplateFieldBeings
 from ...main_registery import MainRegistry
 
 
-class PkgCompanionsProcessor:
+class SupportProcessor:
     """
-    Manages and executes a collection of ProtocolProcess instances. Each process
+    Manages and executes a collection of ProtocolSupport instances. Each process
     is responsible for processing a specific aspect of the package companions.
 
     Notes:
@@ -22,15 +20,15 @@ class PkgCompanionsProcessor:
     def __init__(self, registry: MainRegistry):
         self._workspace_dir = Path(tempfile.mkdtemp(prefix="pkg_companions_"))
         self._main_registry = registry
-        self._processes: list[ProtocolProcess] = []
+        self._processes: list[ProtocolSupport] = []
         self._register_default_processes()
 
-    def register_process(self, process: ProtocolProcess) -> None:
-        """Register a ProtocolProcess with this processor.
+    def register_process(self, process: ProtocolSupport) -> None:
+        """Register a ProtocolSupport with this processor.
 
         Args:
-            process (ProtocolProcess): The process instance to add to this processor. The object
-                should implement the expected ProtocolProcess interface.
+            process (ProtocolSupport): The process instance to add to this processor. The object
+                should implement the expected ProtocolSupport interface.
 
         Returns:
             None
@@ -86,7 +84,7 @@ class PkgCompanionsProcessor:
             )
         results = {}
         for process in self._processes:
-            print(f"Processing Package Companion: {process.get_process_name()}")
+            print(f"Processing Support Companion: {process.get_process_name()}")
             result_path = process.process(tokens)
             results[process.get_process_name()] = result_path
         return results
@@ -110,14 +108,14 @@ class PkgCompanionsProcessor:
 
         self._processes.clear()
 
-    def unregister_process(self, process: ProtocolProcess) -> None:
+    def unregister_process(self, process: ProtocolSupport) -> None:
         """
         Unregister a process from the processor.
         Removes the first occurrence of the given process from the processor's internal list
         of registered processes.
 
         Args:
-            process (ProtocolProcess): The process instance to remove.
+            process (ProtocolSupport): The process instance to remove.
 
         Returns:
             None:
@@ -135,21 +133,11 @@ class PkgCompanionsProcessor:
         self._processes.remove(process)
 
     def _register_default_processes(self) -> None:
-        readme_processor = ProcessReadme(self._workspace_dir, self._main_registry)
-        template_scroll_processor = ProcessTemplateScroll(
-            self._workspace_dir, self._main_registry
-        )
-        registry_processor = ProcessRegistry(self._workspace_dir, self._main_registry)
-        manifest = ProcessTemplateRegistry(self._workspace_dir, self._main_registry)
-        lock_processor = ProcessLock(self._workspace_dir, self._main_registry)
+        prompt_bootstrap = PromptBootstrap(self._main_registry)
+        prompt_template_field_beings = PromptTemplateFieldBeings(self._main_registry)
 
-        self.register_process(readme_processor)
-        self.register_process(template_scroll_processor)
-        self.register_process(registry_processor)
-        self.register_process(manifest)
-        # Lock file must be process after manifest because it includes
-        # the sha256 for the manifest
-        self.register_process(lock_processor)
+        self.register_process(prompt_bootstrap)
+        self.register_process(prompt_template_field_beings)
 
     def cleanup(self) -> None:
         """

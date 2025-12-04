@@ -1,9 +1,10 @@
 from typing import cast
+from .protocol_support import ProtocolSupport
 from ....config.pkg_config import PkgConfig
 from ...main_registery import MainRegistry
 
 
-class PromptBootstrap:
+class PromptBootstrap(ProtocolSupport):
     def __init__(self, registry: MainRegistry):
         self._main_registry = registry
         self.config = PkgConfig()
@@ -38,7 +39,7 @@ class PromptBootstrap:
             NOne:
         """
         if not self.file_src.exists():
-            raise FileNotFoundError(f"README source file not found: {self.file_src}")
+            raise FileNotFoundError(f"{self.file_src.name} source file not found: {self.file_src}")
 
         self._validate_tokens(tokens)
 
@@ -50,3 +51,13 @@ class PromptBootstrap:
         dest_file_path = self._dest_dir / out_file_name
         # write to destination
         dest_file_path.write_text(updated_contents, encoding="utf-8")
+        print(f"{self.get_process_name()}, Wrote output to: {dest_file_path.name}")
+
+    def get_process_name(self) -> str:
+        """
+        Gets the process name for this instance
+
+        Returns:
+            str: Process Name
+        """
+        return self.__class__.__name__

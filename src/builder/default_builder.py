@@ -8,7 +8,7 @@ from ..template.main_registery import MainRegistry
 from ..template.front_mater_meta import FrontMatterMeta
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
-from ..template.process.prompt.prompt_bootstrap import PromptBootstrap
+from ..template.process.prompt.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
 
 
@@ -53,6 +53,8 @@ class DefaultBuilder(BuilderBase):
             lockfile_path.unlink()
 
         template_count = 0
+        template_path_list = []
+        pcp = None
         # === Create ZIP ===
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
@@ -68,6 +70,7 @@ class DefaultBuilder(BuilderBase):
             ) as processed_template_paths:
                 template_paths = {}
                 for key, file_path in processed_template_paths.items():
+                    template_path_list.append(file_path)
                     fm = FrontMatterMeta(file_path)
                     if not fm.has_field("template_id"):
                         continue
@@ -88,17 +91,20 @@ class DefaultBuilder(BuilderBase):
                 )
                 for _, result_path in companion_results.items():
                     zipf.write(result_path, arcname=result_path.name)
+                    
 
-                pcp.cleanup()
-
-        pb = PromptBootstrap(self._main_registry)
-        pb.process(
-            {
-                "CURRENT_USER": self._current_user,
-                "TEMPLATE_COUNT": template_count,
-                "VER": str(self._build_version),
-            }
-        )
+                pb = SupportProcessor(self._main_registry)
+                _ = pb.execute_all(
+                    {
+                        "CURRENT_USER": self._current_user,
+                        "TEMPLATE_COUNT": template_count,
+                        "VER": str(self._build_version),
+                        "TEMPLATE_PATHS": template_paths,
+                    }
+                )
+                
+        if pcp is not None:
+            pcp.cleanup()
         print(f"Built package: {output_zip_path}")
 
     @property

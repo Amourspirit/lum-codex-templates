@@ -74,9 +74,17 @@ class PkgConfig(metaclass=SingletonMeta):
         self._template_dirs = cast(
             list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
         )
+        self._template_field_being_map_src = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_field_being_map_src"],
+        )
         self._template_manifest_name = cast(
             str,
             self._cfg["tool"]["project"]["config"]["template_manifest_name"],
+        )
+        self._template_to_field_being_map_name = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_to_field_being_map_name"],
         )
         self._version_override = cast(
             int, self._cfg["tool"]["project"]["config"]["version_override"]
@@ -207,11 +215,26 @@ class PkgConfig(metaclass=SingletonMeta):
             assert isinstance(dir_name, str), (
                 "each item in template_dirs must be a string"
             )
+        assert isinstance(self._template_field_being_map_src, str), (
+            "template_field_being_map_src must be a string"
+        )
+        if self._template_field_being_map_src:
+            tfbm_path = self._root_path / self._template_field_being_map_src
+            assert tfbm_path.exists(), (
+                f"template_field_being_map_src file does not exist: {tfbm_path}"
+            )
         assert isinstance(self._template_manifest_name, str), (
             "template_manifest_name must be a str"
         )
         if not self._template_manifest_name:
             raise ValueError("template_manifest_name cannot be empty")
+
+        assert isinstance(self._template_to_field_being_map_name, str), (
+            "template_to_field_being_map_name must be a string"
+        )
+
+        if not self._template_to_field_being_map_name:
+            raise ValueError("template_to_field_being_map_name cannot be empty")
 
         assert isinstance(self._version_override, int), (
             "version_override must be an integer"
@@ -487,6 +510,17 @@ class PkgConfig(metaclass=SingletonMeta):
         return self._root_path
 
     @property
+    def template_field_being_map_src(self) -> str:
+        """
+        Gets the source path for the template field being mapped.
+
+        Returns:
+            str: The source path for the template field being mapped.
+        """
+        return self._template_field_being_map_src
+
+
+    @property
     def template_manifest_name(self) -> str:
         return self._template_manifest_name
 
@@ -506,6 +540,16 @@ class PkgConfig(metaclass=SingletonMeta):
                 list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
             )
         return self._template_dirs
+
+    @property
+    def template_to_field_being_map_name(self) -> str:
+        """
+        Gets the name for the template to field being map.
+
+        Returns:
+            str: The name for the template to field being map.
+        """
+        return self._template_to_field_being_map_name
 
     @property
     def version_override(self) -> int:
