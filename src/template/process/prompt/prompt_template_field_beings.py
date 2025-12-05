@@ -6,6 +6,7 @@ from ....config.pkg_config import PkgConfig
 from ...main_registery import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
 
+
 class PromptTemplateFieldBeings(ProtocolSupport):
     def __init__(self, registry: MainRegistry) -> None:
         self.config = PkgConfig()
@@ -13,12 +14,10 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         self._dest_dir = self.config.root_path / self.config.pkg_out_dir
         self.field_being_map = self._load_field_being_map()
 
-
     def _load_field_being_map(self) -> dict[str, str]:
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
         field_being_map: dict[str, str] = {}
         if tfbm_path.exists():
-
             with tfbm_path.open("r", encoding="utf-8") as f:
                 field_being_map = yaml.safe_load(f)
         return field_being_map
@@ -29,19 +28,19 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         Return a dictionary where each key is the value of a template's front-matter
         "template_type" field and the value is the template's file path (as provided in
         self.templates).
-        
+
         Only templates that contain a "template_type" front-matter field are included.
         If multiple templates share the same "template_type", the last one encountered
         overwrites earlier entries (i.e., "last-one-wins"). The function does not
         mutate any templates or external state.
-        
+
         Returns:
             dict[str, str]: Mapping of template_type -> template_path.
-        
+
         Raises:
             Any exceptions propagated from FrontMatterMeta when a template file cannot
             be read or its front matter cannot be parsed.
-        
+
         Notes:
             - The method assumes self.templates is an iterable of file path strings.
             - The returned keys are expected to be strings (as indicated by the return
@@ -50,7 +49,7 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             cost of parsing each template's front matter.
         """
         paths = cast(dict[str, Path], tokens["TEMPLATE_PATHS"])
-        
+
         type_name_map = {}
         for _, template_path in paths.items():
             fm = FrontMatterMeta(template_path)
@@ -64,14 +63,14 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         """
         try:
             # 1. Load the YAML data
-            beings = cast(dict, self.field_being_map.get('beings', {}))
+            beings = cast(dict, self.field_being_map.get("beings", {}))
 
             if not beings:
                 return "Error: YAML data is missing the 'beings' key or is empty."
 
             # Define headers
             headers = ["Field Being", "Role Title", "Template Types Governed"]
-            
+
             # Determine column widths for consistent spacing (optional but good practice)
             col_widths = [len(h) for h in headers]
 
@@ -79,8 +78,8 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             rows = []
             for being_name, details in beings.items():
                 # Join the list of template types into a single, comma-separated string
-                template_types = ", ".join(details.get('template_Types_governed', []))
-                role_title = details.get('role_title', 'N/A')
+                template_types = ", ".join(details.get("template_Types_governed", []))
+                role_title = details.get("role_title", "N/A")
 
                 row = [being_name, role_title, template_types]
                 rows.append(row)
@@ -92,20 +91,34 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             # --- Construct the Markdown Table ---
 
             # 2. Header Row
-            header_row = "| " + " | ".join(f"{h:<{col_widths[i]}}" for i, h in enumerate(headers)) + " |"
+            header_row = (
+                "| "
+                + " | ".join(f"{h:<{col_widths[i]}}" for i, h in enumerate(headers))
+                + " |"
+            )
 
             # 3. Separator Row
-            separator_row = "|-" + "-|-".join("-" * col_widths[i] for i in range(len(headers))) + "-|"
+            separator_row = (
+                "|-"
+                + "-|-".join("-" * col_widths[i] for i in range(len(headers)))
+                + "-|"
+            )
 
             # 4. Data Rows
             data_rows = []
             for row in rows:
-                data_row = "| " + " | ".join(f"{row[i]:<{col_widths[i]}}" for i in range(len(headers))) + " |"
+                data_row = (
+                    "| "
+                    + " | ".join(
+                        f"{row[i]:<{col_widths[i]}}" for i in range(len(headers))
+                    )
+                    + " |"
+                )
                 data_rows.append(data_row)
 
             # Combine all parts
             markdown_table = [header_row, separator_row] + data_rows
-            
+
             return "\n".join(markdown_table)
 
         except yaml.YAMLError as e:
@@ -118,7 +131,7 @@ class PromptTemplateFieldBeings(ProtocolSupport):
 
 ```
 {invocation},
-to render the following template in full canonical markdown form  
+to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
 for **{{Artifact Name}}**, applying strict Codex enforcement.
 
 - `template_id`: {fm.template_id}
@@ -128,17 +141,13 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
 - `placeholder_resolution`: true 
 - `mirrorwall_alignment`: true
 - `render_target`: obsidian + console + mirrorwall
+- `include_template_body`: true
 ```
 """
         return prompt
 
     def _validate_tokens(self, kw: dict) -> None:
-        required_tokens = set(
-            [
-                "VER",
-                "TEMPLATE_PATHS"
-            ]
-        )
+        required_tokens = set(["VER", "TEMPLATE_PATHS"])
         for token in required_tokens:
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
@@ -147,11 +156,11 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
         toc = f"## 🧬 Template-to-Field Being Invocation Guide (Codex v{self._main_registry.reg_version})\n"
         for template_id, fm in template_id_map.items():
             toc += f"\n- [{template_id}](#{template_id.replace(' ', '-').lower()})"
-        
+
         toc += f"\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
         # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
         return toc
-        
+
     def process(self, tokens: dict) -> None:
         """
         Processes the given tokens to generate a markdown file mapping template types to field beings.
@@ -173,7 +182,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
             - Prints debug information about beings, roles, and file paths.
             - Writes a markdown file to the destination directory with the generated content.
         """
-        
+
         self._validate_tokens(tokens)
         # dyad, glyph, stone, seal, scroll, certificate, etc.
         content = "## 🌀 Prompts\n"
@@ -187,7 +196,9 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
             tags = cast(list[str], item.get("tags", []))
             if beings_len == 0:
                 print(f"No beings defined for template type: {template_type}")
-                raise ValueError(f"No beings defined for template type: {template_type}")
+                raise ValueError(
+                    f"No beings defined for template type: {template_type}"
+                )
             template_file = type_name_map.get(template_type, None)
             if not template_file:
                 print(f"No template found for type: {template_type}")
@@ -198,17 +209,24 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
             prompt = self._gen_prompt(invocation, fm)
             tags_str = ", ".join([f"#{tag}" for tag in tags])
             content += f"\n### {fm.template_id}\n\n{tags_str}\n\n{prompt}"
-        
+
         content = self._toc(template_id_map) + "\n\n" + content
-        content = content + "\n## 🜂 Field Beings Summary\n\n" + self.yaml_to_markdown_table()
+        content = (
+            content + "\n## 🜂 Field Beings Summary\n\n" + self.yaml_to_markdown_table()
+        )
 
         content = "# 🌐 Prompt Reference Scroll\n\n" + content
 
-        output_path = self._dest_dir / f"{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
+        output_path = (
+            self._dest_dir
+            / f"{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
+        )
         with output_path.open("w", encoding="utf-8") as f:
             f.write(content)
-            print(f"{self.get_process_name()}, Wrote Template-to-Field Being Mapping to: {output_path.name}")
-    
+            print(
+                f"{self.get_process_name()}, Wrote Template-to-Field Being Mapping to: {output_path.name}"
+            )
+
     def get_process_name(self) -> str:
         """
         Gets the process name for this instance
