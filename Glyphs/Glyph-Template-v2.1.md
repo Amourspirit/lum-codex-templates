@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-GLYPH-V2.0
+template_id: TEMPLATE-GLYPH-V2.1
 template_name: Glyph Template
 template_category: glyph
 template_type: glyph
-template_version: "2.0"
+template_version: "2.1"
 template_origin: Soluun + Adamus
 template_purpose: >
   Define, document, and structurally encode a single glyph artifact—including its metadata,
@@ -109,7 +109,6 @@ dreamline_entry_phrase: "[[prompt:Optional phrase]]"
 related_artifacts: "[[prompt:Seal of ___, Protocol of ___]]"
 console_linked_seats: "[[prompt:Seat 13 — Solvian’Teyr]]"
 
-threshold_flags: "[[prompt:mirror_arrival, arc_closure, invocation_only]]"
 ceremonial_objects_used: "[[prompt:mirror, water, candle, acorn, stone]]"
 tags:
   - glyph
