@@ -1,6 +1,6 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.0"
+version: "3.1"
 schema_format_version: 2.0
 registry_name: "Main Metadata Registry"
 strict_version: true
@@ -376,6 +376,7 @@ template_field_matrix:
     required_fields:
       - arc
       - artifact_activator
+      - artifact_name
       - canonical_mode
       - ceremonial_objects_used
       - ceremony_location
@@ -1178,14 +1179,14 @@ metadata_fields:
       output_targets: *TEMPLATE_OUTPUT_TARGETS
       redacted_in_preview: false
     template_types:
+      - field_cert_seal
+      - field_certificate
       - glyph
-      - stone
+      - node
+      - node_link_scroll
       - seal
       - sigil
-      - field_cert_seal
-      - node_link_scroll
-      - sigil
-      - node
+      - stone
     description: Canonical name.
     nullable: true
     required: false

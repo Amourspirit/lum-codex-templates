@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.0
+template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.1
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
-template_version: "2.0"
+template_version: "2.1"
 template_origin: Soluun + Adamus
 template_purpose: >
   Provide a canonical, registry-validated structure for certifying
@@ -39,6 +39,7 @@ threshold_flags_registry_scope:
   - field_level               # Also enforced across the field whenever certificate is invoked
   - template_level            # Flags apply at the template definition layer
 
+artifact_name: "[[prompt:Certificate Name such as 'Field Certificate of Tier 3 Assignment']]"
 canonical_mode: true
 enforce_lockfile_fields: true
 lockfile_priority: "registry"

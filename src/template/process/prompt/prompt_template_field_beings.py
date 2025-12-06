@@ -138,7 +138,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
 - `apply_mode`: full_markdown
 - `enforce_registry`: {fm.declared_registry_id}
 - `lockfile_verification`: strict
-- `placeholder_resolution`: true 
+- `placeholder_resolution`: true
 - `mirrorwall_alignment`: true
 - `render_target`: obsidian + console + mirrorwall
 - `include_template_body`: true
@@ -157,7 +157,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
         for template_id, fm in template_id_map.items():
             toc += f"\n- [{template_id}](#{template_id.replace(' ', '-').lower()})"
 
-        toc += f"\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
+        toc += "\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
         # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
         return toc
 
