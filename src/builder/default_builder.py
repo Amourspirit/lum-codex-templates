@@ -56,55 +56,57 @@ class DefaultBuilder(BuilderBase):
         template_path_list = []
         pcp = None
         # === Create ZIP ===
+        processs_templates = ProcessObsidianTemplates()
+
+        processed_template_data = processs_templates.process(
+            {
+                "declared_registry_id": self._main_registry.reg_id,
+                "declared_registry_version": self._main_registry.reg_version,
+                "mapped_registry": self._main_registry.reg_id,
+                "mapped_registry_minimum_version": self._main_registry.reg_version,
+            }
+        )
+
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
-            processs_templates = ProcessObsidianTemplates()
+            for _, fm in processed_template_data.items():
+                template_path_list.append(fm.file_path)
+                # fm = FrontMatterMeta(file_path)
+                if not fm.has_field("template_id"):
+                    continue
+                template_count += 1
+                zipf.write(fm.file_path, arcname=fm.file_path.name)
 
-            with processs_templates.process(
+            pcp = PkgCompanionsProcessor(self._main_registry)
+            companion_results = pcp.execute_all(
                 {
-                    "declared_registry_id": self._main_registry.reg_id,
-                    "declared_registry_version": self._main_registry.reg_version,
-                    "mapped_registry": self._main_registry.reg_id,
-                    "mapped_registry_minimum_version": self._main_registry.reg_version,
+                    "VER": str(self._build_version),
+                    "BATCH_HASH": self.batch_hash,
+                    "BUILDER_VER": self.config.version,
+                    "DATE": self.batch_date.isoformat(),
+                    "TEMPLATE_COUNT": template_count,
+                    "TEMPLATES_DATA": processed_template_data,
                 }
-            ) as processed_template_paths:
-                template_paths = {}
-                for key, file_path in processed_template_paths.items():
-                    template_path_list.append(file_path)
-                    fm = FrontMatterMeta(file_path)
-                    if not fm.has_field("template_id"):
-                        continue
-                    template_count += 1
-                    zipf.write(file_path, arcname=file_path.name)
-                    template_paths[key] = file_path
+            )
+            for _, result_path in companion_results.items():
+                zipf.write(result_path, arcname=result_path.name)
 
-                pcp = PkgCompanionsProcessor(self._main_registry)
-                companion_results = pcp.execute_all(
-                    {
-                        "VER": str(self._build_version),
-                        "BATCH_HASH": self.batch_hash,
-                        "BUILDER_VER": self.config.version,
-                        "DATE": self.batch_date.isoformat(),
-                        "TEMPLATE_COUNT": template_count,
-                        "TEMPLATE_PATHS": template_paths,
-                    }
-                )
-                for _, result_path in companion_results.items():
-                    zipf.write(result_path, arcname=result_path.name)
-                    
+        zip_hash = self.compute_sha256(output_zip_path)
 
-                pb = SupportProcessor(self._main_registry)
-                _ = pb.execute_all(
-                    {
-                        "CURRENT_USER": self._current_user,
-                        "TEMPLATE_COUNT": template_count,
-                        "VER": str(self._build_version),
-                        "TEMPLATE_PATHS": template_paths,
-                    }
-                )
-                
+        pb = SupportProcessor(self._main_registry)
+        _ = pb.execute_all(
+            {
+                "CURRENT_USER": self._current_user,
+                "TEMPLATE_COUNT": template_count,
+                "TEMPLATES_DATA": processed_template_data,
+                "VER": str(self._build_version),
+                "ZIP_HASH": zip_hash,
+            }
+        )
+
         if pcp is not None:
             pcp.cleanup()
+        processs_templates.cleanup()
         print(f"Built package: {output_zip_path}")
 
     @property

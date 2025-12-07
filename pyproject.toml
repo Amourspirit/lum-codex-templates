@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "7.3.1"
+version = "7.3.2"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -29,7 +29,7 @@ reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
-template_field_being_map_src = "Assets/template_field_being_map.yaml"
+template_field_being_map_src = "Metadata/template_field_being_map.yaml"
 template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"
 template_to_field_being_map_name = "Prompts-Template-to-Field-Being-Mapping"
 version_override=0

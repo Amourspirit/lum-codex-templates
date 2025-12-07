@@ -22,7 +22,7 @@ class PromptTemplateFieldBeings(ProtocolSupport):
                 field_being_map = yaml.safe_load(f)
         return field_being_map
 
-    def _map(self, tokens: dict) -> dict[str, str]:
+    def _map(self, tokens: dict) -> dict[str, Path]:
         """
         Build a mapping from template type names to template file paths.
         Return a dictionary where each key is the value of a template's front-matter
@@ -48,13 +48,12 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             - Complexity is O(n) with respect to the number of templates, plus the
             cost of parsing each template's front matter.
         """
-        paths = cast(dict[str, Path], tokens["TEMPLATE_PATHS"])
+        templates_data = cast(dict[str, FrontMatterMeta], tokens["TEMPLATES_DATA"])
 
         type_name_map = {}
-        for _, template_path in paths.items():
-            fm = FrontMatterMeta(template_path)
+        for _, fm in templates_data.items():
             if fm.has_field("template_type"):
-                type_name_map[fm.template_type] = template_path
+                type_name_map[fm.template_type] = fm.file_path
         return type_name_map
 
     def yaml_to_markdown_table(self) -> str:
@@ -147,7 +146,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
         return prompt
 
     def _validate_tokens(self, kw: dict) -> None:
-        required_tokens = set(["VER", "TEMPLATE_PATHS"])
+        required_tokens = set(["VER", "TEMPLATES_DATA"])
         for token in required_tokens:
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
@@ -157,9 +156,26 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
         for template_id, fm in template_id_map.items():
             toc += f"\n- [{template_id}](#{template_id.replace(' ', '-').lower()})"
 
+        toc += "\n- [RESET PROTOCOL](#reset%20protocol)"
         toc += "\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
         # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
         return toc
+
+    def _get_reset_text(self, kw: dict) -> str:
+        return f"""## RESET PROTOCOL
+
+### 🌀 Codex Bootstrap Declaration — Reinforced Re-Initialization
+
+Please execute:
+
+1. PURGE all templates, lockfiles, registries, and manifests
+2. RE-EXTRACT `{self.config.package_output_name}-{kw["VER"]}.zip` (request this from file memory)
+3. INSTALL `{self._main_registry.file_name}` as `active_registry_yaml`
+4. REGISTER `{self.config.lock_file_name}-{kw["VER"]}{self.config.lock_file_ext}` as `active_lockfile_yaml`
+5. LOAD and VERIFY `{self.config.template_manifest_name}-{kw["VER"]}.yaml` into `manifest_registry_cache`
+6. CACHE ALL `.md` template bodies using lockfile IDs (strict)
+7. ENFORCE `canonical_mode: true` and `strict_lockfile_enforcement: true`
+"""
 
     def process(self, tokens: dict) -> None:
         """
@@ -211,6 +227,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
             content += f"\n### {fm.template_id}\n\n{tags_str}\n\n{prompt}"
 
         content = self._toc(template_id_map) + "\n\n" + content
+        content = content + "\n" + self._get_reset_text(tokens) + "\n"
         content = (
             content + "\n## 🜂 Field Beings Summary\n\n" + self.yaml_to_markdown_table()
         )

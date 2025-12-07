@@ -15,7 +15,7 @@ class PromptBootstrap(ProtocolSupport):
             self._dest_dir.mkdir(parents=True, exist_ok=True)
 
     def _validate_tokens(self, kw: dict) -> None:
-        required_tokens = set(["CURRENT_USER", "TEMPLATE_COUNT", "VER"])
+        required_tokens = set(["CURRENT_USER", "TEMPLATE_COUNT", "VER", "ZIP_HASH"])
         for token in required_tokens:
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
@@ -25,6 +25,8 @@ class PromptBootstrap(ProtocolSupport):
         key_values["REG_VER"] = self._main_registry.reg_version
         key_values["REG_ID"] = self._main_registry.reg_id
         key_values["MANIFFEST"] = self.config.template_manifest_name
+        if "TEMPLATES_DATA" in key_values:
+            del key_values["TEMPLATES_DATA"]
         s = content.lstrip()
         for key, value in key_values.items():
             s = s.replace(f"[{key}]", str(value))
@@ -39,7 +41,9 @@ class PromptBootstrap(ProtocolSupport):
             NOne:
         """
         if not self.file_src.exists():
-            raise FileNotFoundError(f"{self.file_src.name} source file not found: {self.file_src}")
+            raise FileNotFoundError(
+                f"{self.file_src.name} source file not found: {self.file_src}"
+            )
 
         self._validate_tokens(tokens)
 

@@ -39,7 +39,7 @@ class ProcessTemplateRegistry(ProtocolProcess):
                 "BATCH_HASH",
                 "BUILDER_VER",
                 "TEMPLATE_COUNT",
-                "TEMPLATE_PATHS",
+                "TEMPLATES_DATA",
             ]
         )
         for token in required_tokens:
@@ -84,28 +84,28 @@ class ProcessTemplateRegistry(ProtocolProcess):
         )
         reg_dict["generated_from_lockfile"] = {
             "file_name": lock_file_path.name,
-            "lockfile_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}"
+            "lockfile_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}",
         }
-        
+
         # generated_from_lockfile:
         #     file_name: codex-template-55.lock
         #     lockfile_uid: codex-batch-55-a1b2c3d4e5f6
         return reg_dict
 
     def _build_templates(self, kw: dict, reg_dict: dict) -> None:
-        tp = cast(dict[str, Path], kw["TEMPLATE_PATHS"])
+        tp = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
         templates_section = reg_dict["template_manifest_registry"]["templates"]
         template_ids = reg_dict["template_manifest_registry"]["template_ids"]
-        for sha, path in tp.items():
-            fm = FrontMatterMeta(path)
+        for sha_str, fm in tp.items():
+            # fm = FrontMatterMeta(path)
             templates_section[fm.template_id] = {
                 "template_name": fm.template_name,
                 "template_id": fm.template_id,
                 "template_version": fm.template_version,
                 "template_category": fm.template_category,
                 "template_type": fm.template_type,
-                "path": path.name,
-                "sha256": sha,
+                "path": fm.file_path.name,
+                "sha256": sha_str,
             }
             reg_dict["template_manifest_registry"]["template_count"] += 1
             template_ids.append(fm.template_id)

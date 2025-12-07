@@ -1,10 +1,8 @@
 import re
 import tempfile
-from collections.abc import Generator
 from typing import Any
 
 from pathlib import Path
-from contextlib import contextmanager
 from ...config.pkg_config import PkgConfig
 from ..obsidian_editor import ObsidianEditor
 from ..front_mater_meta import FrontMatterMeta
@@ -14,10 +12,12 @@ from ...util import sha
 class ProcessObsidianTemplates:
     def __init__(self):
         self.config = PkgConfig()
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self._tmp_path = Path(self._tmp_dir.name)
 
     def _process_templates(
         self, tmp_dir: Path, key_values: dict[str, Any]
-    ) -> list[Path]:
+    ) -> list[FrontMatterMeta]:
         processed_templates = []
         for dir_name in self.config.template_dirs:
             dir_path = self.config.root_path / dir_name
@@ -40,7 +40,9 @@ class ProcessObsidianTemplates:
                     ObsidianEditor().write_template(
                         new_file_path, fm.frontmatter, clean_content
                     )
-                    processed_templates.append(new_file_path)
+                    processed_templates.append(
+                        FrontMatterMeta.from_frontmatter_dict(new_file_path, fm_dict)
+                    )
         return processed_templates
 
     def remove_line_comments(self, markdown_content: str) -> str:
@@ -63,31 +65,22 @@ class ProcessObsidianTemplates:
 
         return cleaned_content
 
-    @contextmanager
-    def process(
-        self, key_values: dict[str, Any]
-    ) -> Generator[dict[str, Path], Any, Any]:
+    def process(self, key_values: dict[str, Any]) -> dict[str, FrontMatterMeta]:
         """Process templates by updating their frontmatter with the provided key-values.
 
         Args:
             key_values (dict[str, Any]): A dictionary of key-value pairs to update in the frontmatter.
 
         Returns:
-            dict: Dictionary of file hash values as key and Path a value
+            dict: Dictionary of file hash values as key and FrontMatterMeta a value
         """
-        tmp_dir = None
-        try:
-            tmp_dir = tempfile.TemporaryDirectory()
-            tmp_path = Path(tmp_dir.name)
-            paths = self._process_templates(tmp_path, key_values)
-            results: dict[str, Path] = {}
-            for p in paths:
-                hash = sha.compute_sha256(p)
-                results[hash] = p
-            yield results
-        except Exception as e:
-            raise e
-        finally:
-            # 4. Cleanup actions
-            if tmp_dir is not None:
-                tmp_dir.cleanup()
+
+        fms = self._process_templates(self._tmp_path, key_values)
+        results: dict[str, FrontMatterMeta] = {}
+        for fm in fms:
+            hash = sha.compute_sha256(fm.file_path)
+            results[hash] = fm
+        return results
+
+    def cleanup(self):
+        self._tmp_dir.cleanup()

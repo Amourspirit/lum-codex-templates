@@ -24,7 +24,7 @@ class ProcessLock(ProtocolProcess):
                 "BATCH_HASH",
                 "BUILDER_VER",
                 "TEMPLATE_COUNT",
-                "TEMPLATE_PATHS",
+                "TEMPLATES_DATA",
             ]
         )
         for token in required_tokens:
@@ -130,16 +130,16 @@ class ProcessLock(ProtocolProcess):
         lockfile["template_ids"].append(fm.template_id)
         lockfile["templates"][fm.template_id] = template_meta
 
-    def _process_template_paths(self, lockfile: dict, kw: dict):
-        paths = cast(dict[str, Path], kw["TEMPLATE_PATHS"])
-        for sha, file_path in paths.items():
-            if not file_path.exists():
-                raise FileNotFoundError(f"Template file not found: {file_path}")
-            fm = FrontMatterMeta(file_path)
+    def _process_templates_data(self, lockfile: dict, kw: dict):
+        template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
+        for sha_str, fm in template_data.items():
+            if not fm.file_path.exists():
+                raise FileNotFoundError(f"Template file not found: {fm}")
+            # fm = FrontMatterMeta(file_path)
             if not fm.has_field("template_id"):
-                raise ValueError(f"Template missing 'template_id': {file_path}")
+                raise ValueError(f"Template missing 'template_id': {fm}")
 
-            self._build_lockfile_templates(file_path, fm, lockfile, sha)
+            self._build_lockfile_templates(fm.file_path, fm, lockfile, sha_str)
 
     def process(self, tokens: dict) -> Path:
         """
@@ -157,7 +157,7 @@ class ProcessLock(ProtocolProcess):
             / f"{self.config.lock_file_name}-{tokens['VER']}{self.config.lock_file_ext}"
         )
         lockfile = self._build_lockfile(tokens)
-        self._process_template_paths(lockfile, tokens)
+        self._process_templates_data(lockfile, tokens)
 
         with open(file_path, "w") as lockfile_f:
             yaml.dump(lockfile, lockfile_f, Dumper=yaml.Dumper, sort_keys=False)
