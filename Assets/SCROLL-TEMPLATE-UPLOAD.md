@@ -79,12 +79,21 @@ This scroll defines the canonical ingestion sequence for a Codex Template Archiv
 
 * * *
 
-### 6. 🧾 Optional: SHA-256 Verification
+### 6. 🧾 SHA-256 Verification
 
 If `strict_hash_mode: true` is set in the lockfile:
 
-- Compare each file's hash with the declared `sha256` field
+- Compare each template file's hash with the declared `sha256` field in `codex-template-[VER].lock`
 - Fail ingestion if mismatch is found
+
+* * *
+
+
+### 7. VERIFY `reset_protocol_status: successful` after execution
+
+* * *
+
+### 8. ABORT if `registry_version_mismatch` or `lockfile_template_conflict` detected
 
 * * *
 

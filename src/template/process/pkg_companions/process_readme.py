@@ -32,14 +32,19 @@ class ProcessReadme(ProtocolProcess):
                         continue
                     templates_block.append(
                         {
-                            "template_id": fm.template_id,
-                            "template_type": fm.template_type,
-                            "template_name": fm.template_name,
-                            "template_category": fm.template_category,
-                            "template_version": fm.template_version,
-                            "declared_registry_id": self._main_registry.reg_id,
-                            "mapped_registry": self._main_registry.reg_id,
-                            "path": file_path.name,
+                            fm.template_id: {
+                                "template_id": fm.template_id,
+                                "canonical_template_sha256_hash": fm.sha256,
+                                "template_type": fm.template_type,
+                                "template_name": fm.template_name,
+                                "template_category": fm.template_category,
+                                "template_version": fm.template_version,
+                                "declared_registry_id": self._main_registry.reg_id,
+                                "declared_registry_version": self._main_registry.reg_version,
+                                "mapped_registry": self._main_registry.reg_id,
+                                "mapped_registry_minimum_version": self._main_registry.reg_version,
+                                "path": file_path.name,
+                            }
                         }
                     )
         return templates_block

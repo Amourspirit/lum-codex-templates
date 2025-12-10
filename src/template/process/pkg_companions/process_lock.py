@@ -50,6 +50,7 @@ class ProcessLock(ProtocolProcess):
             "template_index_scope": "flat",
             "template_count": 0,
             "manifest_sha256": None,
+            "canonical_template_sha256_hash_map": {},
             "registry_sources": {
                 "registry_id": self._main_registry.reg_id,
                 "name": self._main_registry.reg_name,
@@ -60,6 +61,9 @@ class ProcessLock(ProtocolProcess):
                 "sha256": None,
             },
         }
+        template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
+        for sha_str, fm in template_data.items():
+            lockfile["canonical_template_sha256_hash_map"][fm.template_id] = sha_str
 
         self._update_manifest_sha(tokens=kw, lockfile=lockfile)
         self._update_registry_sha(tokens=kw, lockfile=lockfile)
@@ -114,7 +118,7 @@ class ProcessLock(ProtocolProcess):
         return result_fields
 
     def _build_lockfile_templates(
-        self, file_path: Path, fm: FrontMatterMeta, lockfile: dict, sha: str
+        self, file_path: Path, fm: FrontMatterMeta, lockfile: dict
     ) -> None:
         template_meta = {
             "template_name": fm.template_name,
@@ -123,7 +127,7 @@ class ProcessLock(ProtocolProcess):
             "template_type": fm.template_type,
             "template_version": fm.template_version,
             "path": file_path.name,
-            "sha256": sha,
+            "sha256": fm.sha256,
             "fields": self._get_template_fields(fm),
         }
         lockfile["template_count"] += 1
@@ -139,7 +143,7 @@ class ProcessLock(ProtocolProcess):
             if not fm.has_field("template_id"):
                 raise ValueError(f"Template missing 'template_id': {fm}")
 
-            self._build_lockfile_templates(fm.file_path, fm, lockfile, sha_str)
+            self._build_lockfile_templates(fm.file_path, fm, lockfile)
 
     def process(self, tokens: dict) -> Path:
         """

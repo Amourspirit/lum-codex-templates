@@ -90,6 +90,12 @@ class ProcessTemplateRegistry(ProtocolProcess):
         # generated_from_lockfile:
         #     file_name: codex-template-55.lock
         #     lockfile_uid: codex-batch-55-a1b2c3d4e5f6
+
+        template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
+        reg_dict["canonical_template_sha256_hash_map"] = {}
+        for sha_str, fm in template_data.items():
+            reg_dict["canonical_template_sha256_hash_map"][fm.template_id] = sha_str
+
         return reg_dict
 
     def _build_templates(self, kw: dict, reg_dict: dict) -> None:

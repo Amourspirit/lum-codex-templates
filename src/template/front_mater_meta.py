@@ -1,12 +1,14 @@
 from pathlib import Path
 from typing import Any
 from .obsidian_editor import ObsidianEditor
+from ..util import sha
 
 
 class FrontMatterMeta:
     def __init__(self, file_path: str | Path):
         self.file_path = Path(file_path)
         self._frontmatter, self._contnet = ObsidianEditor().read_template(file_path)
+        self._sha256 = None
         if self._frontmatter is None:
             self._frontmatter = {}
 
@@ -161,6 +163,13 @@ class FrontMatterMeta:
     def mapped_registry_minimum_version(self, value: str) -> None:
         self.set_field("mapped_registry_minimum_version", value)
 
+    @property
+    def sha256(self) -> str:
+        """Compute and return the SHA-256 hash of the file at self.file_path."""
+        if self._sha256 is None:
+            self._sha256 = sha.compute_sha256(self.file_path)
+        return self._sha256
+
     # endregion Properties
 
     # region Static Methods
@@ -182,6 +191,7 @@ class FrontMatterMeta:
         if instance._frontmatter is None:
             instance._frontmatter = {}
         instance.file_path = file_path  # or set to a default value if needed
+        instance._sha256 = None
         return instance
 
     # endregion Static Methods

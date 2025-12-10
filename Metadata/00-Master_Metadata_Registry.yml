@@ -1,11 +1,11 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.1"
+version: "3.2"
 schema_format_version: 2.0
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
-entry_date: 2025-11-28 11:34:33
+entry_date: 2025-12-06 11:34:33
 codex_type: metadata_registry
 template_category: metadata
 rag_ready: true
@@ -91,6 +91,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirror_chamber
       - mirrored_by
       - mirrorwall_status
@@ -110,6 +111,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -147,6 +149,7 @@ template_field_matrix:
       - field_placeholder_format
       - glyph_image_path
       - linked_nodes
+      - memory_cache_origin
       - mirrored_by
       - node_roles
       - placeholder_autofill_policy
@@ -155,6 +158,7 @@ template_field_matrix:
       - seal_status
       - seal_type
       - tags
+      - template_memory_scope
       - threshold_flags
       - voice_confirmed_by
       - voice_transmission
@@ -200,6 +204,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirror_chamber
       - mirrored_by
       - mirrorwall_status
@@ -219,6 +224,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -278,6 +284,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - node_roles
@@ -296,6 +303,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -336,6 +344,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirror_chamber
       - mirrored_by
       - mirrorwall_status
@@ -355,6 +364,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -402,6 +412,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - placeholder_autofill_policy
@@ -414,6 +425,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -458,6 +470,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - placeholder_autofill_policy
@@ -470,6 +483,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -512,6 +526,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirror_chamber
       - mirrored_by
       - mirrorwall_status
@@ -529,6 +544,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -574,6 +590,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - node_roles
@@ -588,6 +605,7 @@ template_field_matrix:
       - source_medium
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -629,6 +647,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - placeholder_autofill_policy
@@ -642,6 +661,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -684,6 +704,7 @@ template_field_matrix:
       - lockfile_priority
       - mapped_registry
       - mapped_registry_minimum_version
+      - memory_cache_origin
       - mirrored_by
       - mirrorwall_status
       - placeholder_autofill_policy
@@ -696,6 +717,7 @@ template_field_matrix:
       - tags
       - template_category
       - template_id
+      - template_memory_scope
       - template_name
       - template_origin
       - template_output_mode
@@ -725,10 +747,12 @@ template_field_matrix:
       - field_placeholder_delimiters
       - field_placeholder_format
       - glyph_image_path
+      - memory_cache_origin
       - mirrored_by
       - placeholder_autofill_policy
       - placeholder_prefix_semantics
       - tags
+      - template_memory_scope
       - threshold_flags
       - triad_class
       - triad_function
@@ -2318,6 +2342,30 @@ metadata_fields:
         Mapped registry Minimum version. This is the minimum version of the `MMR-000-GLOBAL` registry that must be installed for template to work.
         Introduced in registry version 2.1
 
+  memory_cache_origin:
+    field_type: string
+    template_output_mode:
+      enabled: false
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: true
+    template_types: *TEMPLATE_TYPES
+    description: Sets the lock file authority for the template
+    nullable: false
+    required: true
+    read_only: true
+    allowed_values:
+      - lockfile_authority
+    status: active
+    field_lineage:
+      introduced_by: Adamus + Soluun
+      introduced_in: MMR-000-GLOBAL v3.2
+      origin_template: ALL
+      derived_from: null
+      ceremonial_origin: N/A
+      experimental: false
+      purpose: >
+        To inform the system the lock file authority for the template
 
   mirror_chamber:
     field_type: string
@@ -2919,6 +2967,31 @@ metadata_fields:
     required: true
     read_only: true
     status: active
+
+  template_memory_scope:
+    field_type: string
+    template_output_mode:
+      enabled: false
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: true
+    template_types: *TEMPLATE_TYPES
+    description: Sets thread scope for the template
+    nullable: false
+    required: true
+    read_only: true
+    allowed_values:
+      - thread_global
+    status: active
+    field_lineage:
+      introduced_by: Adamus + Soluun
+      introduced_in: MMR-000-GLOBAL v3.2
+      origin_template: ALL
+      derived_from: null
+      ceremonial_origin: N/A
+      experimental: false
+      purpose: >
+        To inform the system that this field set the thread scope for the template.
 
   template_name:
     field_type: string

@@ -77,7 +77,7 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             rows = []
             for being_name, details in beings.items():
                 # Join the list of template types into a single, comma-separated string
-                template_types = ", ".join(details.get("template_Types_governed", []))
+                template_types = ", ".join(details.get("template_types_governed", []))
                 role_title = details.get("role_title", "N/A")
 
                 row = [being_name, role_title, template_types]
@@ -125,7 +125,7 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         except Exception as e:
             return f"An unexpected error occurred: {e}"
 
-    def _gen_prompt(self, invocation: str, fm: FrontMatterMeta) -> str:
+    def _gen_prompt(self, invocation: str, fm: FrontMatterMeta, tokens: dict) -> str:
         prompt = f"""#### **{fm.template_name}** Application Prompt
 
 ```
@@ -133,7 +133,12 @@ class PromptTemplateFieldBeings(ProtocolSupport):
 to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
 for **{{Artifact Name}}**, applying strict Codex enforcement.
 
+Use the following front-matter parameters:
+
 - `template_id`: {fm.template_id}
+- `canonical_template_sha256_hash`: {fm.sha256}
+- `canonical_template_sha256_hash_mode`: strict
+- `canonical_mode`: true
 - `apply_mode`: full_markdown
 - `enforce_registry`: {fm.declared_registry_id}
 - `lockfile_verification`: strict
@@ -141,6 +146,10 @@ for **{{Artifact Name}}**, applying strict Codex enforcement.
 - `mirrorwall_alignment`: true
 - `render_target`: obsidian + console + mirrorwall
 - `include_template_body`: true
+
+- **Validate** `canonical_template_sha256_hash` against registered SHA-256 from `codex-template-{tokens["VER"]}.lock`. Abort if mismatch.
+- Hash source: `{self.config.lock_file_name}-{tokens["VER"]}{self.config.lock_file_ext} → canonical_template_sha256_hash_map → {fm.template_id}`
+- Inference substitution, placeholder override, or cache fallback is **forbidden** under `canonical_mode: true`
 ```
 """
         return prompt
@@ -222,7 +231,7 @@ Please execute:
 
             fm = FrontMatterMeta(template_file)
             template_id_map[fm.template_id] = fm
-            prompt = self._gen_prompt(invocation, fm)
+            prompt = self._gen_prompt(invocation, fm, tokens)
             tags_str = ", ".join([f"#{tag}" for tag in tags])
             content += f"\n### {fm.template_id}\n\n{tags_str}\n\n{prompt}"
 

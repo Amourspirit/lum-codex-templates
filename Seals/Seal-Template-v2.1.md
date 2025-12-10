@@ -1,9 +1,11 @@
 ---
-template_id: TEMPLATE-SEAL-V2.0
+template_id: TEMPLATE-SEAL-V2.1
 template_type: seal
 template_category: seal
 template_name: Seal Template
-template_version: "2.0"
+template_version: "2.1"
+template_memory_scope: thread_global
+memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >
   Generate a standardized, registry-aligned Seal entry that defines the

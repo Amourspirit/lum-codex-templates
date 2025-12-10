@@ -1,9 +1,11 @@
 ---
-template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.0
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.1
 template_name: Field Correction Scroll Template
 template_category: scroll
 template_type: field_correction_scroll
-template_version: "2.0"
+template_version: "2.1"
+template_memory_scope: thread_global
+memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >
   Provide a structured, canonical scroll format for documenting and enacting corrections to existing Codex metadata—recording changes to roles, assignments, fields, lineage routing, and Console designations—and ensuring all corrections are validated, witnessed, mirrorwall-embedded, and indexed for deterministic Codex memory alignment.

@@ -1,9 +1,11 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.1
+template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.2
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
-template_version: "2.1"
+template_version: "2.2"
+template_memory_scope: thread_global
+memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >
   Provide a canonical, registry-validated structure for certifying

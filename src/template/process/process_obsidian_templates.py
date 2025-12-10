@@ -6,7 +6,6 @@ from pathlib import Path
 from ...config.pkg_config import PkgConfig
 from ..obsidian_editor import ObsidianEditor
 from ..front_mater_meta import FrontMatterMeta
-from ...util import sha
 
 
 class ProcessObsidianTemplates:
@@ -78,8 +77,7 @@ class ProcessObsidianTemplates:
         fms = self._process_templates(self._tmp_path, key_values)
         results: dict[str, FrontMatterMeta] = {}
         for fm in fms:
-            hash = sha.compute_sha256(fm.file_path)
-            results[hash] = fm
+            results[fm.sha256] = fm
         return results
 
     def cleanup(self):

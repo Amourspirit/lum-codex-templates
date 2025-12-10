@@ -1,7 +1,9 @@
 from typing import cast
+import yaml
 from .protocol_support import ProtocolSupport
 from ....config.pkg_config import PkgConfig
 from ...main_registery import MainRegistry
+from ...front_mater_meta import FrontMatterMeta
 
 
 class PromptBootstrap(ProtocolSupport):
@@ -15,13 +17,15 @@ class PromptBootstrap(ProtocolSupport):
             self._dest_dir.mkdir(parents=True, exist_ok=True)
 
     def _validate_tokens(self, kw: dict) -> None:
-        required_tokens = set(["CURRENT_USER", "TEMPLATE_COUNT", "VER", "ZIP_HASH"])
+        required_tokens = set(
+            ["CURRENT_USER", "TEMPLATES_DATA", "TEMPLATE_COUNT", "VER", "ZIP_HASH"]
+        )
         for token in required_tokens:
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
 
-    def _update_content(self, content: str, kv: dict) -> str:
-        key_values = kv.copy()
+    def _update_content(self, content: str, tokens: dict) -> str:
+        key_values = tokens.copy()
         key_values["REG_VER"] = self._main_registry.reg_version
         key_values["REG_ID"] = self._main_registry.reg_id
         key_values["MANIFFEST"] = self.config.template_manifest_name
@@ -30,6 +34,19 @@ class PromptBootstrap(ProtocolSupport):
         s = content.lstrip()
         for key, value in key_values.items():
             s = s.replace(f"[{key}]", str(value))
+
+        template_data = cast(dict[str, FrontMatterMeta], tokens["TEMPLATES_DATA"])
+        reg_dict = {"DATA": {}}
+        reg_dict["DATA"]["canonical_template_hash_map"] = {}
+        for sha_str, fm in template_data.items():
+            reg_dict["DATA"]["canonical_template_hash_map"][fm.template_id] = sha_str
+
+        template_hash_map_yaml = yaml.dump(
+            reg_dict["DATA"],
+            sort_keys=True,
+            default_flow_style=False,
+        )
+        s = s.replace("[TEMPLATE_HASH_MAP]", template_hash_map_yaml)
         return s
 
     def process(self, tokens: dict) -> None:

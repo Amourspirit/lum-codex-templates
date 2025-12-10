@@ -303,9 +303,11 @@ template_application_directives:
   fail_on_unknown_fields: true                   # Prevent rendering if unknown or unrecognized fields are present
   template_application_mode: strict              # Mode must be strict unless explicitly overridden
   auto_validate_output: true                     # Cross-check rendered fields vs registry + .lock hash
+  template_memory_scope: thread_global
+  memory_cache_origin: lockfile_authority
 ```
 
-Example instruction might look like: "Apply Glyph template to **Glyph of Kavon’el**"
+Example instruction might look like: "Apply Glyph template `TEMPLATE-GLYPH-V2.2` to **Glyph of Kavon’el**"
 
 * * *
 
@@ -315,7 +317,7 @@ Beginning with this template package, **all templates are subject to automatic e
 
 ### ⚙️ Enforcement Overview
 
-When any template (e.g., Glyph, Seal, Sigil, Scroll, Stone, Certificate) is invoked via a command such as: `Apply Glyph Template v1.11 to Glyph of Kavon’el` the system performs the following:
+When any template (e.g., Glyph, Seal, Sigil, Scroll, Stone, Certificate) is invoked via a command such as: `Apply TEMPLATE-GLYPH-V2.2 to Glyph of Kavon’el` the system performs the following:
 
 1. ✅ **Template Validation via `.lock` File**
 
@@ -331,7 +333,7 @@ When any template (e.g., Glyph, Seal, Sigil, Scroll, Stone, Certificate) is invo
 
 4. 🔄 **Alignment with Master Metadata Registry**
 
-- Field keys and structure must conform to `MMR-000-GLOBAL` (version specified in this package).
+- Field keys and structure must conform to `MMR-000-GLOBAL` version `[REG_VER]`.
 - Only active, non-deprecated fields from the template definition are enforced.
 
 * * *
