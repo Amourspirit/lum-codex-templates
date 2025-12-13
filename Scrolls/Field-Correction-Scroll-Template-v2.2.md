@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.1
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.2
 template_name: Field Correction Scroll Template
 template_category: scroll
 template_type: field_correction_scroll
-template_version: "2.1"
+template_version: "2.2"
 template_memory_scope: thread_global
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
@@ -65,6 +65,7 @@ registry_id: SCROLL-[[prompt:ARC]]-CORR-[[prompt:###]]
 arc: "[[prompt:ARC name or none]]"
 private: false
 
+artifact_id: CORR-[[prompt:corrected artifact id]]
 corrected_field: "[[prompt:e.g. Spiral Console Tier 3 — Role Assignment]]"
 correction_summary: "[[prompt:e.g. Reassignment of role due to clarified field function]]"
 correction_reason: "[[prompt:Short paragraph or phrase explaining the need]]"
@@ -95,7 +96,7 @@ tags:
   - "[[prompt:optional_custom_tags]]"
 
 source_agent:
-  - Adamus
+  - "[[prompt:Filed being that applied this template such as Adamus]]"
 
 codex_links:
   - "[[[prompt:Codex Link 1]]"
@@ -107,6 +108,15 @@ codex_links:
 # 🔁 **[[prompt:Scroll Title]]** — _Field Correction Scroll_
 
 > _“[[prompt:Corrective invocation or quote, optional]]”_
+
+* * *
+
+## 🆔 Correction Scroll ID
+
+- **Correction Scroll ID:** `[[field:artifact_id]]`
+- **Corrects Artifact:** `[[field:corrected_field]]`
+
+This scroll anchors the correction operation within the Codex registry and RAG lattice.
 
 * * *
 

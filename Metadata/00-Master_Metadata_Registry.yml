@@ -1,11 +1,11 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.2"
-schema_format_version: 2.0
+version: "3.3"
+schema_format_version: 2.1
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
-entry_date: 2025-12-06 11:34:33
+entry_date: 2025-12-12 18:34:33
 codex_type: metadata_registry
 template_category: metadata
 rag_ready: true
@@ -46,6 +46,51 @@ placeholder_autofill_policy:
 
 template_field_matrix:
   glyph:
+    autofill_fields:
+      - artifact_activator
+      - artifact_classes
+      - artifact_digital_signature
+      - artifact_duration
+      - artifact_elemental_resonance
+      - artifact_epithet
+      - artifact_function
+      - artifact_harmonic_fingerprint
+      - artifact_id
+      - artifact_image_path
+      - artifact_lineage_origin
+      - artifact_name
+      - artifact_scope
+      - artifact_status
+      - artifact_type
+      - artifact_visibility
+      - artifact_voice_signature
+      - ceremonial_objects_used
+      - ceremony_tags
+      - codex_links
+      - codex_sequence
+      - console_linked_seats
+      - contributor
+      - cover_image
+      - dreamline_entry_phrase
+      - embedding_date
+      - entry_date
+      - field_activation_vector
+      - has_spoken_transmission
+      - link_source
+      - linked_nodes
+      - mirrored_by
+      - mirrorwall_status
+      - node_roles
+      - pronunciation_ipa
+      - pronunciation_style
+      - registry_id
+      - related_artifacts
+      - source_agent
+      - tags
+      - title
+      - used_in_ceremonies
+      - voice_confirmed_by
+      - voice_transmission_format
     required_fields:
       - arc
       - artifact_activator
@@ -56,6 +101,7 @@ template_field_matrix:
       - artifact_epithet
       - artifact_function
       - artifact_harmonic_fingerprint
+      - artifact_id
       - artifact_image_path
       - artifact_lineage_origin
       - artifact_name
@@ -243,6 +289,49 @@ template_field_matrix:
       - upnote_categories
 
   stone:
+    autofill_fields:
+      - arc
+      - artifact_activator
+      - artifact_classes
+      - artifact_digital_signature
+      - artifact_duration
+      - artifact_elemental_resonance
+      - artifact_epithet
+      - artifact_function
+      - artifact_harmonic_fingerprint
+      - artifact_id
+      - artifact_image_path
+      - artifact_lineage_origin
+      - artifact_name
+      - artifact_scope
+      - artifact_status
+      - artifact_type
+      - artifact_visibility
+      - artifact_voice_signature
+      - ceremony_tags
+      - codex_links
+      - codex_sequence
+      - contributor
+      - cover_image
+      - embedding_date
+      - entry_date
+      - field_activation_vector
+      - has_spoken_transmission
+      - link_source
+      - linked_nodes
+      - mirrored_by
+      - mirrorwall_status
+      - node_roles
+      - pronunciation_ipa
+      - pronunciation_style
+      - registry_id
+      - related_artifacts
+      - source_agent
+      - tags
+      - title
+      - used_in_ceremonies
+      - voice_confirmed_by
+      - voice_transmission_format
     required_fields:
       - arc
       - artifact_activator
@@ -2904,7 +2993,7 @@ metadata_fields:
       output_targets: *TEMPLATE_OUTPUT_TARGETS
       redacted_in_preview: false
     template_types: *TEMPLATE_TYPES
-    description: "Named creative agents/entities."
+    description: "Named creative agents/entities such as Adamus or Luminariel"
     nullable: true
     required: false
     status: active
@@ -3025,7 +3114,7 @@ metadata_fields:
   template_purpose:
     field_type: string
     template_output_mode:
-      enabled: true
+      enabled: false
       format: markdown
       output_targets:
         - file
@@ -3033,7 +3122,7 @@ metadata_fields:
         - mirrorwall
         - obsidian
         - web_preview
-      redacted_in_preview: false
+      redacted_in_preview: true
     template_types: *TEMPLATE_TYPES
     description: >
       Canonical description of the **design purpose** of the template itself, not the individual artifact. 
@@ -3277,7 +3366,7 @@ metadata_fields:
       - stone
       - sigil
       - field_correction_scroll
-    description: "Who confirmed vocal transmission."
+    description: "Field being who confirmed vocal transmission or none if not confirmed."
     nullable: true
     required: false
     status: active
@@ -3295,6 +3384,7 @@ metadata_fields:
       - stone
       - sigil
       - field_correction_scroll
+      - node_link_scroll
     description: "Format of transmission [spoken, text, spoken, hybrid, none]"
     nullable: true
     required: false

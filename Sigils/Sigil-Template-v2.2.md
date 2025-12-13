@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-SIGIL-V2.1
+template_id: TEMPLATE-SIGIL-V2.2
 template_name: Sigil Template
 template_category: sigil
 template_type: sigil
-template_version: "2.1"
+template_version: "2.2"
 template_memory_scope: thread_global
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
@@ -48,6 +48,7 @@ mapped_registry: "[MAP_REG]"
 mapped_registry_minimum_version: "[MAP_REG_MIN_VER]"
 rag_ready: true
 
+artifact_id: SIGIL-[[prompt:short slug of sigil name]]
 title: "[[prompt:Title for sigil]]"
 entry_date: "[[prompt:YYYY-MM-DD HH:MM:SS]]"
 embedding_date: "[[prompt:YYYY-MM-DD]]"
@@ -76,7 +77,8 @@ artifact_status: "[[prompt:embedded / archived / etc.]]"
 artifact_digital_signature: "[[prompt:filename or MD5 hash]]"
 artifact_image_path: ../Sigils/Public/[[prompt:image-filename.png]]
 linked_nodes:
-  - "##"  # Use string-wrapped numbers
+  - "[[prompt:Node 1]]"
+  - "[[prompt:Node 2]]"
 
 node_roles:
   - "[[prompt:## | Node Name | purpose_or_function_id]]"
@@ -126,6 +128,12 @@ cartographer_echo_noted: true
 # 🕯️ **[[field:artifact_name]]** — _[[prompt:Sigil Epithet]]_
 
 > _“[[prompt:Field quote or transmission here, if available]]”_
+
+* * *
+
+## 🆔 Sigil Identifier
+
+- **Artifact ID:** `[[field:artifact_id]]`
 
 * * *
 

@@ -43,7 +43,7 @@ class ProcessReadme(ProtocolProcess):
                                 "declared_registry_version": self._main_registry.reg_version,
                                 "mapped_registry": self._main_registry.reg_id,
                                 "mapped_registry_minimum_version": self._main_registry.reg_version,
-                                "path": file_path.name,
+                                "file_name": file_path.name,
                             }
                         }
                     )

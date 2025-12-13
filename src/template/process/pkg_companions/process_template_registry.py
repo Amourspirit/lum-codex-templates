@@ -27,7 +27,7 @@ class ProcessTemplateRegistry(ProtocolProcess):
             raise KeyError("VER not in Tokens")
         dest_path = (
             self._workspace_dir
-            / f"{self.config.template_manifest_name}-{tokens['VER']}.yaml"
+            / f"{self.config.template_manifest_name}-{tokens['VER']}.yml"
         )
         return dest_path
 
@@ -93,8 +93,12 @@ class ProcessTemplateRegistry(ProtocolProcess):
 
         template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
         reg_dict["canonical_template_sha256_hash_map"] = {}
+        reg_dict["canonical_template_id_file_name_map"] = {}
         for sha_str, fm in template_data.items():
             reg_dict["canonical_template_sha256_hash_map"][fm.template_id] = sha_str
+            reg_dict["canonical_template_id_file_name_map"][fm.template_id] = (
+                fm.file_path.name
+            )
 
         return reg_dict
 
@@ -110,7 +114,7 @@ class ProcessTemplateRegistry(ProtocolProcess):
                 "template_version": fm.template_version,
                 "template_category": fm.template_category,
                 "template_type": fm.template_type,
-                "path": fm.file_path.name,
+                "file_name": fm.file_path.name,
                 "sha256": sha_str,
             }
             reg_dict["template_manifest_registry"]["template_count"] += 1

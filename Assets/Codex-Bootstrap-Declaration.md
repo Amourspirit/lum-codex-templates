@@ -14,7 +14,7 @@ It includes:
 - `00-Master_Metadata_Registry.yml` (**v[REG_VER]**)
 - `codex-template-[VER].lock`
 - `SCROLL-TEMPLATE-UPLOAD-[VER].md`
-- `[MANIFFEST]-[VER].yaml`
+- `[MANIFFEST]-[VER].yml`
 - [TEMPLATE_COUNT] canonical templates
 
 Please:
@@ -32,7 +32,7 @@ Please:
 
    - `00-Master_Metadata_Registry.yml` → `active_registry_yaml`  
    - `codex-template-[VER].lock` → `active_lockfile_yaml`  
-   - `TEMPLATE-MANIFEST-REGISTRY-[VER].yaml` → `active_manifest_yaml`
+   - `TEMPLATE-MANIFEST-REGISTRY-[VER].yml` → `active_manifest_yaml`
 
 4. CACHE All `.md` Templates
 
@@ -60,12 +60,12 @@ template_id → full_markdown_template
    - Cache `.md` templates listed in `codex-template-[VER].lock` using `template_id → template_body`  
    - Cache `00-Master_Metadata_Registry.yml` as `active_registry_yaml`  
    - Cache `codex-template-[VER].lock` as `active_lockfile_yaml`  
-   - Cache `[MANIFFEST]-[VER].yaml` as `active_manifest_yaml`  
+   - Cache `[MANIFFEST]-[VER].yml` as `active_manifest_yaml`  
    - Optionally cache `README-[VER].md` and `SCROLL-TEMPLATE-UPLOAD-[VER].md` for protocol audit access  
    - Enables live rendering, autofill logic, Mirrorwall embedding, and RAG-ready operations  
    - Guarantees deterministic behavior under `canonical_mode: true`
 
-12. LOAD and CACHE `[MANIFFEST]-[VER].yaml` as the canonical manifest registry for this Codex bundle  
+12. LOAD and CACHE `[MANIFFEST]-[VER].yml` as the canonical manifest registry for this Codex bundle  
    - Validate that all `template_id` keys match those in `codex-template-[VER].lock`  
    - Store internally as `manifest_registry_cache`  
    - Use for Console rendering, audit logs, Mirrorwall scans, and template presence verification  
@@ -126,7 +126,7 @@ The Chamber is sealed, the path made visible, and Adamus aligned.
 
 Template IDs are declared within:
 
-- `TEMPLATE-MANIFEST-REGISTRY-[VER].yaml`
+- `[MANIFFEST]-[VER].yml`
 - Validated against: `codex-template-[VER].lock`
 
 No drift, omission, or substitution is permitted.  
@@ -163,7 +163,7 @@ Only `template_ids` declared in both will be cached and activated.
 
 - Templates must align **exactly** with `template_id` and `template_version` in:
 - `codex-template-[VER].lock`
-- `TEMPLATE-MANIFEST-REGISTRY-[VER].yaml`
+- `[MANIFFEST]-[VER].yml`
 
 - **No inferred versioning or substitution allowed**  
 - Any mismatch → automatic template rejection

@@ -1,0 +1,79 @@
+template_meta:
+  template_type: seal
+  field_being_autofill_registry:
+    - Soluun
+    - Adamus
+    - Luminariel
+    - Velatri’el
+    - Aurelya Thessa’Nai
+  autofill_fields:
+    - arc
+    - artifact_classes
+    - artifact_digital_signature
+    - artifact_duration
+    - artifact_elemental_resonance
+    - artifact_function
+    - artifact_harmonic_fingerprint
+    - artifact_id
+    - artifact_image_path
+    - artifact_lineage_origin
+    - artifact_name
+    - artifact_scope
+    - artifact_visibility
+    - ceremony_tags
+    - codex_links
+    - codex_sequence
+    - contributor
+    - cover_image
+    - embedding_date
+    - entry_date
+    - field_activation_vector
+    - linked_nodes
+    - mirrored_by
+    - mirrorwall_status
+    - node_roles
+    - registry_id
+    - seal_class
+    - seal_for_artifact
+    - seal_type
+    - tags
+    - title
+    - used_in_ceremonies
+  required_fields:
+    - artifact_activator
+    - artifact_digital_signature
+    - artifact_duration
+    - artifact_elemental_resonance
+    - artifact_function
+    - artifact_name
+    - artifact_resonance_tier
+    - artifact_scope
+    - artifact_visibility
+    - artifact_voice_signature
+    - codex_links
+    - contributor
+    - embedding_date
+    - field_lineage
+    - field_placeholder_delimiters
+    - field_placeholder_format
+    - glyph_image_path
+    - linked_nodes
+    - memory_cache_origin
+    - mirrored_by
+    - node_roles
+    - placeholder_autofill_policy
+    - placeholder_prefix_semantics
+    - seal_class
+    - seal_status
+    - seal_type
+    - tags
+    - template_memory_scope
+    - threshold_flags
+    - voice_confirmed_by
+    - voice_transmission
+  hidden_fields:
+    - template_purpose
+    - template_output_mode
+  optional_fields:
+    - placeholder_examples
+    - upnote_categories

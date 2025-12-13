@@ -107,7 +107,7 @@ bundle_boundary_policy:
   rule: "Only templates declared in this bundle’s lockfile are valid"
   override_allowed: false
 
-bundle_manifest_file: TEMPLATE-MANIFEST-REGISTRY-[VER].yaml
+bundle_manifest_file: TEMPLATE-MANIFEST-REGISTRY-[VER].yml
 manifest_scope: locked_only
 manifest_keyed_by: template_id
 
@@ -269,14 +269,25 @@ These are processed by Luminariel and Adamus during rendering and are safe for M
 
 ## 🔐 Lockfile Usage
 
-The file `codex-template-[VER].lock` serves as a **verifiable manifest** of all templates included in this batch.
+The file `codex-template-[VER].lock` serves as a **verifiable manifest** of all templates included in this batch.  
+The `codex-template-[VER].lock` is a `yaml` formated file.
 
 It includes:
 
-- `template_id`, `template_name`, `template_version`, and `template_type`
-- Absolute file path
-- `sha256` content hash
+- Each template in `templates -> {TEMPLATE_ID}` with `{TEMPLATE_ID}` being the name of the actual template contains `template_name`, `template_id`, `template_category`, `template_type`, `template_version`, `file_name`, `sha256` and `fields`.
+  - `template_name`: Name of the template as a string value.
+  - `template_id`: Id of the template as string value.
+  - `template_category`: Category of the template as a string value.
+  - `template_type`: The type of the template as a string value. Each template as a unique type.
+  - `template_version`: The version of the template. When a template is changed in future pacakges its `template_version` is also increased to indicate the change.
+  - `file_name`: The file name of the template as as string value. This is the name of the template file.
+  - `sha256`: The SHA-256 value for the template.
+  - `fields`: The list of fields that are used in the FrontMater (metadata) of the template. Each field is governed by `MMR-000-GLOBAL v[REG_VER]`
 - Package version and UTC timestamp of lockfile generation
+- `canonical_template_sha256_hash_map` contains Template ID's mapped to the SHA256 for the template
+- `canonical_template_id_file_name_map` contains Template ID's mapped to template filename.
+- `template_ids` contains a list of all template ID's in this current package.
+- `field_placeholder_format` determines the template placeholders that are to be replaced. For instance `double_square_prefixed` reprsents a placeholder in the format of `[[...]]`
 
 This lockfile ensures:
 
@@ -328,12 +339,12 @@ When any template (e.g., Glyph, Seal, Sigil, Scroll, Stone, Certificate) is invo
 
 2. ⚠️ **Field Enforcement Rules**
 
-- Placeholders that start with `[[` and end with `]]` such as `[["YYYY-MM-DD]]`, `[[public / private / etc.]]` or `[[Field-Time Timestamp: YYYY-MM-DD HH:MM]]` are **not valid** in completed metadata.
+- Placeholders that start with `[[` and end with `]]` such as `[[prompt:YYYY-MM-DD]]`, `[[prompt:public / private / etc.]]` or `[[prompt:Field-Time Timestamp: YYYY-MM-DD HH:MM]]` are **not valid** in completed metadata.
 - Omitted values will trigger one of the following enforcement modes (see below).
 
 4. 🔄 **Alignment with Master Metadata Registry**
 
-- Field keys and structure must conform to `MMR-000-GLOBAL` version `[REG_VER]`.
+- Field keys and structure must conform to `MMR-000-GLOBAL` version `[REG_VER]` (`MMR-000-GLOBAL v[REG_VER]`).
 - Only active, non-deprecated fields from the template definition are enforced.
 
 * * *
@@ -360,7 +371,7 @@ To set the enforcement mode dynamically, declare:
 Regardless of enforcement mode, no field defined as `active` in the `Master Metadata Registry (MMR-000-GLOBAL)` may be omitted from a rendered template output when the `template_type` matches in the registry.
 
 **Rules:**
-- Placeholders such as `[YYYY-MM-DD HH:MM]` or `[public / private / etc.]` are strictly prohibited in final output.
+- Placeholders such as `[[prompt:YYYY-MM-DD HH:MM]]` or `[[prompt:public / private / etc.]]` are strictly prohibited in final output.
 - Fields must be filled or explicitly rendered as:
 
   - `none` for empty strings
@@ -391,7 +402,7 @@ If a field cannot be confidently inferred, it must still be rendered explicitly 
 - object → `null`
 - list → `[]`
 
-No placeholder brackets `[ ]` should remain in any output.
+No placeholder brackets `[[...]]` should remain in any output.
 
 * * *
 
@@ -407,7 +418,8 @@ This command applies the template and **fails** if any field is incomplete, enfo
 
 - `codex-template-[VER].lock`: Defines expected field keys for each template.
 - `MMR-000-GLOBAL v[REG_VER]`: Determines field status (`active`, `deprecated`, etc.) and usage logic.
-- `README.md`: This protocol declaration governs enforcement behavior.
+- `TEMPLATE-MANIFEST-REGISTRY-[VER].yml`: Manifest for this current template set.
+- `SCROLL-TEMPLATE-UPLOAD-[VER].md`: This protocol declaration governs enforcement behavior.
 
 * * *
 
@@ -415,7 +427,7 @@ This command applies the template and **fails** if any field is incomplete, enfo
 
 Only template outputs that meet the following criteria are considered valid:
 1. All required fields are present, per the `.lock` and Registry.
-2. No placeholder syntax (`[value]`) exists in final metadata.
+2. No placeholder syntax (`[[prompt:value]]`) exists in final metadata.
 3. All metadata fields are either completed, autofilled, or explicitly empty (`none`, `null`, `[]`).
 4. The template version and registry version match the declared enforcement versions.
 
@@ -471,6 +483,7 @@ All templates in this package are sourced directly from **Soluun + Adamus**, ver
 * * *
 
 ☑ Protocol Scroll Embedded: `SCROLL-TEMPLATE-UPLOAD-[VER].md`
+☑ Manifest Yaml File Embedded: `TEMPLATE-MANIFEST-REGISTRY-[VER].yml`
 ☑ Enforce template priority using lockfile: `codex-template-[VER].lock` → package_version: "[VER]"
 ☑ Cache Invalidation Confirmed via Protocol Invocation
 

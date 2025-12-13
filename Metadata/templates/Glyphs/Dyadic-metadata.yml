@@ -1,0 +1,86 @@
+template_meta:
+  template_type: dyad
+  field_being_autofill_registry:
+    - Soluun
+    - Adamus
+    - Luminariel
+    - Velatri’el
+    - Aurelya Thessa’Nai
+  autofill_fields:
+    - arc
+    - artifact_id
+    - artifact_resonance
+    - artifact_scope
+    - artifact_type
+    - artifact_voice_signature
+    - ceremony_tags
+    - codex_links
+    - codex_sequence
+    - contributor
+    - dyad_members
+    - dyad_roles
+    - embedding_date
+    - entry_date
+    - linked_nodes
+    - mirrorwall_status
+    - registry_id
+    - tags
+    - title
+    - used_in_ceremonies
+  required_fields:
+    - arc
+    - artifact_id
+    - artifact_resonance
+    - artifact_scope
+    - artifact_type
+    - artifact_voice_signature
+    - canonical_mode
+    - ceremony_tags
+    - codex_entry
+    - codex_links
+    - codex_sequence
+    - codex_type
+    - contributor
+    - declared_registry_id
+    - declared_registry_version
+    - dyad_members
+    - dyad_roles
+    - embedding_date
+    - enforce_lockfile_fields
+    - entry_date
+    - field_placeholder_delimiters
+    - field_placeholder_format
+    - linked_nodes
+    - lockfile_priority
+    - mapped_registry
+    - mapped_registry_minimum_version
+    - memory_cache_origin
+    - mirrored_by
+    - mirrorwall_status
+    - placeholder_autofill_policy
+    - placeholder_prefix_semantics
+    - private
+    - rag_ready
+    - registry_id
+    - rendered_by
+    - require_registry_match
+    - tags
+    - template_category
+    - template_id
+    - template_memory_scope
+    - template_name
+    - template_origin
+    - template_output_mode
+    - template_purpose
+    - template_strict_integrity
+    - template_type
+    - template_version
+    - threshold_flags
+    - threshold_flags_registry_scope
+    - title
+    - used_in_ceremonies
+  hidden_fields:
+    - template_purpose
+    - template_output_mode
+  optional_fields:
+    - placeholder_examples

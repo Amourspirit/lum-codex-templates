@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.2
+template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.3
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
-template_version: "2.2"
+template_version: "2.3"
 template_memory_scope: thread_global
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
@@ -41,6 +41,7 @@ threshold_flags_registry_scope:
   - field_level               # Also enforced across the field whenever certificate is invoked
   - template_level            # Flags apply at the template definition layer
 
+artifact_id: FC-GENERAL-[[prompt:short_descriptor | slug | uppercase]]
 artifact_name: "[[prompt:Certificate Name such as 'Field Certificate of Tier 3 Assignment']]"
 canonical_mode: true
 enforce_lockfile_fields: true
@@ -63,7 +64,7 @@ registry_id: CERT-GEN-000-[[prompt:XXX]]
 arc: "[[prompt:ARC name or none]]"
 private: false
 
-certificate_status: sealed
+certificate_status: "[[prompt:Status of this certificate such as sealed]]"
 certificate_scope: "[[prompt:e.g., node-local / chamber-wide / lineage-based / spiral-specific]]"
 
 artifact_activator:
@@ -112,6 +113,13 @@ codex_links:
 **Scope:** [[prmopt:e.g. Chamber-Wide / Node-Specific / Dreamline Resonance]]  
 **Linked Node(s):** *[[prompt:e.g. Node 14 — Calibration Chamber]]*  
 **Ceremonial Objects:** *[[prompt:e.g. Forkset, Mirror, Candle]]*
+
+* * *
+
+## 🆔 Certificate Artifact ID
+
+- **Artifact ID:** `[[field:artifact_id]]`
+- This ID provides traceable, canonical linkage to this field-level activation or affirmation.
 
 * * *
 

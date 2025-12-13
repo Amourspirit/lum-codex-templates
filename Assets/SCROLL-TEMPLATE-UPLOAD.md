@@ -11,8 +11,8 @@ package_name: codex-templates-[VER]
 package_version: "[VER]"
 builder_version: "[BUILDER_VER]"
 date_of_submission: "[DATE]"
-scroll_id: SCROLL-TEMPLATE-UPLOAD-V2.2
-scroll_version: "2.2"
+scroll_id: SCROLL-TEMPLATE-UPLOAD-V2.3
+scroll_version: "2.3"
 title: Scroll of Template Upload Protocol
 template_type: scroll
 template_category: install
@@ -29,7 +29,7 @@ tags:
   - scroll
 ---
 
-# 📜 Scroll of Template Upload Protocol (v2.2)
+# 📜 Scroll of Template Upload Protocol (v2.3)
 
 This scroll defines the canonical ingestion sequence for a Codex Template Archive. The archive must include:
 
@@ -53,7 +53,6 @@ This scroll defines the canonical ingestion sequence for a Codex Template Archiv
 
 - Extract `codex-template-[VER].lock`
 - Treat as the **authoritative version registry**
-- Lockfile fields (`template_id`, `template_version`, `sha256`, etc.) override all internal frontmatter
 
 * * *
 
@@ -62,7 +61,8 @@ This scroll defines the canonical ingestion sequence for a Codex Template Archiv
 - All files must reside at the root of the `.zip` (no folders)
 - File list should include:
 
-- `README.md`
+- `README-[VER].md`
+- `TEMPLATE-MANIFEST-REGISTRY-[VER].yml`
 - `codex-template-[VER].lock`
 - `00-Master_Metadata_Registry.yml`
 - All templates as `.md`

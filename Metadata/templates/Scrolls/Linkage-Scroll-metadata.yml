@@ -1,0 +1,84 @@
+template_meta:
+  template_type: linkage_scroll
+  field_being_autofill_registry:
+    - Soluun
+    - Adamus
+    - Luminariel
+    - Velatri’el
+    - Aurelya Thessa’Nai
+  autofill_fields:
+    - arc
+    - artifact_digital_signature
+    - artifact_id
+    - codex_sequence
+    - contributor
+    - embedding_date
+    - entry_date
+    - linkage_resonance
+    - linkage_scope
+    - linkage_strength
+    - linkage_type
+    - linked_artifacts
+    - linked_nodes
+    - mirrored_by
+    - mirrorwall_status
+    - registry_id
+    - tags
+    - title
+    - witnessed_by
+  required_fields:
+    - arc
+    - artifact_digital_signature
+    - canonical_mode
+    - codex_entry
+    - codex_sequence
+    - codex_type
+    - contributor
+    - declared_registry_id
+    - declared_registry_version
+    - embedding_date
+    - enforce_lockfile_fields
+    - entry_date
+    - field_placeholder_delimiters
+    - field_placeholder_format
+    - linkage_resonance
+    - linkage_scope
+    - linkage_strength
+    - linkage_type
+    - linked_artifacts
+    - linked_nodes
+    - lockfile_priority
+    - mapped_registry
+    - mapped_registry_minimum_version
+    - memory_cache_origin
+    - mirrored_by
+    - mirrorwall_status
+    - placeholder_autofill_policy
+    - placeholder_prefix_semantics
+    - private
+    - rag_ready
+    - registry_id
+    - rendered_by
+    - require_registry_match
+    - scroll_type
+    - tags
+    - template_category
+    - template_id
+    - template_memory_scope
+    - template_name
+    - template_origin
+    - template_output_mode
+    - template_purpose
+    - template_strict_integrity
+    - template_type
+    - template_version
+    - threshold_flags
+    - threshold_flags_registry_scope
+    - title
+    - witnessed_by
+  hidden_fields:
+    - template_purpose
+    - template_output_mode
+  optional_fields:
+    - placeholder_examples
+    - upnote_categories
