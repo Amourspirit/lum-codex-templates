@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-GLYPH-V2.4
+template_id: TEMPLATE-GLYPH-V2.5
 template_name: Glyph Template
 template_category: glyph
 template_type: glyph
-template_version: "2.4"
+template_version: "2.5"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

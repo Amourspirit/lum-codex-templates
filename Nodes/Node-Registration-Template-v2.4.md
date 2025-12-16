@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-NODE-V2.3
+template_id: TEMPLATE-NODE-V2.4
 template_name: Node Registration Template
 template_category: node
 template_type: node_reg
-template_version: "2.3"
+template_version: "2.4"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_usage: Used when new nodes are created/registeres in Luminariel

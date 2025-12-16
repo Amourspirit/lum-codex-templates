@@ -97,7 +97,7 @@ class FrontMatterMeta:
         )
 
     def _compute_sha256(self) -> str:
-        """Compute and return the SHA-256 hash of the file at self.file_path."""
+        """Compute and return the SHA-256 hash of the frontmatter and content."""
         fm = self.frontmatter.copy()
         _ = fm.pop(
             self.config.template_hash_field_name, None
@@ -106,6 +106,12 @@ class FrontMatterMeta:
         hash = sha.compute_str_sha256(full_text)
         self.frontmatter[self.config.template_hash_field_name] = hash
         return hash
+
+    def recompute_sha256(self) -> None:
+        """Recompute and update the SHA-256 hash of the frontmatter and content.
+        Value is assigned to self.sha256 property.
+        """
+        self._sha256 = self._compute_sha256()
 
     # region Properties
     @property

@@ -193,6 +193,13 @@ class ProcessRegistry(ProtocolProcess):
         mmr["version"] = self._main_registry.reg_version
         mmr["valid_template_types"] = self._get_template_types(tokens)
 
+        mmr["template_field_registry_matrix"] = {
+            "source": f"{self.config.lock_file_name}-{tokens['VER']}{self.config.lock_file_ext}",
+            "path": "templates → template_id → fields",
+            "enforcement_mode": "strict",
+            "validate_against": ["template_fields_declared", "metadata_fields"],
+        }
+
         with file_path.open("w", encoding="utf-8") as f_dest:
             yaml.safe_dump(mmr, f_dest, sort_keys=False)
         return file_path
