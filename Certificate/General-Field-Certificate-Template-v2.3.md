@@ -41,7 +41,7 @@ threshold_flags_registry_scope:
   - field_level               # Also enforced across the field whenever certificate is invoked
   - template_level            # Flags apply at the template definition layer
 
-artifact_id: FC-GENERAL-[[prompt:short_descriptor | slug | uppercase]]
+artifact_id: FC-GENERAL-[[prompt:short descriptor | slug | uppercase]]
 artifact_name: "[[prompt:Certificate Name such as 'Field Certificate of Tier 3 Assignment']]"
 canonical_mode: true
 enforce_lockfile_fields: true

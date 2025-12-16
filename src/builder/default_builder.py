@@ -5,11 +5,11 @@ from datetime import datetime
 from .builderbase import BuilderBase
 from .build_ver_mgr import BuildVerMgr
 from ..template.main_registery import MainRegistry
-from ..template.front_mater_meta import FrontMatterMeta
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
 from ..template.process.prompt.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
+from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
 
 
 class DefaultBuilder(BuilderBase):
@@ -17,7 +17,7 @@ class DefaultBuilder(BuilderBase):
         super().__init__()
         self.config = PkgConfig()
         self._build_version = build_version
-        self._main_registry = MainRegistry()
+        self._main_registry = MainRegistry(build_version=self._build_version)
         self._destination_path = self.config.root_path / self.config.pkg_out_dir
         self._destination_path.mkdir(parents=True, exist_ok=True)
         self._batch_hash = ""
@@ -55,10 +55,12 @@ class DefaultBuilder(BuilderBase):
         template_count = 0
         template_path_list = []
         pcp = None
-        # === Create ZIP ===
-        processs_templates = ProcessObsidianTemplates()
+        meta_reader = ReadObsidianTemplateMeta()
+        template_meta = meta_reader.read_template_meta()
 
-        processed_template_data = processs_templates.process(
+        process_templates = ProcessObsidianTemplates()
+
+        processed_template_data = process_templates.process(
             {
                 "declared_registry_id": self._main_registry.reg_id,
                 "declared_registry_version": self._main_registry.reg_version,
@@ -67,6 +69,7 @@ class DefaultBuilder(BuilderBase):
             }
         )
 
+        # === Create ZIP ===
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             # Dictionary to group templates by category dynamically
             for _, fm in processed_template_data.items():
@@ -75,6 +78,8 @@ class DefaultBuilder(BuilderBase):
                 if not fm.has_field("template_id"):
                     continue
                 template_count += 1
+                template_meta[fm.template_type]["template_id"] = fm.template_id
+                template_meta[fm.template_type]["template_front_matter_meta"] = fm
                 zipf.write(fm.file_path, arcname=fm.file_path.name)
 
             pcp = PkgCompanionsProcessor(self._main_registry)
@@ -86,6 +91,7 @@ class DefaultBuilder(BuilderBase):
                     "DATE": self.batch_date.isoformat(),
                     "TEMPLATE_COUNT": template_count,
                     "TEMPLATES_DATA": processed_template_data,
+                    "TEMPLATE_META": template_meta,
                 }
             )
             for _, result_path in companion_results.items():
@@ -106,7 +112,7 @@ class DefaultBuilder(BuilderBase):
 
         if pcp is not None:
             pcp.cleanup()
-        processs_templates.cleanup()
+        process_templates.cleanup()
         print(f"Built package: {output_zip_path}")
 
     @property

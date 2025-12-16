@@ -48,6 +48,7 @@ class PkgConfig(metaclass=SingletonMeta):
         self._lock_file_name = cast(
             str, self._cfg["tool"]["project"]["config"]["lock_file_name"]
         )
+
         self._non_template_patterns = cast(
             list[str],
             self._cfg["tool"]["project"]["config"]["non_template_patterns"],
@@ -81,6 +82,14 @@ class PkgConfig(metaclass=SingletonMeta):
         self._template_manifest_name = cast(
             str,
             self._cfg["tool"]["project"]["config"]["template_manifest_name"],
+        )
+        self._template_meta_dir = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_meta_dir"],
+        )
+        self._template_meta_keys = cast(
+            set[str],
+            set(self._cfg["tool"]["project"]["config"]["template_meta_keys"]),
         )
         self._template_to_field_being_map_name = cast(
             str,
@@ -168,6 +177,7 @@ class PkgConfig(metaclass=SingletonMeta):
         assert isinstance(self._lock_file_name, str), "lock_file_name must be a string"
         if not self._lock_file_name:
             raise ValueError("lock_file_name cannot be empty")
+
         assert isinstance(self._non_template_patterns, list), (
             "non_template_patterns must be a list"
         )
@@ -228,6 +238,28 @@ class PkgConfig(metaclass=SingletonMeta):
         )
         if not self._template_manifest_name:
             raise ValueError("template_manifest_name cannot be empty")
+
+        assert isinstance(self._template_meta_dir, str), (
+            "template_meta_dir must be a str"
+        )
+        if not self._template_meta_dir:
+            raise ValueError("template_meta_dir cannot be empty")
+
+        template_meta_dir_path = self._root_path / self._template_meta_dir
+
+        assert template_meta_dir_path.exists(), (
+            f"template_meta_dir does not exist: {template_meta_dir_path}"
+        )
+
+        assert isinstance(self._template_meta_keys, set), (
+            "template_meta_keys must be a set"
+        )
+        if not self._template_meta_keys:
+            raise ValueError("template_meta_keys cannot be empty")
+        for key in self._template_meta_keys:
+            assert isinstance(key, str), (
+                "each item in template_meta_keys must be a string"
+            )
 
         assert isinstance(self._template_to_field_being_map_name, str), (
             "template_to_field_being_map_name must be a string"
@@ -519,7 +551,6 @@ class PkgConfig(metaclass=SingletonMeta):
         """
         return self._template_field_being_map_src
 
-
     @property
     def template_manifest_name(self) -> str:
         return self._template_manifest_name
@@ -540,6 +571,26 @@ class PkgConfig(metaclass=SingletonMeta):
                 list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
             )
         return self._template_dirs
+
+    @property
+    def template_meta_dir(self) -> str:
+        """
+        Gets the template meta directory.
+
+        Returns:
+            str: The template meta directory.
+        """
+        return self._template_meta_dir
+
+    @property
+    def template_meta_keys(self) -> set[str]:
+        """
+        Gets the template meta keys.
+
+        Returns:
+            set[str]: The template meta keys.
+        """
+        return self._template_meta_keys
 
     @property
     def template_to_field_being_map_name(self) -> str:

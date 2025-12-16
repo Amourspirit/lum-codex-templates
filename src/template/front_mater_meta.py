@@ -7,7 +7,7 @@ from ..util import sha
 class FrontMatterMeta:
     def __init__(self, file_path: str | Path):
         self.file_path = Path(file_path)
-        self._frontmatter, self._contnet = ObsidianEditor().read_template(file_path)
+        self._frontmatter, self._content = ObsidianEditor().read_template(file_path)
         self._sha256 = None
         if self._frontmatter is None:
             self._frontmatter = {}
@@ -70,7 +70,7 @@ class FrontMatterMeta:
         Example:
             >>> obj.frontmatter = {"template_type": "type_a", "template_id": "id_a}
             >>> obj.get_keys()
-            ['template_id', 'template_typeb']
+            ['template_id', 'template_type_b']
         """
 
         if self._frontmatter:
@@ -97,11 +97,11 @@ class FrontMatterMeta:
     # region Properties
     @property
     def content(self) -> str:
-        return self._contnet
+        return self._content
 
     @content.setter
     def content(self, value: str) -> None:
-        self._contnet = value
+        self._content = value
 
     @property
     def frontmatter(self) -> dict:

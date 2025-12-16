@@ -6,6 +6,7 @@ template_meta:
     - Luminariel
     - Velatri’el
     - Aurelya Thessa’Nai
+  deprecated_fields: []
   autofill_fields:
     - arc
     - artifact_activator

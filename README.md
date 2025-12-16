@@ -7,7 +7,7 @@ Template project for working with Field.
 
 This project generates a hidden file named `.mkpkg_last`.  
 When a new set of templates are generated the `.mkpkg_last` gets the package version written into it.  
-This enables new template sets to be generated wihout having to keep track of the previouse version.  
+This enables new template sets to be generated wihout having to keep track of the previous version.  
 The previous version is automatically read from `.mkpkg_last` and the next version is then inferred.
 
 ### zip-pkg
@@ -18,7 +18,7 @@ Generated the next template set.
 python -m mkplg pkg-zip
 ```
 
-Build version can be overridded using `-b` or `--build`.  
+Build version can be overrode using `-b` or `--build`.  
 This will generate template set `50` but will NOT update `.mkpkg_last`.
 
 ```shell
@@ -33,3 +33,18 @@ uv run python -m mkplg pkg-zip
 ```
 
 This will circumvent the need to activate the virtual environment.
+
+## MMR-000-GLOBAL
+
+The `MMR-000-GLOBAL` is in file `Metadata/00-Master_Metadata_Registry.yml`.  
+When the file is manually updated `version` should be bumped such as `3.3` to `3.4`.  
+However, the `version` should always be a two digit (major, minor) version and not a three digit version.  
+The reason for this is when the package is built the revision is the build number.  
+So, if the version is `3.4` and the package build number is `88` then final outputted version will becomes `3.4.88`.  
+This is done because each build modifies the outputted `00-Master_Metadata_Registry.yml` file so it must have a version to reflect that a change as occurred.
+
+## Metadata Templates
+
+Each template has a corresponding metadata for managing its field matrix.  
+When a template has its metadata modified it must also be reflected in it corresponding metadata template.  
+The metadata for templates is found in `Metadata/templates`.
