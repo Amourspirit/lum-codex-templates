@@ -17,7 +17,6 @@ class DefaultBuilder(BuilderBase):
         super().__init__()
         self.config = PkgConfig()
         self._build_version = build_version
-        self._main_registry = MainRegistry(build_version=self._build_version)
         self._destination_path = self.config.root_path / self.config.pkg_out_dir
         self._destination_path.mkdir(parents=True, exist_ok=True)
         self._batch_hash = ""
@@ -39,6 +38,8 @@ class DefaultBuilder(BuilderBase):
                 self._build_version = bvm.get_next_version()
                 bvm.version = self._build_version
                 bvm.save_current_version()
+
+        self._main_registry = MainRegistry(build_version=self._build_version)
 
     def build_package(self):
         # === Paths ===

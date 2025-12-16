@@ -49,7 +49,6 @@ class MainRegistry:
         """Gets the registry version from the loaded registry data."""
         if not self._reg_version:
             self._reg_version = ".".join(str(part) for part in self.reg_ver_tuple)
-            # self._reg_version = self.reg_ver_tuple.__str__().replace("(", "").replace(")", "").replace(",", "").replace(" ", ".")
         return self._reg_version
 
     @property
