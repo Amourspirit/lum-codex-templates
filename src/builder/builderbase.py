@@ -20,7 +20,7 @@ class BuilderBase:
             FileNotFoundError: If the provided path does not exist or is not a file.
         """
 
-        return sha.compute_sha256(file_path=file_path)
+        return sha.compute_file_sha256(file_path=file_path)
 
     def compute_time_hash(self) -> str:
         """

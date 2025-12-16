@@ -51,7 +51,20 @@ class ProcessLock(ProtocolProcess):
             "template_count": 0,
             "manifest_file_name": None,
             "manifest_sha256": None,
+            "template_validation_policy": {
+                "enforce_template_hash": True,
+                "compare_lockfile_hash": True,
+                "compare_embedded_hash": True,
+                "hash_algorithm": "sha256",
+                "hash_scope": {
+                    "exclude_fields": ["template_hash"],
+                    "include": ["yaml_frontmatter", "markdown_body"],
+                },
+                "on_hash_mismatch": "reject_template",
+            },
             "canonical_template_sha256_hash_map": {},
+            "canonical_template_id_to_template_type_map": {},
+            "canonical_template_type_to_template_id_map": {},
             "canonical_template_id_file_name_map": {},
             "registry_sources": {
                 "registry_id": self._main_registry.reg_id,
@@ -66,6 +79,12 @@ class ProcessLock(ProtocolProcess):
         template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
         for sha_str, fm in template_data.items():
             lockfile["canonical_template_sha256_hash_map"][fm.template_id] = sha_str
+            lockfile["canonical_template_id_to_template_type_map"][fm.template_id] = (
+                fm.template_type
+            )
+            lockfile["canonical_template_type_to_template_id_map"][fm.template_type] = (
+                fm.template_id
+            )
             lockfile["canonical_template_id_file_name_map"][fm.template_id] = (
                 fm.file_path.name
             )
@@ -88,7 +107,7 @@ class ProcessLock(ProtocolProcess):
         reg = ProcessRegistry(self._workspace_dir, self._main_registry)
         reg_path = reg.get_dest_path(tokens=tokens)
         if reg_path.exists():
-            lockfile["registry_sources"]["sha256"] = sha.compute_sha256(reg_path)
+            lockfile["registry_sources"]["sha256"] = sha.compute_file_sha256(reg_path)
         else:
             del lockfile[["registry_sources"]]["sha256"]
             print(
@@ -99,7 +118,7 @@ class ProcessLock(ProtocolProcess):
         reg = ProcessTemplateRegistry(self._workspace_dir, self._main_registry)
         manifest_path = reg.get_dest_path(tokens=tokens)
         if manifest_path.exists():
-            lockfile["manifest_sha256"] = sha.compute_sha256(manifest_path)
+            lockfile["manifest_sha256"] = sha.compute_file_sha256(manifest_path)
             lockfile["manifest_file_name"] = manifest_path.name
         else:
             del lockfile["manifest_sha256"]

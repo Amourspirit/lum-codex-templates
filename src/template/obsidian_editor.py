@@ -59,8 +59,22 @@ class ObsidianEditor:
         Returns:
             Path: The path to the file that was written.
         """
+        full_text = self.get_template_str(frontmatter, content)
         path = Path(file_path)
-        fm_text = yaml.dump(frontmatter, Dumper=yaml.Dumper, sort_keys=False)
-        full_text = f"---\n{fm_text}---\n{content}"
         path.write_text(full_text, encoding="utf-8")
         return path
+
+    def get_template_str(self, frontmatter: dict, content: str) -> str:
+        """
+        Get the full template string with frontmatter and content.
+
+        Args:
+            frontmatter (dict): The frontmatter data to write as YAML.
+            content (str): The markdown content to write after the frontmatter.
+
+        Returns:
+            str: The full template string.
+        """
+        fm_text = yaml.dump(frontmatter, Dumper=yaml.Dumper, sort_keys=False)
+        full_text = f"---\n{fm_text}---\n{content}"
+        return full_text

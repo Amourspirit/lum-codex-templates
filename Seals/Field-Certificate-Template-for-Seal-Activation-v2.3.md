@@ -1,10 +1,11 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-SEAL-V2.2
+template_id: TEMPLATE-FIELD-CERT-SEAL-V2.3
 template_type: field_cert_seal
 template_category: certificate
 template_name: Field Certificate Template for Seal Activation
-template_version: "2.2"
+template_version: "2.3"
 template_memory_scope: thread_global
+template_hash: none
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

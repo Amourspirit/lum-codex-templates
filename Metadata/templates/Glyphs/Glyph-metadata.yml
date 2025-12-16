@@ -118,6 +118,7 @@ template_meta:
     - tags
     - template_category
     - template_id
+    - template_hash
     - template_memory_scope
     - template_name
     - template_origin
@@ -135,6 +136,7 @@ template_meta:
   hidden_fields:
     - template_purpose
     - template_output_mode
+    - template_hash
   optional_fields:
     - placeholder_examples
     - upnote_categories

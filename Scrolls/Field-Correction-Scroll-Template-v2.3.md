@@ -1,10 +1,11 @@
 ---
-template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.2
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.3
 template_name: Field Correction Scroll Template
 template_category: scroll
 template_type: field_correction_scroll
-template_version: "2.2"
+template_version: "2.3"
 template_memory_scope: thread_global
+template_hash: none
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

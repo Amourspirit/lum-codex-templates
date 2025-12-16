@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 from .obsidian_editor import ObsidianEditor
+from ..config.pkg_config import PkgConfig
 from ..util import sha
 
 
@@ -8,6 +9,7 @@ class FrontMatterMeta:
     def __init__(self, file_path: str | Path):
         self.file_path = Path(file_path)
         self._frontmatter, self._content = ObsidianEditor().read_template(file_path)
+        self.config = PkgConfig()
         self._sha256 = None
         if self._frontmatter is None:
             self._frontmatter = {}
@@ -94,6 +96,17 @@ class FrontMatterMeta:
             file_path, self.frontmatter, self.content
         )
 
+    def _compute_sha256(self) -> str:
+        """Compute and return the SHA-256 hash of the file at self.file_path."""
+        fm = self.frontmatter.copy()
+        _ = fm.pop(
+            self.config.template_hash_field_name, None
+        )  # Exclude existing sha256 field if present
+        full_text = ObsidianEditor().get_template_str(fm, self.content)
+        hash = sha.compute_str_sha256(full_text)
+        self.frontmatter[self.config.template_hash_field_name] = hash
+        return hash
+
     # region Properties
     @property
     def content(self) -> str:
@@ -167,7 +180,7 @@ class FrontMatterMeta:
     def sha256(self) -> str:
         """Compute and return the SHA-256 hash of the file at self.file_path."""
         if self._sha256 is None:
-            self._sha256 = sha.compute_sha256(self.file_path)
+            self._sha256 = self._compute_sha256()
         return self._sha256
 
     # endregion Properties
@@ -175,7 +188,7 @@ class FrontMatterMeta:
     # region Static Methods
     @staticmethod
     def from_frontmatter_dict(
-        file_path: str | Path, fm_dict: dict
+        file_path: str | Path, fm_dict: dict, content: str
     ) -> "FrontMatterMeta":
         """Create a FrontMatterMeta instance from a frontmatter dictionary.
 
@@ -188,10 +201,12 @@ class FrontMatterMeta:
         """
         instance = FrontMatterMeta.__new__(FrontMatterMeta)
         instance._frontmatter = fm_dict
+        instance._content = content
         if instance._frontmatter is None:
             instance._frontmatter = {}
         instance.file_path = file_path  # or set to a default value if needed
         instance._sha256 = None
+        instance.config = PkgConfig()
         return instance
 
     # endregion Static Methods

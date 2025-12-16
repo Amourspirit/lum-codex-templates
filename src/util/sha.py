@@ -3,7 +3,7 @@ import hashlib
 import datetime
 
 
-def compute_sha256(file_path: Path | str) -> str:
+def compute_file_sha256(file_path: Path | str) -> str:
     """
     Computes the SHA-256 hash of a specified file.
     Reads the file in binary chunks to efficiently handle large files without
@@ -23,6 +23,19 @@ def compute_sha256(file_path: Path | str) -> str:
     with path.open("rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
             hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def compute_str_sha256(input_str: str) -> str:
+    """
+    Computes the SHA-256 hash of a given string.
+    Args:
+        input_str (str): The input string to be hashed.
+    Returns:
+        str: The hexadecimal representation of the SHA-256 hash.
+    """
+    hasher = hashlib.sha256()
+    hasher.update(input_str.encode("utf-8"))
     return hasher.hexdigest()
 
 

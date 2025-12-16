@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "7.5.0"
+version = "8.0.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -33,6 +33,7 @@ template_field_being_map_src = "Metadata/template_field_being_map.yaml"
 template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"
 template_to_field_being_map_name = "Prompts-Template-to-Field-Being-Mapping"
 version_override=0
+template_hash_field_name="template_hash"
 template_meta_dir="Metadata/templates"
 template_meta_keys=[
     "template_type",

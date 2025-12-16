@@ -1,7 +1,7 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.5"
-schema_format_version: 2.2
+version: "3.6"
+schema_format_version: "2.3"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
@@ -37,6 +37,7 @@ template_type_enforcement:
     - metadata_fields
     - lockfile_verification
 
+template_hash_enforcement: placeholder
 template_type_to_template_id_map: placeholder
 template_id_to_template_type_map: placeholder
 template_field_matrix_by_template_type: placeholder
@@ -2304,6 +2305,47 @@ metadata_fields:
     required: true
     read_only: true
     status: active
+
+  template_hash:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS  # e.g., [console, mirrorwall, obsidian]
+      redacted_in_preview: true  # Optional: hide in public views unless needed
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Canonical SHA-256 content hash of the full template (YAML + body),
+      excluding this field itself. Used for validation, audit tracing,
+      lockfile verification, and tamper detection across the Codex system.
+    nullable: false
+    required: true
+    read_only: true
+    hash_algorithm: sha256
+    hash_scope:
+      include:
+        - yaml_frontmatter
+        - markdown_body
+      exclude_fields:
+        - template_hash
+    canonicalize_before_hashing: true
+    enforce_during:
+      - lockfile_registration
+      - mirrorwall_embedding
+      - RAG_vectorization
+    plugin_groups:
+      - validation
+      - audit
+      - security
+      - registry_integrity
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      declared_in: MMR-000-GLOBAL v3.6.0
+      notes: >
+        Template hash is excluded from its own hash calculation. Validation logic
+        must canonicalize and omit this field during hash verification. Embedded
+        for alignment with codex-template-XX.lock and audit traceability. Required
+        for all templates from v2.3 onward.
 
   template_memory_scope:
     field_type: string

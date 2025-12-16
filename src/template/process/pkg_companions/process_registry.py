@@ -130,7 +130,7 @@ class ProcessRegistry(ProtocolProcess):
             template_field_matrix[template_type] = {
                 "template_id": fm.template_id,
                 "file_name": fm.file_path.name,
-                "sha256": fm.sha256,
+                self.config.template_hash_field_name: fm.sha256,
             }
             for key, value in meta.items():
                 if key not in self.config.template_meta_keys:
@@ -144,6 +144,26 @@ class ProcessRegistry(ProtocolProcess):
         """
         template_meta = self._get_template_meta(tokens)
         return sorted(list(template_meta.keys()))
+
+    def _set_template_hash_enforcement(self, tokens: dict, mmr: dict) -> None:
+        """
+        Builds a mapping from template types to their hash enforcement status.
+
+        Args:
+            tokens (dict): A dictionary of tokens.
+        Returns:
+            None:
+        """
+        mmr["template_hash_enforcement"] = {
+            "field_name": self.config.template_hash_field_name,
+            "algorithm": "sha256",
+            "hash_scope": {
+                "include": ["yaml_frontmatter", "template_body"],
+                "exclude_fields": [self.config.template_hash_field_name],
+            },
+            "canonicalize_before_hashing": True,
+            "enforce_in_all_templates": True,
+        }
 
     def process(self, tokens: dict) -> Path:
         """
@@ -169,6 +189,7 @@ class ProcessRegistry(ProtocolProcess):
 
         template_field_matrix = self._get_template_field_matrix(tokens)
         mmr["template_field_matrix_by_template_type"] = template_field_matrix
+        self._set_template_hash_enforcement(tokens, mmr)
         mmr["version"] = self._main_registry.reg_version
         mmr["valid_template_types"] = self._get_template_types(tokens)
 

@@ -79,6 +79,10 @@ class PkgConfig(metaclass=SingletonMeta):
             str,
             self._cfg["tool"]["project"]["config"]["template_field_being_map_src"],
         )
+        self._template_hash_field_name = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_hash_field_name"],
+        )
         self._template_manifest_name = cast(
             str,
             self._cfg["tool"]["project"]["config"]["template_manifest_name"],
@@ -232,6 +236,16 @@ class PkgConfig(metaclass=SingletonMeta):
             tfbm_path = self._root_path / self._template_field_being_map_src
             assert tfbm_path.exists(), (
                 f"template_field_being_map_src file does not exist: {tfbm_path}"
+            )
+        assert isinstance(self._template_hash_field_name, str), (
+            "template_hash_field_name must be a str"
+        )
+        if not self._template_hash_field_name:
+            raise ValueError("template_hash_field_name cannot be empty")
+        # assert that template_hash_field_name only has alphanumeric and underscores
+        if not all(c.isalnum() or c == "_" for c in self._template_hash_field_name):
+            raise ValueError(
+                "template_hash_field_name must only contain alphanumeric characters and underscores"
             )
         assert isinstance(self._template_manifest_name, str), (
             "template_manifest_name must be a str"
@@ -571,6 +585,16 @@ class PkgConfig(metaclass=SingletonMeta):
                 list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
             )
         return self._template_dirs
+
+    @property
+    def template_hash_field_name(self) -> str:
+        """
+        Gets the template hash field name.
+
+        Returns:
+            str: The template hash field name.
+        """
+        return self._template_hash_field_name
 
     @property
     def template_meta_dir(self) -> str:

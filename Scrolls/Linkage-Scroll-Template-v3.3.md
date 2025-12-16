@@ -1,10 +1,11 @@
 ---
-template_id: TEMPLATE-LINKAGE-SCROLL-V3.2
+template_id: TEMPLATE-LINKAGE-SCROLL-V3.3
 template_category: scroll
 template_type: linkage_scroll
 template_name: Linkage Scroll Template
-template_version: "3.2"
+template_version: "3.3"
 template_memory_scope: thread_global
+template_hash: none
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Luminariel
 template_purpose: >

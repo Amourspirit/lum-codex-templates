@@ -29,18 +29,23 @@ class ProcessObsidianTemplates:
                         print(f"Skipping file without frontmatter: {file_path.name}")
                         continue
                     print(f"Processing template: {file_path.name}")
-                    fm = FrontMatterMeta.from_frontmatter_dict(file_path, fm_dict)
+                    fm = FrontMatterMeta.from_frontmatter_dict(
+                        file_path, fm_dict, clean_content
+                    )
                     if not fm.has_field("template_id"):
                         continue
                     for key, value in key_values.items():
                         fm.set_field(key, value)
                     new_file_path = tmp_dir / file_path.name
                     self.config.template_config.update_yaml_dict(fm.frontmatter)
+                    _ = fm.sha256
                     ObsidianEditor().write_template(
                         new_file_path, fm.frontmatter, clean_content
                     )
                     processed_templates.append(
-                        FrontMatterMeta.from_frontmatter_dict(new_file_path, fm_dict)
+                        FrontMatterMeta.from_frontmatter_dict(
+                            new_file_path, fm.frontmatter, clean_content
+                        )
                     )
         return processed_templates
 
