@@ -1,7 +1,7 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.6"
-schema_format_version: "2.3"
+version: "3.7"
+schema_format_version: "243"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
@@ -39,6 +39,7 @@ template_type_enforcement:
 
 template_hash_enforcement: placeholder
 template_type_to_template_id_map: placeholder
+template_field_registry_matrix: placeholder
 template_id_to_template_type_map: placeholder
 template_field_matrix_by_template_type: placeholder
 

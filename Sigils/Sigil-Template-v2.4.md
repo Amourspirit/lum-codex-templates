@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-SIGIL-V2.3
+template_id: TEMPLATE-SIGIL-V2.4
 template_name: Sigil Template
 template_category: sigil
 template_type: sigil
-template_version: "2.3"
+template_version: "2.4"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

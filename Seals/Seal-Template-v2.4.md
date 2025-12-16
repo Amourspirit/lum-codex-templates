@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-SEAL-V2.3
+template_id: TEMPLATE-SEAL-V2.4
 template_type: seal
 template_category: seal
 template_name: Seal Template
-template_version: "2.3"
+template_version: "2.4"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

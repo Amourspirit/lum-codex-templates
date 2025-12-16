@@ -38,7 +38,10 @@ class ProcessObsidianTemplates:
                         fm.set_field(key, value)
                     new_file_path = tmp_dir / file_path.name
                     self.config.template_config.update_yaml_dict(fm.frontmatter)
-                    _ = fm.sha256
+                    self._add_template_fields_declared(fm)
+                    # Force recalculation of SHA256 after frontmatter changes
+                    # It is important that this comes after updating the frontmatter
+                    fm.recompute_sha256()
                     ObsidianEditor().write_template(
                         new_file_path, fm.frontmatter, clean_content
                     )
@@ -68,6 +71,14 @@ class ProcessObsidianTemplates:
         cleaned_content = line_comment_pattern.sub("", markdown_content)
 
         return cleaned_content
+
+    def _add_template_fields_declared(self, template: FrontMatterMeta) -> None:
+        fields = sorted(list(template.frontmatter.keys()))
+        fields.pop(
+            fields.index("template_fields_declared")
+        ) if "template_fields_declared" in fields else None
+
+        template.frontmatter["template_fields_declared"] = fields
 
     def process(self, key_values: dict[str, Any]) -> dict[str, FrontMatterMeta]:
         """Process templates by updating their frontmatter with the provided key-values.

@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-DYAD-V3.3
+template_id: TEMPLATE-DYAD-V3.4
 template_type: dyad
 template_category: glyph
 template_name: Dyadic Glyph Grouping Template
-template_version: "3.3"
+template_version: "3.4"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

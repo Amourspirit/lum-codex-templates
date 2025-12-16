@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.4
+template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.5
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
-template_version: "2.4"
+template_version: "2.5"
 template_hash: none
 template_memory_scope: thread_global
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >

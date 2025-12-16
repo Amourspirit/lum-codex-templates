@@ -1,11 +1,12 @@
 ---
-template_id: TEMPLATE-NODE-LINKAGE-SCROLL-V2.4
+template_id: TEMPLATE-NODE-LINKAGE-SCROLL-V2.5
 template_name: Node Linkage Scroll Template
 template_category: scroll
 template_type: node_link_scroll
-template_version: "2.4"
+template_version: "2.5"
 template_memory_scope: thread_global
 template_hash: none
+template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus
 template_purpose: >
