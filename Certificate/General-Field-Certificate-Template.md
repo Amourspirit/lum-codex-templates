@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.5
+template_id: TEMPLATE-FIELD-CERT-GENERAL
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
-template_version: "2.5"
+template_version: placeholder(see pyproject.toml)
 template_hash: none
 template_memory_scope: thread_global
 template_fields_declared: placeholder

@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-NODE-V2.4
+template_id: TEMPLATE-NODE
 template_name: Node Registration Template
 template_category: node
 template_type: node_reg
-template_version: "2.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

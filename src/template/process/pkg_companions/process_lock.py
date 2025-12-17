@@ -73,7 +73,7 @@ class ProcessLock(ProtocolProcess):
                 "version": self._main_registry.reg_version,
                 "format": "yaml",
                 "enforced": True,
-                "sha256": None,
+                self.config.template_hash_field_name: None,
             },
         }
         template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
@@ -107,9 +107,11 @@ class ProcessLock(ProtocolProcess):
         reg = ProcessRegistry(self._workspace_dir, self._main_registry)
         reg_path = reg.get_dest_path(tokens=tokens)
         if reg_path.exists():
-            lockfile["registry_sources"]["sha256"] = sha.compute_file_sha256(reg_path)
+            lockfile["registry_sources"][self.config.template_hash_field_name] = (
+                sha.compute_file_sha256(reg_path)
+            )
         else:
-            del lockfile[["registry_sources"]]["sha256"]
+            del lockfile[["registry_sources"]][self.config.template_hash_field_name]
             print(
                 f"Unable to calculate sha256 for registry file. File {reg_path.name} not found!"
             )
@@ -153,7 +155,7 @@ class ProcessLock(ProtocolProcess):
             "template_type": fm.template_type,
             "template_version": fm.template_version,
             "file_name": file_path.name,
-            "sha256": fm.sha256,
+            self.config.template_hash_field_name: fm.sha256,
             "fields": self._get_template_fields(fm),
         }
         lockfile["template_count"] += 1

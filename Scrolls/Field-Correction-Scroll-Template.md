@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.4
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL
 template_name: Field Correction Scroll Template
 template_category: scroll
 template_type: field_correction_scroll
-template_version: "2.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

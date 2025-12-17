@@ -123,7 +123,7 @@ class ProcessTemplateRegistry(ProtocolProcess):
                 "template_category": fm.template_category,
                 "template_type": fm.template_type,
                 "file_name": fm.file_path.name,
-                "sha256": sha_str,
+                self.config.template_hash_field_name: sha_str,
             }
             reg_dict["template_manifest_registry"]["template_count"] += 1
             template_ids.append(fm.template_id)

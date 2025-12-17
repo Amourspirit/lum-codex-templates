@@ -3,6 +3,7 @@ from pathlib import Path
 import toml
 from ..meta.singleton import SingletonMeta
 from .template_config import TemplateConfig
+from .templates_config_info import TemplatesConfigInfo
 from .codex_binding_contract import CodexBindingContract
 
 
@@ -113,6 +114,11 @@ class PkgConfig(metaclass=SingletonMeta):
             .get("config", {})
             .get("template", {})
         )
+        templates_info_data = (
+            self._cfg.get("tool", {}).get("project", {}).get("templates", {})
+        )
+        self.templates_config_info = TemplatesConfigInfo(templates_info_data)
+
         contract_data = (
             self._cfg.get("tool", {})
             .get("project", {})

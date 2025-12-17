@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-SIGIL-V2.4
+template_id: TEMPLATE-SIGIL
 template_name: Sigil Template
 template_category: sigil
 template_type: sigil
-template_version: "2.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-LINKAGE-SCROLL-V3.4
+template_id: TEMPLATE-LINKAGE-SCROLL
 template_category: scroll
 template_type: linkage_scroll
 template_name: Linkage Scroll Template
-template_version: "3.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

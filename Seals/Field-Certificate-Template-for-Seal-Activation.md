@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-FIELD-CERT-SEAL-V2.4
+template_id: TEMPLATE-FIELD-CERT-SEAL
 template_type: field_cert_seal
 template_category: certificate
 template_name: Field Certificate Template for Seal Activation
-template_version: "2.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

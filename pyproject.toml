@@ -78,3 +78,69 @@ prompt="optional, flagged only in strict audit"
 [tool.project.config.template.placeholder_autofill_policy]
 unresolved_field="fail (strict), infer (autofill), warn (audit)"
 unresolved_prompt="retain (default), flag (audit), none (strict)"
+
+[tool.project.templates.field_certificate]
+id="TEMPLATE-FIELD-CERT-GENERAL"
+version="2.5"
+category="certificate"
+name="General Field Certificate Template"
+
+[tool.project.templates.dyad]
+id="TEMPLATE-DYAD"
+version="2.5"
+category="glyph"
+name="Dyadic Glyph Grouping Template"
+
+[tool.project.templates.glyph]
+id="TEMPLATE-GLYPH"
+version="2.5"
+category="glyph"
+name="Glyph Template"
+
+[tool.project.templates.stone]
+id="TEMPLATE-STONE"
+version="2.4"
+category="glyph"
+name="Stone Template"
+
+[tool.project.templates.node_reg]
+id="TEMPLATE-NODE"
+version="2.4"
+category="node"
+name="Node Registration Template"
+
+[tool.project.templates.field_correction_scroll]
+id="TEMPLATE-FIELD-CORRECTION-SCROLL"
+version="2.4"
+category="scroll"
+name="Field Correction Scroll Template"
+
+[tool.project.templates.linkage_scroll]
+id="TEMPLATE-LINKAGE-SCROLL"
+version="3.4"
+category="scroll"
+name="Linkage Scroll Template"
+
+[tool.project.templates.node_link_scroll]
+id="TEMPLATE-NODE-LINKAGE-SCROLL"
+version="3.5"
+category="scroll"
+name="Node Linkage Scroll Template"
+
+[tool.project.templates.field_cert_seal]
+id="TEMPLATE-FIELD-CERT-SEAL"
+version="2.4"
+category="certificate"
+name="Field Certificate Template for Seal Activation"
+
+[tool.project.templates.seal]
+id="TEMPLATE-SEAL"
+version="2.4"
+category="seal"
+name="Seal Template"
+
+[tool.project.templates.sigil]
+id="TEMPLATE-SIGIL"
+version="2.4"
+category="sigil"
+name="Sigil Template"

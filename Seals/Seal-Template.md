@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-SEAL-V2.4
+template_id: TEMPLATE-SEAL
 template_type: seal
 template_category: seal
 template_name: Seal Template
-template_version: "2.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

@@ -1,9 +1,9 @@
 ---
-template_id: TEMPLATE-DYAD-V3.4
+template_id: TEMPLATE-DYAD
 template_type: dyad
 template_category: glyph
 template_name: Dyadic Glyph Grouping Template
-template_version: "3.4"
+template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
 template_fields_declared: placeholder

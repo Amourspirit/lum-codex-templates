@@ -36,7 +36,25 @@ class ProcessObsidianTemplates:
                         continue
                     for key, value in key_values.items():
                         fm.set_field(key, value)
-                    new_file_path = tmp_dir / file_path.name
+                    info = self.config.templates_config_info.tci_items.get(
+                        fm.template_type, None
+                    )
+                    if info is None:
+                        raise ValueError(
+                            f"Template type '{fm.template_type}' not found in configuration. Ensure it is defined in the templates section of pyproject.toml."
+                        )
+
+                    new_file_name = (
+                        f"{file_path.stem}-v{info.template_version}{file_path.suffix}"
+                    )
+                    new_file_path = tmp_dir / new_file_name
+                    fm.frontmatter["template_id"] = (
+                        f"{info.template_id}-V{info.template_version}"
+                    )
+                    fm.frontmatter["template_name"] = info.template_name
+                    fm.frontmatter["template_category"] = info.template_category
+                    fm.frontmatter["template_version"] = info.template_version
+
                     self.config.template_config.update_yaml_dict(fm.frontmatter)
                     self._add_template_fields_declared(fm)
                     # Force recalculation of SHA256 after frontmatter changes
