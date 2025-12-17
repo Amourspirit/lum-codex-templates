@@ -19,7 +19,7 @@ class ReadObsidianTemplateMeta:
             ValueError: If duplicate template types are found.
 
         Returns:
-            dict[str, dict[str, Any]]: A dictionary mapping template types to their metadata dictionaries
+            dict: A dictionary (dict[str, dict[str, Any]]) mapping template types to their metadata dictionaries
         """
         results: dict[str, dict[str, Any]] = {}
         if self.template_meta_dir.exists() and self.template_meta_dir.is_dir():

@@ -154,6 +154,7 @@ class ProcessLock(ProtocolProcess):
             "template_category": fm.template_category,
             "template_type": fm.template_type,
             "template_version": fm.template_version,
+            "template_family": fm.template_family,
             "file_name": file_path.name,
             self.config.template_hash_field_name: fm.sha256,
             "fields": self._get_template_fields(fm),

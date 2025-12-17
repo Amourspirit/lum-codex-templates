@@ -131,6 +131,10 @@ class FrontMatterMeta:
         return self.get_field("template_id", "")
 
     @property
+    def template_family(self) -> str:
+        return self.get_field("template_family", "")
+
+    @property
     def template_version(self) -> str:
         return self.get_field("template_version", "")
 

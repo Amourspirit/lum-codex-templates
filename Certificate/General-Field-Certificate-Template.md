@@ -6,6 +6,7 @@ template_name: General Field Certificate Template
 template_version: placeholder(see pyproject.toml)
 template_hash: none
 template_memory_scope: thread_global
+template_family: placeholder(see pyproject.toml)
 template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus

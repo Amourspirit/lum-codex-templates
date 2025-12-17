@@ -54,6 +54,7 @@ class ProcessObsidianTemplates:
                     fm.frontmatter["template_name"] = info.template_name
                     fm.frontmatter["template_category"] = info.template_category
                     fm.frontmatter["template_version"] = info.template_version
+                    fm.frontmatter["template_family"] = info.template_family
 
                     self.config.template_config.update_yaml_dict(fm.frontmatter)
                     self._add_template_fields_declared(fm)

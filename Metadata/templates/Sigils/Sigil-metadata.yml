@@ -101,6 +101,7 @@ template_meta:
     - source_medium
     - tags
     - template_category
+    - template_family
     - template_id
     - template_memory_scope
     - template_name

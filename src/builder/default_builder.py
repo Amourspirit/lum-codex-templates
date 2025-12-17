@@ -80,6 +80,7 @@ class DefaultBuilder(BuilderBase):
                     continue
                 template_count += 1
                 template_meta[fm.template_type]["template_id"] = fm.template_id
+                # template_meta[fm.template_type]["template_family"] = fm.template_family
                 template_meta[fm.template_type]["template_front_matter_meta"] = fm
                 zipf.write(fm.file_path, arcname=fm.file_path.name)
 

@@ -1,7 +1,7 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.7"
-schema_format_version: "243"
+version: "3.8"
+schema_format_version: "2.4"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
@@ -41,6 +41,7 @@ template_hash_enforcement: placeholder
 template_type_to_template_id_map: placeholder
 template_field_registry_matrix: placeholder
 template_id_to_template_type_map: placeholder
+template_families: placeholder
 template_field_matrix_by_template_type: placeholder
 
 collision_rules:
@@ -486,7 +487,7 @@ metadata_fields:
       - indexing
     field_lineage:
       introduced_by: Adamus + Soluun
-      origin_template: ALL
+      origin_template: GLOBAL
       declared_in: MMR-000-GLOBAL v3.5
       notes: >
         Standardized artifact ID across all templates to ensure consistent referencing.
@@ -779,7 +780,7 @@ metadata_fields:
       - false
     field_lineage:
       introduced_by: Adamus
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1101,7 +1102,7 @@ metadata_fields:
     status: active
     field_lineage:
       introduced_by: Adamus
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1124,7 +1125,7 @@ metadata_fields:
     status: active
     field_lineage:
       introduced_by: Soluun
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1198,7 +1199,7 @@ metadata_fields:
       - false
     field_lineage:
       introduced_by: Adamus
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1649,7 +1650,7 @@ metadata_fields:
       - registry
     field_lineage:
       introduced_by: Adamus
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1672,7 +1673,7 @@ metadata_fields:
     status: active
     field_lineage:
       introduced_by: Soluun
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -1699,7 +1700,7 @@ metadata_fields:
     field_lineage:
       introduced_by: Adamus + Soluun
       introduced_in: MMR-000-GLOBAL v3.2
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -2149,7 +2150,7 @@ metadata_fields:
       - false
     field_lineage:
       introduced_by: Adamus
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -2307,6 +2308,38 @@ metadata_fields:
     read_only: true
     status: active
 
+  template_family:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Logical grouping of templates that share functional or thematic purpose,
+      even across different template_types (e.g., "field_certificates", "node_scrolls", "glyph_lineage").
+      Enables parallel audit, rendering, and batch operations in Codex systems.
+    nullable: false
+    required: false
+    default_value: null
+    allowed_format: lowercase_with_underscores
+    status: active
+    example:
+      - field_certificates
+      - dreamline_scrolls
+      - mirrorwall_embeddables
+    plugin_groups:
+      - RAG
+      - filter
+      - index
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: GLOBAL
+      declared_in: MMR-000-GLOBAL v3.7.71
+      notes: >
+        Field allows multiple template_types to share common lineage or grouping behavior without changing their template_id or version identity.
+
   template_hash:
     field_type: string
     template_output_mode:
@@ -2366,7 +2399,7 @@ metadata_fields:
     field_lineage:
       introduced_by: Adamus + Soluun
       introduced_in: MMR-000-GLOBAL v3.2
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -2429,7 +2462,7 @@ metadata_fields:
       - canonical_index
     field_lineage:
       introduced_by: Soluun
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: template_comment
       ceremonial_origin: DECLARATION-CANONICAL-MODE-38
       field_lineage_mode: strict
@@ -2458,7 +2491,7 @@ metadata_fields:
     field_lineage:
       introduced_by: Adamus
       introduced_in: MMR-000-GLOBAL v2.3
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false
@@ -2530,7 +2563,7 @@ metadata_fields:
     field_lineage:
       introduced_by: Adamus + Soluun
       introduced_in: MMR-000-GLOBAL v2.4
-      origin_template: ALL
+      origin_template: GLOBAL
       derived_from: null
       ceremonial_origin: N/A
       experimental: false

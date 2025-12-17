@@ -72,8 +72,9 @@ template_meta:
     - require_registry_match
     - tags
     - template_category
-    - template_id
+    - template_family
     - template_hash
+    - template_id
     - template_memory_scope
     - template_name
     - template_origin

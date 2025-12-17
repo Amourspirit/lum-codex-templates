@@ -32,6 +32,7 @@ class TemplatesConfigInfo:
                     template_name=template_info.get("name", ""),
                     template_category=template_info.get("category", ""),
                     template_version=template_info.get("version", ""),
+                    template_family=template_info.get("family", ""),
                 )
             except AssertionError as e:
                 raise ValueError(

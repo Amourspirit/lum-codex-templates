@@ -43,7 +43,13 @@ The reason for this is when the package is built the revision is the build numbe
 So, if the version is `3.4` and the package build number is `88` then final outputted version will becomes `3.4.88`.  
 This is done because each build modifies the outputted `00-Master_Metadata_Registry.yml` file so it must have a version to reflect that a change as occurred.
 
-## Metadata Templates
+## Updating Templates
+
+### Updating Template
+
+Templates `id`, `version`,`category`, and `name` values are set in `pyproject.toml` file under `tool.project.templates.TEMPLATE_TYPE` sections.
+
+### Metadata Templates
 
 Each template has a corresponding metadata for managing its field matrix.  
 When a template has its metadata modified it must also be reflected in it corresponding metadata template.  

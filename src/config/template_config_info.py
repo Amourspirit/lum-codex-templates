@@ -8,6 +8,7 @@ class TemplateConfigInfo:
     template_name: str
     template_category: str
     template_version: str
+    template_family: str
 
     def __post_init__(self) -> None:
         check(
@@ -42,4 +43,15 @@ class TemplateConfigInfo:
             len(parts) in (2, 3) and all(part.isdigit() for part in parts),
             f"{self}",
             "Value of template_version must follow semantic versioning format: MAJOR.MINOR or MAJOR.MINOR.PATCH.",
+        )
+        check(
+            self.template_family != "",
+            f"{self}",
+            "Value of template_family must not be empty.",
+        )
+        # self.template_family must contain only alphanumeric characters, and underscores
+        check(
+            all(c.isalnum() or c == "_" for c in self.template_family),
+            f"{self}",
+            "Value of template_family must contain only alphanumeric characters and underscores.",
         )

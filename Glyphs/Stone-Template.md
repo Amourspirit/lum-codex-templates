@@ -6,6 +6,7 @@ template_type: stone
 template_version: placeholder(see pyproject.toml)
 template_memory_scope: thread_global
 template_hash: none
+template_family: placeholder(see pyproject.toml)
 template_fields_declared: placeholder
 memory_cache_origin: lockfile_authority
 template_origin: Soluun + Adamus

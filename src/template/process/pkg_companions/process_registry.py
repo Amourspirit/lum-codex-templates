@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 import yaml
 from .protocol_process import ProtocolProcess
 from ....config.pkg_config import PkgConfig
@@ -14,7 +15,7 @@ class ProcessRegistry(ProtocolProcess):
         self.file_src = self.config.root_path / self.config.reg_file
 
     def _validate_tokens(self, kw: dict) -> None:
-        required_tokens = set(["DATE", "TEMPLATE_META"])
+        required_tokens = set(["DATE", "TEMPLATES_DATA", "TEMPLATE_META"])
         for token in required_tokens:
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
@@ -49,6 +50,43 @@ class ProcessRegistry(ProtocolProcess):
         if not isinstance(template_meta, dict):
             raise ValueError("TEMPLATE_META token is not a dictionary.")
         return template_meta
+
+    def _get_template_data(self, tokens: dict) -> dict[str, FrontMatterMeta]:
+        """
+        Extracts the TEMPLATES_DATA from the provided tokens.
+
+        Args:
+            tokens (dict): A dictionary of tokens.
+        Returns:
+            dict: The TEMPLATES_DATA dictionary (dict[str, FrontMatterMeta]).
+        Raises:
+            ValueError: If TEMPLATES_DATA is missing or not in the expected format.
+        """
+        if "TEMPLATES_DATA" not in tokens:
+            raise ValueError("TEMPLATES_DATA token is missing.")
+        templates_data = tokens["TEMPLATES_DATA"]
+        if not isinstance(templates_data, dict):
+            raise ValueError("TEMPLATES_DATA token is not a dictionary.")
+        return templates_data
+
+    def _get_template_families(self, tokens: dict) -> dict[str, Any]:
+        """
+        Builds a mapping from template families to their member template IDs.
+        Args:
+            tokens (dict): A dictionary of tokens.
+        Returns:
+            dict: A mapping (dict[str, Any]) from template families to their member template IDs.
+        """
+        template_data = self._get_template_data(tokens)
+        template_families: dict[str, Any] = {}
+        for template_type, fm in template_data.items():
+            if fm.template_family not in template_families:
+                template_families[fm.template_family] = {}
+            if "members" not in template_families[fm.template_family]:
+                template_families[fm.template_family]["members"] = []
+            template_families[fm.template_family]["members"].append(fm.template_id)
+
+        return template_families
 
     def _get_template_front_matter_meta(
         self, template_type: str, template_meta: dict
@@ -199,6 +237,8 @@ class ProcessRegistry(ProtocolProcess):
             "enforcement_mode": "strict",
             "validate_against": ["template_fields_declared", "metadata_fields"],
         }
+        template_families = self._get_template_families(tokens)
+        mmr["template_families"] = template_families
 
         with file_path.open("w", encoding="utf-8") as f_dest:
             yaml.safe_dump(mmr, f_dest, sort_keys=False)
