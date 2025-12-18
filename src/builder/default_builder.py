@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .builderbase import BuilderBase
 from .build_ver_mgr import BuildVerMgr
-from ..template.main_registery import MainRegistry
+from ..template.main_registry import MainRegistry
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
 from ..template.process.prompt.support_processor import SupportProcessor
@@ -21,10 +21,7 @@ class DefaultBuilder(BuilderBase):
         self._destination_path.mkdir(parents=True, exist_ok=True)
         self._batch_hash = ""
         self._batch_date = None
-        if os.getenv("CURRENT_USER") is None:
-            self._current_user = self.config.current_user
-        else:
-            self._current_user = os.getenv("CURRENT_USER")
+        self._current_user = self.config.env_user
 
         # if VERSION_OVERRIDE in in the environment, use it
         env_version = os.getenv("VERSION_OVERRIDE")

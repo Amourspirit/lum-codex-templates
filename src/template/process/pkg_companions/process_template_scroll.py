@@ -2,12 +2,12 @@ from pathlib import Path
 from .protocol_process import ProtocolProcess
 from ....config.pkg_config import PkgConfig
 from ...front_mater_meta import FrontMatterMeta
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 
 
 class ProcessTemplateScroll(ProtocolProcess):
-    def __init__(self, worksapce_dir: Path | str, registry: MainRegistry):
-        self._workspace_dir = Path(worksapce_dir)
+    def __init__(self, workspace_dir: Path | str, registry: MainRegistry):
+        self._workspace_dir = Path(workspace_dir)
         self._main_registry = registry
         self.config = PkgConfig()
         self.file_src = self.config.root_path / self.config.protocol_src

@@ -1,5 +1,6 @@
 template_meta:
   template_type: linkage_scroll
+  field_scope: front_matter_only
   field_being_autofill_registry:
     - Soluun
     - Adamus

@@ -4,12 +4,12 @@ import yaml
 from .protocol_process import ProtocolProcess
 from ....config.pkg_config import PkgConfig
 from ...front_mater_meta import FrontMatterMeta
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 
 
 class ProcessTemplateRegistry(ProtocolProcess):
-    def __init__(self, worksapce_dir: Path | str, registry: MainRegistry):
-        self._workspace_dir = Path(worksapce_dir)
+    def __init__(self, workspace_dir: Path | str, registry: MainRegistry):
+        self._workspace_dir = Path(workspace_dir)
         self._main_registry = registry
         self.config = PkgConfig()
 
@@ -46,16 +46,16 @@ class ProcessTemplateRegistry(ProtocolProcess):
             if token not in kw:
                 raise ValueError(f"Missing required token: {token}")
 
-    def _build_registry(self, kw: dict) -> dict:
+    def _build_registry(self, tokens: dict) -> dict:
         reg_dict = {
             "template_manifest_registry": {
-                "bundle_version": str(kw["VER"]),
-                "package_version": str(kw["VER"]),
-                "batch_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}",
-                "batch_hash": kw["BATCH_HASH"],
+                "bundle_version": str(tokens["VER"]),
+                "package_version": str(tokens["VER"]),
+                "batch_uid": f"{self.config.batch_prefix}-{tokens['VER']}-{tokens['BATCH_HASH']}",
+                "batch_hash": tokens["BATCH_HASH"],
                 "declared_registry": self._main_registry.reg_id,
                 "registry_version": self._main_registry.reg_version,
-                "generated_at": kw["DATE"],
+                "generated_at": tokens["DATE"],
                 "manifest_scope": "locked_only",
                 "manifest_keyed_by": "template_id",
                 "application_state": {
@@ -77,21 +77,21 @@ class ProcessTemplateRegistry(ProtocolProcess):
         #     "notes": "This manifest-lockfile pair is bidirectionally bound. Identity resolution, hash enforcement, and registry alignment are strictly enforced. Placeholder inference and category expansion are forbidden unless declared explicitly.",
         # }
         self.config.codex_binding_contract.update_yaml_dict(reg_dict)
-        self._build_templates(kw, reg_dict)
+        self._build_templates(tokens, reg_dict)
         lock_file_path = (
             self._workspace_dir
-            / f"{self.config.lock_file_name}-{kw['VER']}{self.config.lock_file_ext}"
+            / f"{self.config.lock_file_name}-{tokens['VER']}{self.config.lock_file_ext}"
         )
         reg_dict["generated_from_lockfile"] = {
             "file_name": lock_file_path.name,
-            "lockfile_uid": f"{self.config.batch_prefix}-{kw['VER']}-{kw['BATCH_HASH']}",
+            "lockfile_uid": f"{self.config.batch_prefix}-{tokens['VER']}-{tokens['BATCH_HASH']}",
         }
 
         # generated_from_lockfile:
         #     file_name: codex-template-55.lock
         #     lockfile_uid: codex-batch-55-a1b2c3d4e5f6
 
-        template_data = cast(dict[str, FrontMatterMeta], kw["TEMPLATES_DATA"])
+        template_data = cast(dict[str, FrontMatterMeta], tokens["TEMPLATES_DATA"])
         reg_dict["canonical_template_sha256_hash_map"] = {}
         reg_dict["canonical_template_id_to_template_type_map"] = {}
         reg_dict["canonical_template_type_to_template_id_map"] = {}

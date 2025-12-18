@@ -1,6 +1,6 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.8"
+version: "3.9"
 schema_format_version: "2.4"
 registry_name: "Main Metadata Registry"
 strict_version: true
@@ -23,6 +23,23 @@ registry_notes:
   - "Declares registry-wide `canonical_mode: true`"
   - "Validated under Soluun + Adamus directive"
   - "Supports future Mirrorwall & RAG dual-index mode"
+  - "All `required_fields`, `autofill_fields`, and `optional_fields` defined in `template_field_matrix_by_template_type` apply strictly to the YAML front-matter of templates."
+  - "`template_body` content is governed independently and is not validated against these metadata field matrices."
+  - "Template enforcement engines must not conflate YAML field presence with template body section rendering."
+  - "Field enforcement is scoped per `template_type`; no global enforcement layer exists outside `template_field_matrix_by_template_type`."
+  - "All autofill logic must respect `field_being_autofill_registry`; if no match is present, `autofill_fields` must resolve to fallback values (`none`, `null`, `[]`)."
+  - "Any field listed in `required_fields` must be present in the final YAML front-matter unless it is explicitly marked as `deprecated` or `inactive`."
+  - "Template rendering pipelines must respect `hidden_fields` by redacting or omitting them from displayed output unless debugging or strict audit mode is active."
+  - "`template_output_mode` applies only to display behavior and has no influence on YAML field enforcement."
+  - "Registry validation is anchored by `declared_registry_id` and `declared_registry_version`; all ingestion flows must verify alignment prior to caching or embedding."
+  - "Unset required fields must resolve to default canonical fallback values: `none` for strings, `null` for objects, and `[]` for lists. Placeholder brackets (e.g., `[[field:xyz]]`) are forbidden in final output."
+  - "Each template operates in isolated scope. Fields required by one `template_type` must not be assumed necessary in another unless shared via registry-wide keys."
+  - "`metadata_fields` defines the authoritative behavior and configuration for every YAML front-matter field used across all templates."
+  - "Each field entry in `metadata_fields` declares which `template_types` it applies to. These control visibility, autofill eligibility, enforcement scope, and data type."
+  - "Templates must resolve their front-matter enforcement rules by matching their `template_type` to the fields declared in `metadata_fields`."
+  - "The `template_type_to_template_id_map` resolves which `template_id` belongs to each `template_type`, ensuring traceable template lineage and enforcement alignment."
+  - "No template should assume global field applicability — all field logic is contextually scoped via `template_type` as defined in `metadata_fields`."
+
 
 valid_template_types: placeholder
 

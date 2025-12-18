@@ -6,7 +6,7 @@ from .process_registry import ProcessRegistry
 from .process_template_registry import ProcessTemplateRegistry
 from ....config.pkg_config import PkgConfig
 from ...front_mater_meta import FrontMatterMeta
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 from ....util import sha
 
 

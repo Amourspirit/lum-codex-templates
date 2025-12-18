@@ -3,8 +3,10 @@ from pathlib import Path
 import yaml
 from .protocol_support import ProtocolSupport
 from ....config.pkg_config import PkgConfig
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
+from .meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
+from .meta_helpers.prompt_beings import PromptBeings, BeingEntry
 
 
 class PromptTemplateFieldBeings(ProtocolSupport):
@@ -12,15 +14,28 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         self.config = PkgConfig()
         self._main_registry = registry
         self._dest_dir = self.config.root_path / self.config.pkg_out_dir
-        self.field_being_map = self._load_field_being_map()
+        self._prompt_meta_type = self._load_prompt_meta_type()
+        self._prompt_beings = self._load_prompt_beings()
+        # self.field_being_map = self._load_field_being_map()
+        self._backticks = "```"
 
-    def _load_field_being_map(self) -> dict[str, str]:
+    # def _load_field_being_map(self) -> dict[str, str]:
+    #     tfbm_path = self.config.root_path / self.config.template_field_being_map_src
+    #     field_being_map: dict[str, str] = {}
+    #     if tfbm_path.exists():
+    #         with tfbm_path.open("r", encoding="utf-8") as f:
+    #             field_being_map = yaml.safe_load(f)
+    #     return field_being_map
+
+    def _load_prompt_meta_type(self) -> PromptMetaType:
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
-        field_being_map: dict[str, str] = {}
-        if tfbm_path.exists():
-            with tfbm_path.open("r", encoding="utf-8") as f:
-                field_being_map = yaml.safe_load(f)
-        return field_being_map
+        prompt_meta_type = PromptMetaType.from_yaml(tfbm_path)
+        return prompt_meta_type
+
+    def _load_prompt_beings(self) -> PromptBeings:
+        tfbm_path = self.config.root_path / self.config.template_field_being_map_src
+        prompt_beings = PromptBeings.from_yaml(tfbm_path)
+        return prompt_beings
 
     def _map(self, tokens: dict) -> dict[str, Path]:
         """
@@ -62,7 +77,9 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         """
         try:
             # 1. Load the YAML data
-            beings = cast(dict, self.field_being_map.get("beings", {}))
+            beings = (
+                self._prompt_beings.beings
+            )  # cast(dict, self.field_being_map.get("beings", {}))
 
             if not beings:
                 return "Error: YAML data is missing the 'beings' key or is empty."
@@ -75,10 +92,10 @@ class PromptTemplateFieldBeings(ProtocolSupport):
 
             # Prepare rows, updating widths as we go
             rows = []
-            for being_name, details in beings.items():
+            for being_name, being_entry in beings.items():
                 # Join the list of template types into a single, comma-separated string
-                template_types = ", ".join(details.get("template_types_governed", []))
-                role_title = details.get("role_title", "N/A")
+                template_types = ", ".join(being_entry.template_types_governed)
+                role_title = being_entry.role_title
 
                 row = [being_name, role_title, template_types]
                 rows.append(row)
@@ -125,13 +142,71 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         except Exception as e:
             return f"An unexpected error occurred: {e}"
 
-    def _gen_prompt(self, invocation: str, fm: FrontMatterMeta, tokens: dict) -> str:
+    def _get_invocation_agents(self, entry: TemplateEntry) -> str:
+        agents = []
+        cf_current_user = self.config.current_user.casefold()
+        for role, name in entry.invocation_agents.items():
+            role_name = role.replace("_", " ").capitalize()
+            if name.lower() == "current_user":
+                new_name = self.config.env_user
+            else:
+                new_name = name
+            agents.append(f"- {role_name}: {new_name}  ")
+        return "\n".join(agents)
+
+    def _get_invocation_ext(
+        self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
+    ) -> str:
+        return f"""{entry.invocation},
+to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
+for **{{Artifact Name}}**, applying strict Codex enforcement."""
+
+    def _get_prompt_suffix(self, fm: FrontMatterMeta, tokens: dict) -> str:
+        return ""
+
+    def _gen_prompt(
+        self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
+    ) -> str:
+        invocation_ext = self._get_invocation_ext(entry, fm, tokens)
+        prompt_suffix = self._get_prompt_suffix(fm, tokens)
+        invocation_agents = self._get_invocation_agents(entry)
         prompt = f"""#### **{fm.template_name}** Application Prompt
 
-```
-{invocation},
-to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
-for **{{Artifact Name}}**, applying strict Codex enforcement.
+{self._backticks}md
+{invocation_ext}
+
+---
+
+## 🌀 Canonical Behavior Invocation Block (CBIB-V1.0)
+
+cbib_id: CBIB-V1.0
+
+Behavioral Directives:
+- `canonical_mode`: true
+- `template_application_mode`: strict
+- `lockfile_verification`: strict
+- `registry_sync_mode`: lockfile_strict
+- `field_completion_required`: true
+- `placeholder_autofill_policy`:
+    unresolved_field: fail
+    unresolved_prompt: flag
+- `default_fallback_behavior`:
+    string: none
+    list: []
+    object: null
+- `field_placeholder_format`: double_square_prefixed
+- `template_memory_scope`: thread_global
+- `rendering_intent`: glyph instantiation for Mirrorwall embedding and RAG ingestion
+
+Invocation Agents:
+{invocation_agents}
+
+Source Alignment:
+- `template_id`: {fm.template_id}  
+- `lockfile_source`: codex-template-{tokens["VER"]}.lock  
+- `registry_source`: {fm.declared_registry_id} v{fm.mapped_registry_minimum_version}  
+
+---
 
 Use the following front-matter parameters:
 
@@ -150,7 +225,19 @@ Use the following front-matter parameters:
 - **Validate** `canonical_template_sha256_hash` against registered SHA-256 from `codex-template-{tokens["VER"]}.lock`. Abort if mismatch.
 - Hash source: `{self.config.lock_file_name}-{tokens["VER"]}{self.config.lock_file_ext} → canonical_template_sha256_hash_map → {fm.template_id}`
 - Inference substitution, placeholder override, or cache fallback is **forbidden** under `canonical_mode: true`
-```
+
+- **Perform autofill verification check** before rendering output:
+  - Was the `template_type` resolved from the registry?
+  - Was the `field_being_autofill_registry` checked for the declared `artifact_activator`?
+  - Were all fields listed in `autofill_fields` for this `template_type` present in the YAML front-matter?
+  - If any required or autofill-enabled field was omitted and not explicitly marked `deprecated` in `metadata_fields`, the rendering must **abort immediately**, and include:
+    - `autofill_misalignment_detected: true`
+    - `missing_fields` list
+    - `canonical_rendering_status: aborted`
+
+This step is mandatory under `canonical_mode: true` to ensure no inference or silent omission occurred.  
+{prompt_suffix}
+{self._backticks}
 """
         return prompt
 
@@ -170,10 +257,14 @@ Use the following front-matter parameters:
         # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
         return toc
 
-    def _get_reset_text(self, kw: dict) -> str:
-        return f"""## RESET PROTOCOL
+    def _get_reset_heading(self) -> str:
+        return "## RESET PROTOCOL\n\n### 🌀 Codex Bootstrap Declaration — Reinforced Re-Initialization\n"
 
-### 🌀 Codex Bootstrap Declaration — Reinforced Re-Initialization
+    def _get_reset_text(self, kw: dict) -> str:
+        result = self._get_reset_heading()
+        result = (
+            result
+            + f"""
 
 Please execute:
 
@@ -185,6 +276,8 @@ Please execute:
 6. CACHE ALL `.md` template bodies using lockfile IDs (strict)
 7. ENFORCE `canonical_mode: true` and `strict_lockfile_enforcement: true`
 """
+        )
+        return result
 
     def process(self, tokens: dict) -> None:
         """
@@ -211,14 +304,17 @@ Please execute:
         self._validate_tokens(tokens)
         # dyad, glyph, stone, seal, scroll, certificate, etc.
         content = "## 🌀 Prompts\n"
-        template_types = cast(dict, self.field_being_map["template_type"])
+        template_types = self._prompt_meta_type.template_type
+        # template_types = cast(dict, self.field_being_map["template_type"])
         type_name_map = self._map(tokens)
         template_id_map: dict[str, FrontMatterMeta] = {}
-        for template_type, item in template_types.items():
-            beings = cast(list[str], item["beings"])
-            beings_len = len(beings)
-            invocation = cast(str, item["invocation"])
-            tags = cast(list[str], item.get("tags", []))
+        for template_type, template_entry in template_types.items():
+            tp_type = self._prompt_meta_type.template_type.get(template_type)
+            assert tp_type is not None, (
+                f"Template type {template_type} not found in prompt meta type"
+            )
+            beings_len = len(tp_type.beings)
+            tags = template_entry.tags
             if beings_len == 0:
                 print(f"No beings defined for template type: {template_type}")
                 raise ValueError(
@@ -231,7 +327,7 @@ Please execute:
 
             fm = FrontMatterMeta(template_file)
             template_id_map[fm.template_id] = fm
-            prompt = self._gen_prompt(invocation, fm, tokens)
+            prompt = self._gen_prompt(tp_type, fm, tokens)
             tags_str = ", ".join([f"#{tag}" for tag in tags])
             content += f"\n### {fm.template_id}\n\n{tags_str}\n\n{prompt}"
 
@@ -243,15 +339,18 @@ Please execute:
 
         content = "# 🌐 Prompt Reference Scroll\n\n" + content
 
-        output_path = (
-            self._dest_dir
-            / f"{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
-        )
+        output_path = self._get_output_path(tokens)
         with output_path.open("w", encoding="utf-8") as f:
             f.write(content)
             print(
                 f"{self.get_process_name()}, Wrote Template-to-Field Being Mapping to: {output_path.name}"
             )
+
+    def _get_output_path(self, tokens: dict) -> Path:
+        return (
+            self._dest_dir
+            / f"{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
+        )
 
     def get_process_name(self) -> str:
         """

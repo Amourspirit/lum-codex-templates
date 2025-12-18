@@ -1,6 +1,6 @@
 from typing import Protocol
 from pathlib import Path
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 
 
 class ProtocolProcess(Protocol):

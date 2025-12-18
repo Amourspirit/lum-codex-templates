@@ -3,7 +3,7 @@ from typing import Any
 import yaml
 from .protocol_process import ProtocolProcess
 from ....config.pkg_config import PkgConfig
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
 
 

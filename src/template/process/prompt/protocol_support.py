@@ -1,5 +1,5 @@
 from typing import Protocol
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 
 
 class ProtocolSupport(Protocol):

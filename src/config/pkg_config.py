@@ -1,3 +1,4 @@
+import os
 from typing import cast
 from pathlib import Path
 import toml
@@ -100,6 +101,12 @@ class PkgConfig(metaclass=SingletonMeta):
             str,
             self._cfg["tool"]["project"]["config"]["template_to_field_being_map_name"],
         )
+        self._template_to_field_being_upgrade_map_name = cast(
+            str,
+            self._cfg["tool"]["project"]["config"][
+                "template_to_field_being_upgrade_map_name"
+            ],
+        )
         self._version_override = cast(
             int, self._cfg["tool"]["project"]["config"]["version_override"]
         )
@@ -127,6 +134,7 @@ class PkgConfig(metaclass=SingletonMeta):
         )
         self.template_config = TemplateConfig(template_data)
         self.codex_binding_contract = CodexBindingContract(contract_data)
+        self._env_user = self._get_env_user()
 
     def _load_config(self):
         return toml.load(self._project_toml_path)
@@ -288,6 +296,10 @@ class PkgConfig(metaclass=SingletonMeta):
         if not self._template_to_field_being_map_name:
             raise ValueError("template_to_field_being_map_name cannot be empty")
 
+        assert isinstance(self._template_to_field_being_upgrade_map_name, str)
+        if not self._template_to_field_being_upgrade_map_name:
+            raise ValueError("template_to_field_being_upgrade_map_name cannot be empty")
+
         assert isinstance(self._version_override, int), (
             "version_override must be an integer"
         )
@@ -295,6 +307,14 @@ class PkgConfig(metaclass=SingletonMeta):
         assert isinstance(self._version, str), "version must be a string"
         if not self._version:
             raise ValueError("version cannot be empty")
+
+    def _get_env_user(self) -> str:
+        result = ""
+        if os.getenv("CURRENT_USER") is None:
+            result = self._current_user
+        else:
+            result = cast(str, os.getenv("CURRENT_USER"))
+        return result
 
     # region Properties
     @property
@@ -378,6 +398,18 @@ class PkgConfig(metaclass=SingletonMeta):
                 str, self._cfg["tool"]["project"]["config"]["current_user"]
             )
         return self._current_user
+
+    @property
+    def env_user(self) -> str:
+        """
+        Gets the current user from the environment variable or configuration.
+        If the environment variable "CURRENT_USER" is set, its value is returned.
+        Otherwise, the value from the configuration is returned.
+
+        Returns:
+            str: The user value.
+        """
+        return self._env_user
 
     @property
     def files_upload_protocol_src(self) -> str:
@@ -631,6 +663,16 @@ class PkgConfig(metaclass=SingletonMeta):
             str: The name for the template to field being map.
         """
         return self._template_to_field_being_map_name
+
+    @property
+    def template_to_field_being_upgrade_map_name(self) -> str:
+        """
+        Gets the name for the template to field being upgrade map.
+
+        Returns:
+            str: The name for the template to field being upgrade map.
+        """
+        return self._template_to_field_being_upgrade_map_name
 
     @property
     def version_override(self) -> int:

@@ -2,7 +2,7 @@ from typing import cast
 import yaml
 from .protocol_support import ProtocolSupport
 from ....config.pkg_config import PkgConfig
-from ...main_registery import MainRegistry
+from ...main_registry import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
 
 

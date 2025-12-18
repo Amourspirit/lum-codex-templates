@@ -4,7 +4,8 @@ from .protocol_support import ProtocolSupport
 
 from .prompt_bootstrap import PromptBootstrap
 from .prompt_template_field_beings import PromptTemplateFieldBeings
-from ...main_registery import MainRegistry
+from .prompt_template_field_beings_upgrade import PromptTemplateFieldBeingsUpgrade
+from ...main_registry import MainRegistry
 
 
 class SupportProcessor:
@@ -135,9 +136,13 @@ class SupportProcessor:
     def _register_default_processes(self) -> None:
         prompt_bootstrap = PromptBootstrap(self._main_registry)
         prompt_template_field_beings = PromptTemplateFieldBeings(self._main_registry)
+        prompt_template_field_beings_upgrade = PromptTemplateFieldBeingsUpgrade(
+            self._main_registry
+        )
 
         self.register_process(prompt_bootstrap)
         self.register_process(prompt_template_field_beings)
+        self.register_process(prompt_template_field_beings_upgrade)
 
     def cleanup(self) -> None:
         """
