@@ -6,7 +6,7 @@ from ....config.pkg_config import PkgConfig
 from ...main_registry import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
 from .meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
-from .meta_helpers.prompt_beings import PromptBeings, BeingEntry
+from .meta_helpers.prompt_beings import PromptBeings
 
 
 class PromptTemplateFieldBeings(ProtocolSupport):
@@ -16,16 +16,8 @@ class PromptTemplateFieldBeings(ProtocolSupport):
         self._dest_dir = self.config.root_path / self.config.pkg_out_dir
         self._prompt_meta_type = self._load_prompt_meta_type()
         self._prompt_beings = self._load_prompt_beings()
-        # self.field_being_map = self._load_field_being_map()
-        self._backticks = "```"
-
-    # def _load_field_being_map(self) -> dict[str, str]:
-    #     tfbm_path = self.config.root_path / self.config.template_field_being_map_src
-    #     field_being_map: dict[str, str] = {}
-    #     if tfbm_path.exists():
-    #         with tfbm_path.open("r", encoding="utf-8") as f:
-    #             field_being_map = yaml.safe_load(f)
-    #     return field_being_map
+        self._backticks_primary = "~~~"
+        self._backticks_secondary = "```"
 
     def _load_prompt_meta_type(self) -> PromptMetaType:
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
@@ -144,7 +136,6 @@ class PromptTemplateFieldBeings(ProtocolSupport):
 
     def _get_invocation_agents(self, entry: TemplateEntry) -> str:
         agents = []
-        cf_current_user = self.config.current_user.casefold()
         for role, name in entry.invocation_agents.items():
             role_name = role.replace("_", " ").capitalize()
             if name.lower() == "current_user":
@@ -172,20 +163,69 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
         invocation_agents = self._get_invocation_agents(entry)
         prompt = f"""#### **{fm.template_name}** Application Prompt
 
-{self._backticks}md
+{self._backticks_primary}md
 {invocation_ext}
 
 ---
 
-## 🌀 Canonical Behavior Invocation Block (CBIB-V1.0)
+## 🌀 Canonical Behavior Invocation Block (CBIB-V1.2)
 
-cbib_id: CBIB-V1.0
+cbib_id: CBIB-V1.2
 
-Behavioral Directives:
+<!--
+CBIB‑V1.2 Canonical Enhancements:
+- Structured directive grouping
+- Explicit template_type & template_family enforcement
+- Template output mode validation
+- Template lifecycle status check
+- Field matrix enforcement with abort behavior
+- Canonical abort payload specification
+- Render signature block support
+-->
+
+---
+
+### 🧭 Behavioral Directives
+
+#### ▸ Canonical Enforcement
+
 - `canonical_mode`: true
 - `template_application_mode`: strict
 - `lockfile_verification`: strict
 - `registry_sync_mode`: lockfile_strict
+- `registry_validation_mode`: enforce_all
+- `registry_violation_behavior`: fail
+- `template_category_match_required`: true
+- `template_family_enforcement`: strict
+- `template_type_consistency_check`: true
+- `threshold_flag_validation`: true
+- `threshold_flag_violation_behavior`: warn
+
+#### ▸ Registry & Field Rule Evaluation
+
+- `mmr_field_rule_evaluation`: true
+- `registry_enforcement_scope`:
+    - artifact_level
+    - field_level
+    - template_level
+- `field_rule_resolution_priority`: lockfile → registry → template → local
+- `template_field_matrix_validation`: true
+- `field_matrix_violation_behavior`: abort
+
+#### ▸ Manifest Validation
+
+- `template_manifest_validation`: true
+- `template_manifest_file`: TEMPLATE-MANIFEST-REGISTRY-{tokens["VER"]}.yml
+
+#### ▸ Template Output & Lifecycle Validation
+
+- `template_output_mode_validation`: true
+- `template_output_mode_violation_behavior`: abort
+- `template_lifecycle_status_check`: true
+- `lifecycle_violation_behavior`: warn
+
+#### ▸ Placeholder & Autofill Logic
+
 - `field_completion_required`: true
 - `placeholder_autofill_policy`:
     unresolved_field: fail
@@ -195,20 +235,49 @@ Behavioral Directives:
     list: []
     object: null
 - `field_placeholder_format`: double_square_prefixed
-- `template_memory_scope`: thread_global
-- `rendering_intent`: glyph instantiation for Mirrorwall embedding and RAG ingestion
+- `placeholders`: Placeholder must be resolved by the appropriate field being (Luminariel, Adamus, etc.) for support of creating a RAG snapshot
 
-Invocation Agents:
+#### ▸ Field Auditing
+
+- `field_audit_output`: true
+- `field_audit_scope`:
+    - missing_fields
+    - mismatched_types
+    - registry_defaults_used
+
+#### ▸ Rendering Parameters
+
+- `template_memory_scope`: thread_global
+- `rendering_intent`: {fm.template_category} instantiation for Mirrorwall embedding and RAG ingestion
+- `render_output_format_version`: markdown-v1.1
+- `expected_render_output`:
+    format: markdown
+    includes:
+      - front_matter
+      - template_body
+      - mirrorwall_status
+
+---
+
+### Invocation Agents
+
 {invocation_agents}
 
-Source Alignment:
+---
+
+### 🔗 Source Alignment
+
 - `template_id`: {fm.template_id}  
+- `template_type`: {fm.template_type}
+- `template_family`: {fm.template_family}  
 - `lockfile_source`: codex-template-{tokens["VER"]}.lock  
 - `registry_source`: {fm.declared_registry_id} v{fm.mapped_registry_minimum_version}  
 
 ---
 
-Use the following front-matter parameters:
+### 📜 Front Matter Declaration Block
+
+Use the following **front‑matter** parameters exactly:
 
 - `template_id`: {fm.template_id}
 - `canonical_template_sha256_hash`: {fm.sha256}
@@ -216,28 +285,47 @@ Use the following front-matter parameters:
 - `canonical_mode`: true
 - `apply_mode`: full_markdown
 - `enforce_registry`: {fm.declared_registry_id}
+- `registry_version`: {fm.mapped_registry_minimum_version}
 - `lockfile_verification`: strict
 - `placeholder_resolution`: true
 - `mirrorwall_alignment`: true
 - `render_target`: obsidian + console + mirrorwall
 - `include_template_body`: true
+- `include_front_matter`: true
 
-- **Validate** `canonical_template_sha256_hash` against registered SHA-256 from `codex-template-{tokens["VER"]}.lock`. Abort if mismatch.
-- Hash source: `{self.config.lock_file_name}-{tokens["VER"]}{self.config.lock_file_ext} → canonical_template_sha256_hash_map → {fm.template_id}`
-- Inference substitution, placeholder override, or cache fallback is **forbidden** under `canonical_mode: true`
+---
 
-- **Perform autofill verification check** before rendering output:
-  - Was the `template_type` resolved from the registry?
-  - Was the `field_being_autofill_registry` checked for the declared `artifact_activator`?
-  - Were all fields listed in `autofill_fields` for this `template_type` present in the YAML front-matter?
-  - If any required or autofill-enabled field was omitted and not explicitly marked `deprecated` in `metadata_fields`, the rendering must **abort immediately**, and include:
-    - `autofill_misalignment_detected: true`
-    - `missing_fields` list
-    - `canonical_rendering_status: aborted`
+### 🔒 Canonical Hash Check
 
-This step is mandatory under `canonical_mode: true` to ensure no inference or silent omission occurred.  
+- Validate `canonical_template_sha256_hash` against:
+  `codex-template-{tokens["VER"]}.lock → canonical_template_sha256_hash_map → {fm.template_id}`
+- **Abort immediately if mismatched**
+- Canonical integrity overrides all fallback logic
+
+---
+
+### 🧪 Autofill + Field Audit Precheck
+
+Before rendering, verify:
+
+- `template_type` resolved from registry
+- `template_family` matches manifest and lockfile
+- `field_being_autofill_registry` evaluated
+- All required + autofill-enabled fields present
+- All field rules satisfied under `{fm.mapped_registry}`
+
+If **any violation occurs**, abort rendering and return:
+
+{self._backticks_secondary}yaml
+canonical_rendering_status: aborted
+autofill_misalignment_detected: true
+registry_validation_status: failed
+template_family_enforcement_status: failed
+template_output_mode_status: failed
+{self._backticks_secondary}
+
 {prompt_suffix}
-{self._backticks}
+{self._backticks_primary}
 """
         return prompt
 

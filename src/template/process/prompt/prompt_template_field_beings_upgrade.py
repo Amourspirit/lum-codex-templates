@@ -1,18 +1,14 @@
-from typing import cast
 from pathlib import Path
-import yaml
 from .protocol_support import ProtocolSupport
-from ....config.pkg_config import PkgConfig
 from ...main_registry import MainRegistry
 from ...front_mater_meta import FrontMatterMeta
 from .prompt_template_field_beings import PromptTemplateFieldBeings
-from .meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
+from .meta_helpers.prompt_meta_type import TemplateEntry
 
 
 class PromptTemplateFieldBeingsUpgrade(PromptTemplateFieldBeings, ProtocolSupport):
     def __init__(self, registry: MainRegistry) -> None:
         super().__init__(registry)
-        self._backticks = "~~~"
 
     def _get_output_path(self, tokens: dict) -> Path:
         return (
