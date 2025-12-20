@@ -4,10 +4,10 @@ from ....main_registry import MainRegistry
 from ....front_mater_meta import FrontMatterMeta
 from .....config.pkg_config import PkgConfig
 from .template_base import TemplateBase
-from .protocol_template import ProtocolTemplate
+from .protocol_template_reg import ProtocolTemplateReg
 
 
-class TemplateFieldCertSeal(TemplateBase, ProtocolTemplate):
+class TemplateFieldCertSeal(TemplateBase, ProtocolTemplateReg):
     def __init__(
         self,
         working_dir: Path,

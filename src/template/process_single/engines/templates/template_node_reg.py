@@ -7,7 +7,7 @@ from .template_base import TemplateBase
 from .protocol_template import ProtocolTemplate
 
 
-class TemplateGlyph(TemplateBase, ProtocolTemplate):
+class TemplateNodeReg(TemplateBase, ProtocolTemplate):
     def __init__(
         self,
         working_dir: Path,
@@ -15,7 +15,7 @@ class TemplateGlyph(TemplateBase, ProtocolTemplate):
         templates_data: dict[str, FrontMatterMeta],
     ):
         config = PkgConfig()
-        type_name = config.templates_config_info.tci_items["glyph"].template_type
+        type_name = config.templates_config_info.tci_items["node_reg"].template_type
         template_data = templates_data.get(type_name)
         if template_data is None:
             raise ValueError(f"Template data for type '{type_name}' not found.")

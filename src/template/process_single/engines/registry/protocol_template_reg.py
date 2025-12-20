@@ -5,7 +5,7 @@ from ....main_registry import MainRegistry
 from ....front_mater_meta import FrontMatterMeta
 
 
-class ProtocolTemplate(Protocol):
+class ProtocolTemplateReg(Protocol):
     def __init__(
         self,
         main_registry: MainRegistry,

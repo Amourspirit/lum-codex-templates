@@ -1,4 +1,5 @@
 from typing import Any
+from pathlib import Path
 from ....main_registry import MainRegistry
 from .....config.pkg_config import PkgConfig
 from ....front_mater_meta import FrontMatterMeta
@@ -7,30 +8,49 @@ from ....front_mater_meta import FrontMatterMeta
 class TemplateBase:
     def __init__(
         self,
+        working_dir: Path,
         main_registry: MainRegistry,
-        templates_meta: dict[str, dict[str, Any]],
-        template_type: str,
+        template_front_matter: FrontMatterMeta,
     ):
+        self.__working_dir = working_dir
         self.__main_registry = main_registry
         self.__config = PkgConfig()
-        self.__meta = templates_meta.get(template_type, {}).copy()
-        self._tci = self.config.templates_config_info.tci_items[template_type]
+        self.__tci = self.config.templates_config_info.tci_items[
+            template_front_matter.template_type
+        ]
+        self.__fm = self._get_filtered_front_matter(template_front_matter)
 
-    def _remove_omitted_single_fields(self) -> None:
-        omitted_fields = self._tci.single_fields_omitted
-
-        for field in omitted_fields:
-            if field in self.template_meta:
-                del self.__meta[field]
+    def _get_filtered_front_matter(self, orig_fm: FrontMatterMeta) -> FrontMatterMeta:
+        omitted_fields = self.tci.single_fields_omitted
+        filtered_fm = {
+            key: value
+            for key, value in orig_fm.frontmatter.items()
+            if key not in omitted_fields
+        }
+        fm = FrontMatterMeta.from_frontmatter_dict(
+            file_path=orig_fm.file_path,
+            fm_dict=filtered_fm,
+            content=orig_fm.content,
+        )
+        return fm
 
     def _process_common(self, tokens: dict[str, Any]) -> None:
-        # Placeholder for common processing logic
-        self.template_meta["template_version"] = self._tci.template_version
-        self.template_meta["template_family"] = self._tci.template_family
+        self.fm.frontmatter["template_version"] = self.tci.template_version
+        self.fm.frontmatter["template_family"] = self.tci.template_family
+        self.fm.frontmatter["template_registry"] = {
+            "filename": f"{self.tci.template_type}-template-v{self.tci.template_version}-registry.yml",
+            "registry_id": f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY",
+            "enforced": True,
+        }
 
-    @property
-    def template_meta(self) -> dict[str, Any]:
-        return self.__meta
+    def _write_file(self) -> Path:
+        output_path = (
+            self.working_dir
+            / f"{self.fm.template_type}-template-v{self.fm.template_version}.md"
+        )
+        self.fm.write_template(output_path)
+        # print(f"Generated registry file: {output_path.name}")
+        return output_path
 
     @property
     def config(self) -> PkgConfig:
@@ -39,3 +59,15 @@ class TemplateBase:
     @property
     def main_registry(self) -> MainRegistry:
         return self.__main_registry
+
+    @property
+    def tci(self):
+        return self.__tci
+
+    @property
+    def fm(self) -> FrontMatterMeta:
+        return self.__fm
+
+    @property
+    def working_dir(self) -> Path:
+        return self.__working_dir

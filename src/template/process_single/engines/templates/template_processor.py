@@ -1,9 +1,7 @@
-from typing import Any
 from pathlib import Path
-
 from ....front_mater_meta import FrontMatterMeta
 from ....main_registry import MainRegistry
-from .protocol_template_reg import ProtocolTemplateReg
+from .protocol_template import ProtocolTemplate
 from .template_glyph import TemplateGlyph
 from .template_field_certificate import TemplateFieldCertificate
 from .template_dyad import TemplateDyad
@@ -11,12 +9,13 @@ from .template_stone import TemplateStone
 from .template_node_reg import TemplateNodeReg
 from .template_field_correction_scroll import TemplateFieldCorrectionScroll
 from .template_linkage_scroll import TemplateLinkageScroll
+from .template_node_link_scroll import TemplateNodeLinkScroll
 from .template_field_cert_seal import TemplateFieldCertSeal
 from .template_seal import TemplateSeal
 from .template_sigil import TemplateSigil
 
 
-class TemplateRegistryProcessor:
+class TemplateProcessor:
     """
     Manages and executes a collection of ProtocolTemplate instances. Each process
     is responsible for processing a specific aspect of the package companions.
@@ -30,17 +29,15 @@ class TemplateRegistryProcessor:
         self,
         workspace_dir: Path,
         registry: MainRegistry,
-        templates_meta: dict[str, dict[str, Any]],
         templates_data: dict[str, FrontMatterMeta],
     ):
         self._workspace_dir = workspace_dir
         self._main_registry = registry
-        self._templates_meta = templates_meta
-        self._processes: list[ProtocolTemplateReg] = []
+        self._processes: list[ProtocolTemplate] = []
         self._templates_data = templates_data
         self._register_default_processes()
 
-    def register_process(self, process: ProtocolTemplateReg) -> None:
+    def register_process(self, process: ProtocolTemplate) -> None:
         """Register a ProtocolTemplate with this processor.
 
         Args:
@@ -91,9 +88,7 @@ class TemplateRegistryProcessor:
         for process in self._processes:
             result_path = process.process(tokens)
             results[result_path[0]] = result_path[1]
-            print(
-                f"Processed Template Registry: {result_path[0]} -> {result_path[1].name}"
-            )
+            print(f"Processed Template: {result_path[0]} -> {result_path[1].name}")
         return results
 
     def unregister_all(self) -> None:
@@ -115,7 +110,7 @@ class TemplateRegistryProcessor:
 
         self._processes.clear()
 
-    def unregister_process(self, process: ProtocolTemplateReg) -> None:
+    def unregister_process(self, process: ProtocolTemplate) -> None:
         """
         Unregister a process from the processor.
         Removes the first occurrence of the given process from the processor's internal list
@@ -143,28 +138,26 @@ class TemplateRegistryProcessor:
         template_glyph = TemplateGlyph(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_glyph)
         template_field_certificate = TemplateFieldCertificate(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_field_certificate)
+
         template_dyad = TemplateDyad(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_dyad)
+
         template_stone = TemplateStone(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_stone)
@@ -172,7 +165,6 @@ class TemplateRegistryProcessor:
         template_node_reg = TemplateNodeReg(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_node_reg)
@@ -180,7 +172,6 @@ class TemplateRegistryProcessor:
         template_field_correction_scroll = TemplateFieldCorrectionScroll(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_field_correction_scroll)
@@ -188,15 +179,20 @@ class TemplateRegistryProcessor:
         template_linkage_scroll = TemplateLinkageScroll(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_linkage_scroll)
 
+        template_node_link_scroll = TemplateNodeLinkScroll(
+            working_dir=self._workspace_dir,
+            main_registry=self._main_registry,
+            templates_data=self._templates_data,
+        )
+        self.register_process(template_node_link_scroll)
+
         template_field_cert_seal = TemplateFieldCertSeal(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_field_cert_seal)
@@ -204,7 +200,6 @@ class TemplateRegistryProcessor:
         template_seal = TemplateSeal(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_seal)
@@ -212,7 +207,6 @@ class TemplateRegistryProcessor:
         template_sigil = TemplateSigil(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
-            templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
         self.register_process(template_sigil)

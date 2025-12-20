@@ -14,9 +14,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # sys.argv.append("single")
     # sys.argv.append("pkg-zip")
     # sys.argv.append("-b")
-    # sys.argv.append("1000")
-    #
-    # sys.argv.append("single")
+    # sys.argv.append("79")
     sys.exit(main())

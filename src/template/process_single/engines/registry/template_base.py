@@ -59,7 +59,17 @@ class TemplateBase:
                     item["description"] = metadata_fields[key]["description"]
                 if "field_lineage" in metadata_fields[key]:
                     item["field_lineage"] = metadata_fields[key]["field_lineage"]
+
                 result[key] = item
+        result["template_registry"] = {
+            "type": "object",
+            "nullable": False,
+            "status": "active",
+            "plugin_groups": ["template_registry_management"],
+            "autofill": False,
+            "required": True,
+            "description": "The field value that connects the markdown template to this registry.",
+        }
         return result
 
     def _get_template_meta_fields(self, key_name: str) -> set[str]:
@@ -74,6 +84,7 @@ class TemplateBase:
             f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY"
         )
         result["registry_scope"] = self.tci.template_type
+        result["template_type"] = self.tci.template_type
         result["template_filename"] = (
             f"{self.tci.template_type}-template-v{self.tci.template_version}.md"
         )
@@ -90,6 +101,17 @@ class TemplateBase:
         result["allow_inference"] = False
         result["fail_on_field_mismatch"] = True
 
+        # ===============================
+        # Template Hash Enforcement
+        # ===============================
+        result["template_hash_enforcement"] = {
+            "field_name": "template_hash",
+            "algorithm": "sha256",
+            "hash_scope": {
+                "include": ["yaml_frontmatter", "template_body"],
+            },
+            "exclude_fields": ["template_hash"],
+        }
         # ===============================
         # Autofill Configuration
         # ===============================

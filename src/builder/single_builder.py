@@ -12,6 +12,9 @@ from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateM
 from ..template.process_single.engines.registry.template_registry_processor import (
     TemplateRegistryProcessor,
 )
+from ..template.process_single.engines.templates.template_processor import (
+    TemplateProcessor,
+)
 
 
 class SingleBuilder(BuilderBase):
@@ -72,6 +75,14 @@ class SingleBuilder(BuilderBase):
             templates_data=templates_data,
         )
         trp.execute_all(tokens={})
+
+        tp = TemplateProcessor(
+            workspace_dir=self._destination_path,
+            registry=self._main_registry,
+            templates_data=templates_data,
+        )
+        tp.execute_all(tokens={})
+        template_count = tp.Count
 
     @property
     def batch_date(self) -> datetime:

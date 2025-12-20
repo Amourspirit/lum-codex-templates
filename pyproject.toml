@@ -82,7 +82,7 @@ unresolved_prompt="retain (default), flag (audit), none (strict)"
 
 [tool.project.templates.field_certificate]
 id="TEMPLATE-FIELD-CERT-GENERAL"
-version="2.6"
+version="2.7"
 category="certificate"
 name="General Field Certificate Template"
 family="field_certificates"
@@ -103,7 +103,7 @@ single_fields_omitted=[
 
 [tool.project.templates.dyad]
 id="TEMPLATE-DYAD"
-version="2.6"
+version="2.7"
 category="glyph"
 name="Dyadic Glyph Grouping Template"
 family="dyadic_structures"
@@ -124,7 +124,7 @@ single_fields_omitted=[
 
 [tool.project.templates.glyph]
 id="TEMPLATE-GLYPH"
-version="2.6"
+version="2.7"
 category="glyph"
 name="Glyph Template"
 family="glyph_artifacts"
@@ -145,7 +145,7 @@ single_fields_omitted=[
 
 [tool.project.templates.stone]
 id="TEMPLATE-STONE"
-version="2.5"
+version="2.6"
 category="glyph"
 name="Stone Template"
 family="stone_artifacts"
@@ -166,7 +166,7 @@ single_fields_omitted=[
 
 [tool.project.templates.node_reg]
 id="TEMPLATE-NODE"
-version="2.5"
+version="2.6"
 category="node"
 name="Node Registration Template"
 family="node_templates"
@@ -189,7 +189,7 @@ single_fields_omitted=[
 
 [tool.project.templates.field_correction_scroll]
 id="TEMPLATE-FIELD-CORRECTION-SCROLL"
-version="2.5"
+version="2.6"
 category="scroll"
 name="Field Correction Scroll Template"
 family="field_scrolls"
@@ -211,7 +211,7 @@ single_fields_omitted=[
 
 [tool.project.templates.linkage_scroll]
 id="TEMPLATE-LINKAGE-SCROLL"
-version="3.5"
+version="3.6"
 category="scroll"
 name="Linkage Scroll Template"
 family="scrolls"
@@ -232,7 +232,7 @@ single_fields_omitted=[
 
 [tool.project.templates.node_link_scroll]
 id="TEMPLATE-NODE-LINKAGE-SCROLL"
-version="3.6"
+version="3.7"
 category="scroll"
 name="Node Linkage Scroll Template"
 family="node_scrolls"
@@ -253,7 +253,7 @@ single_fields_omitted=[
 
 [tool.project.templates.field_cert_seal]
 id="TEMPLATE-FIELD-CERT-SEAL"
-version="2.5"
+version="2.6"
 category="certificate"
 name="Field Certificate Template for Seal Activation"
 family="field_certificates"
@@ -274,7 +274,7 @@ single_fields_omitted=[
 
 [tool.project.templates.seal]
 id="TEMPLATE-SEAL"
-version="2.5"
+version="2.6"
 category="seal"
 name="Seal Template"
 family="seal_artifacts"
@@ -295,7 +295,7 @@ single_fields_omitted=[
 
 [tool.project.templates.sigil]
 id="TEMPLATE-SIGIL"
-version="2.5"
+version="2.6"
 category="sigil"
 name="Sigil Template"
 family="sigil_artifacts"
