@@ -4,15 +4,15 @@ from .sub_parser_args import SubParserArgs
 from .protocol_subparser import ProtocolSubparser
 
 
-class RulePkgZip(SubParserBase, ProtocolSubparser):
+class RuleSingleTemplate(SubParserBase, ProtocolSubparser):
     def __init__(
         self, cmd_sub_parser: argparse._SubParsersAction[argparse.ArgumentParser]
     ):
         self._cmd_sub_parser = cmd_sub_parser
 
-        self._cmd = "pkg-zip"
+        self._cmd = "single"
         self._sub_parser = self._cmd_sub_parser.add_parser(
-            name=self._cmd, help="Package and zip a Codex Template Package."
+            name=self._cmd, help="Export templates as single template files."
         )
 
         args = SubParserArgs(sub_parser=self._sub_parser, command=self._cmd)
@@ -20,13 +20,6 @@ class RulePkgZip(SubParserBase, ProtocolSubparser):
         self._add_arguments()
 
     def _add_arguments(self):
-        self._sub_parser.add_argument(
-            "-n",
-            "--no-path",
-            action="store_false",
-            help="Determines whether to include the full path in the zip file. By default, the full path is included.",
-            default=True,
-        )
         self._sub_parser.add_argument(
             "-b",
             "--build",
@@ -39,10 +32,10 @@ class RulePkgZip(SubParserBase, ProtocolSubparser):
         return command == self._cmd
 
     def action(self, args: argparse.Namespace) -> int:
-        from ..builder.zip_builder import ZipBuilder
+        from ..builder.single_builder import SingleBuilder
 
         try:
-            builder = ZipBuilder(build_version=args.build)
+            builder = SingleBuilder(build_version=args.build)
             builder.build_package()
             print("Package build complete.")
         except Exception as e:

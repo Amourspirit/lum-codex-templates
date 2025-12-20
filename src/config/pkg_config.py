@@ -51,10 +51,10 @@ class PkgConfig(metaclass=SingletonMeta):
             str, self._cfg["tool"]["project"]["config"]["lock_file_name"]
         )
 
-        self._non_template_patterns = cast(
-            list[str],
-            self._cfg["tool"]["project"]["config"]["non_template_patterns"],
-        )
+        # self._non_template_patterns = cast(
+        #     list[str],
+        #     self._cfg["tool"]["project"]["config"]["non_template_patterns"],
+        # )
         self._package_output_name = cast(
             str, self._cfg["tool"]["project"]["config"]["package_output_name"]
         )
@@ -196,13 +196,13 @@ class PkgConfig(metaclass=SingletonMeta):
         if not self._lock_file_name:
             raise ValueError("lock_file_name cannot be empty")
 
-        assert isinstance(self._non_template_patterns, list), (
-            "non_template_patterns must be a list"
-        )
-        for pattern in self._non_template_patterns:
-            assert isinstance(pattern, str), (
-                "each item in non_template_patterns must be a string"
-            )
+        # assert isinstance(self._non_template_patterns, list), (
+        #     "non_template_patterns must be a list"
+        # )
+        # for pattern in self._non_template_patterns:
+        #     assert isinstance(pattern, str), (
+        #         "each item in non_template_patterns must be a string"
+        #     )
         assert isinstance(self._package_output_name, str), (
             "package_output_name must be a string"
         )
@@ -463,18 +463,18 @@ class PkgConfig(metaclass=SingletonMeta):
         """
         return self._lock_file_name
 
-    @property
-    def non_template_patterns(self) -> list[str]:
-        """
-        Return the cached non-template patterns list, loading it from configuration on first access.
-        If self._non_template_patterns is already set, that value is returned. Otherwise the method
-        retrieves the value at self._cfg["tool"]["project"]["non_template_patterns"], casts it to list[str], stores it
-        in self._non_template_patterns for future calls, and returns it.
+    # @property
+    # def non_template_patterns(self) -> list[str]:
+    #     """
+    #     Return the cached non-template patterns list, loading it from configuration on first access.
+    #     If self._non_template_patterns is already set, that value is returned. Otherwise the method
+    #     retrieves the value at self._cfg["tool"]["project"]["non_template_patterns"], casts it to list[str], stores it
+    #     in self._non_template_patterns for future calls, and returns it.
 
-        Returns:
-            list[str]: The non-template patterns value.
-        """
-        return self._non_template_patterns
+    #     Returns:
+    #         list[str]: The non-template patterns value.
+    #     """
+    #     return self._non_template_patterns
 
     @property
     def package_output_name(self) -> str:

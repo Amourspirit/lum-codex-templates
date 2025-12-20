@@ -33,6 +33,10 @@ class TemplatesConfigInfo:
                     template_category=template_info.get("category", ""),
                     template_version=template_info.get("version", ""),
                     template_family=template_info.get("family", ""),
+                    template_type=template_info.get("template_type", ""),
+                    single_fields_omitted=set(
+                        template_info.get("single_fields_omitted", [])
+                    ),
                 )
             except AssertionError as e:
                 raise ValueError(

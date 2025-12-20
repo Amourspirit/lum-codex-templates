@@ -12,7 +12,7 @@ from ..config.pkg_config import PkgConfig
 from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
 
 
-class DefaultBuilder(BuilderBase):
+class ZipBuilder(BuilderBase):
     def __init__(self, build_version: int = 0):
         super().__init__()
         self.config = PkgConfig()

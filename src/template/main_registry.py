@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 import yaml
 from ..config.pkg_config import PkgConfig
 
@@ -20,6 +21,11 @@ class MainRegistry:
         return registry_data
 
     # region Properties
+    @property
+    def build_version(self) -> int:
+        """Gets the build version."""
+        return self._build_version
+
     @property
     def file_name(self) -> str:
         """Gets the registry file name from the configuration."""
@@ -70,5 +76,10 @@ class MainRegistry:
     def registry(self) -> dict:
         """Gets the entire registry data."""
         return self._reg
+
+    @property
+    def metadata_fields(self) -> dict[str, dict[str, Any]]:
+        """Gets the metadata fields from the registry data."""
+        return self._reg.get("metadata_fields", {})
 
     # endregion Properties

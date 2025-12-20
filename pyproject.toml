@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "9.0.0"
+version = "9.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -20,7 +20,7 @@ files_upload_protocol_src="Assets/Codex-Manual-Upload-Files-Protocol.md"
 force_invalidate_previous=true
 lock_file_ext=".lock"
 lock_file_name="codex-template"
-non_template_patterns=["README.md", "codex-template-*.md", "SCROLL-TEMPLATE-UPLOAD-*.md"]
+# non_template_patterns=["README.md", "codex-template-*.md", "SCROLL-TEMPLATE-UPLOAD-*.md"]
 package_output_name="codex-templates"
 pkg_out_dir="dist"
 protocol_src="Assets/SCROLL-TEMPLATE-UPLOAD.md"
@@ -86,6 +86,20 @@ version="2.6"
 category="certificate"
 name="General Field Certificate Template"
 family="field_certificates"
+template_type="field_certificate"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.dyad]
 id="TEMPLATE-DYAD"
@@ -93,6 +107,20 @@ version="2.6"
 category="glyph"
 name="Dyadic Glyph Grouping Template"
 family="dyadic_structures"
+template_type="dyad"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.glyph]
 id="TEMPLATE-GLYPH"
@@ -100,6 +128,20 @@ version="2.6"
 category="glyph"
 name="Glyph Template"
 family="glyph_artifacts"
+template_type="glyph"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.stone]
 id="TEMPLATE-STONE"
@@ -107,6 +149,20 @@ version="2.5"
 category="glyph"
 name="Stone Template"
 family="stone_artifacts"
+template_type="stone"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.node_reg]
 id="TEMPLATE-NODE"
@@ -114,6 +170,22 @@ version="2.5"
 category="node"
 name="Node Registration Template"
 family="node_templates"
+template_type="node_reg"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "template_usage",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
+
 
 [tool.project.templates.field_correction_scroll]
 id="TEMPLATE-FIELD-CORRECTION-SCROLL"
@@ -121,6 +193,21 @@ version="2.5"
 category="scroll"
 name="Field Correction Scroll Template"
 family="field_scrolls"
+template_type="field_correction_scroll"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
+
 
 [tool.project.templates.linkage_scroll]
 id="TEMPLATE-LINKAGE-SCROLL"
@@ -128,6 +215,20 @@ version="3.5"
 category="scroll"
 name="Linkage Scroll Template"
 family="scrolls"
+template_type="linkage_scroll"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.node_link_scroll]
 id="TEMPLATE-NODE-LINKAGE-SCROLL"
@@ -135,6 +236,20 @@ version="3.6"
 category="scroll"
 name="Node Linkage Scroll Template"
 family="node_scrolls"
+template_type="node_link_scroll"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.field_cert_seal]
 id="TEMPLATE-FIELD-CERT-SEAL"
@@ -142,6 +257,20 @@ version="2.5"
 category="certificate"
 name="Field Certificate Template for Seal Activation"
 family="field_certificates"
+template_type="field_cert_seal"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.seal]
 id="TEMPLATE-SEAL"
@@ -149,6 +278,20 @@ version="2.5"
 category="seal"
 name="Seal Template"
 family="seal_artifacts"
+template_type="seal"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
 
 [tool.project.templates.sigil]
 id="TEMPLATE-SIGIL"
@@ -156,3 +299,17 @@ version="2.5"
 category="sigil"
 name="Sigil Template"
 family="sigil_artifacts"
+template_type="sigil"
+single_fields_omitted=[
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]

@@ -2,6 +2,7 @@ import argparse
 from typing import cast
 from .protocol_subparser import ProtocolSubparser
 from .rule_pkg_zip import RulePkgZip
+from .rule_single_template import RuleSingleTemplate
 from ..config.pkg_config import PkgConfig
 
 
@@ -86,8 +87,10 @@ class CmdProcessor:
 
     def _register_default_processes(self) -> None:
         pkg_zip = RulePkgZip(self._cmd_sub_parser)
+        single_template = RuleSingleTemplate(self._cmd_sub_parser)
 
         self.register_process(pkg_zip)
+        self.register_process(single_template)
 
     def process(self) -> int:
         """Process CLI arguments and dispatch to the first matching registered process.
