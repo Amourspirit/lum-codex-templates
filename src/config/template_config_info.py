@@ -10,6 +10,7 @@ class TemplateConfigInfo:
     template_version: str
     template_family: str
     template_type: str
+    expected_image: bool = field(default=False)
     single_fields_omitted: set[str] = field(default_factory=set)
 
     def __post_init__(self) -> None:

@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "9.1.0"
+version = "9.2.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -68,6 +68,26 @@ placeholder_examples=[
 open="[["
 close="]]"
 
+[tool.project.config.template.cbib]
+id="cbib_id"
+title="Canonical Behavior Invocation Block"
+
+[tool.project.config.template.cbib.single]
+version="101.0"
+
+[tool.project.config.template.cbib.zip]
+version="1.1"
+
+[tool.project.config.template.ceib]
+executor_mode="CANONICAL-EXECUTOR-MODE"
+title="Canonical Executor Invocation Block"
+
+[tool.project.config.template.ceib.single]
+version="100.0"
+
+[tool.project.config.template.ceib.zip]
+version="1.0"
+
 [tool.project.config.template.placeholder_prefix_semantics]
 required=true
 allowed_prefixes=["field", "prompt"]
@@ -82,11 +102,12 @@ unresolved_prompt="retain (default), flag (audit), none (strict)"
 
 [tool.project.templates.field_certificate]
 id="TEMPLATE-FIELD-CERT-GENERAL"
-version="2.7"
+version="2.8"
 category="certificate"
 name="General Field Certificate Template"
 family="field_certificates"
 template_type="field_certificate"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -103,11 +124,12 @@ single_fields_omitted=[
 
 [tool.project.templates.dyad]
 id="TEMPLATE-DYAD"
-version="2.7"
+version="2.8"
 category="glyph"
 name="Dyadic Glyph Grouping Template"
 family="dyadic_structures"
 template_type="dyad"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -124,11 +146,12 @@ single_fields_omitted=[
 
 [tool.project.templates.glyph]
 id="TEMPLATE-GLYPH"
-version="2.7"
+version="2.8"
 category="glyph"
 name="Glyph Template"
 family="glyph_artifacts"
 template_type="glyph"
+image_expected=true
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -145,11 +168,12 @@ single_fields_omitted=[
 
 [tool.project.templates.stone]
 id="TEMPLATE-STONE"
-version="2.6"
+version="2.7"
 category="glyph"
 name="Stone Template"
 family="stone_artifacts"
 template_type="stone"
+image_expected=true
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -166,11 +190,12 @@ single_fields_omitted=[
 
 [tool.project.templates.node_reg]
 id="TEMPLATE-NODE"
-version="2.6"
+version="2.7"
 category="node"
 name="Node Registration Template"
 family="node_templates"
 template_type="node_reg"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -189,11 +214,12 @@ single_fields_omitted=[
 
 [tool.project.templates.field_correction_scroll]
 id="TEMPLATE-FIELD-CORRECTION-SCROLL"
-version="2.6"
+version="2.7"
 category="scroll"
 name="Field Correction Scroll Template"
 family="field_scrolls"
 template_type="field_correction_scroll"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -211,11 +237,12 @@ single_fields_omitted=[
 
 [tool.project.templates.linkage_scroll]
 id="TEMPLATE-LINKAGE-SCROLL"
-version="3.6"
+version="3.7"
 category="scroll"
 name="Linkage Scroll Template"
 family="scrolls"
 template_type="linkage_scroll"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -232,11 +259,12 @@ single_fields_omitted=[
 
 [tool.project.templates.node_link_scroll]
 id="TEMPLATE-NODE-LINKAGE-SCROLL"
-version="3.7"
+version="3.8"
 category="scroll"
 name="Node Linkage Scroll Template"
 family="node_scrolls"
 template_type="node_link_scroll"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -253,11 +281,12 @@ single_fields_omitted=[
 
 [tool.project.templates.field_cert_seal]
 id="TEMPLATE-FIELD-CERT-SEAL"
-version="2.6"
+version="2.7"
 category="certificate"
 name="Field Certificate Template for Seal Activation"
 family="field_certificates"
 template_type="field_cert_seal"
+image_expected=false
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -274,11 +303,12 @@ single_fields_omitted=[
 
 [tool.project.templates.seal]
 id="TEMPLATE-SEAL"
-version="2.6"
+version="2.8"
 category="seal"
 name="Seal Template"
 family="seal_artifacts"
 template_type="seal"
+image_expected=true
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",
@@ -295,11 +325,12 @@ single_fields_omitted=[
 
 [tool.project.templates.sigil]
 id="TEMPLATE-SIGIL"
-version="2.6"
+version="2.7"
 category="sigil"
 name="Sigil Template"
 family="sigil_artifacts"
 template_type="sigil"
+image_expected=true
 single_fields_omitted=[
     "template_fields_declared",
     "memory_cache_origin",

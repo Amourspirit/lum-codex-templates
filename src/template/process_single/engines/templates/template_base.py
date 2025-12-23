@@ -35,8 +35,6 @@ class TemplateBase:
         return fm
 
     def _process_common(self, tokens: dict[str, Any]) -> None:
-        self.fm.frontmatter["template_version"] = self.tci.template_version
-        self.fm.frontmatter["template_family"] = self.tci.template_family
         self.fm.frontmatter["template_registry"] = {
             "filename": f"{self.tci.template_type}-template-v{self.tci.template_version}-registry.yml",
             "registry_id": f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY",

@@ -1,11 +1,11 @@
 import tempfile
 from pathlib import Path
-from .protocol_support import ProtocolSupport
+from ..protocol_support import ProtocolSupport
 
 from .prompt_bootstrap import PromptBootstrap
 from .prompt_template_field_beings import PromptTemplateFieldBeings
 from .prompt_template_field_beings_upgrade import PromptTemplateFieldBeingsUpgrade
-from ...main_registry import MainRegistry
+from ....main_registry import MainRegistry
 
 
 class SupportProcessor:

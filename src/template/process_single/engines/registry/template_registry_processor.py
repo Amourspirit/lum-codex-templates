@@ -11,6 +11,7 @@ from .template_stone import TemplateStone
 from .template_node_reg import TemplateNodeReg
 from .template_field_correction_scroll import TemplateFieldCorrectionScroll
 from .template_linkage_scroll import TemplateLinkageScroll
+from .template_node_link_scroll import TemplateNodeLinkScroll
 from .template_field_cert_seal import TemplateFieldCertSeal
 from .template_seal import TemplateSeal
 from .template_sigil import TemplateSigil
@@ -177,13 +178,13 @@ class TemplateRegistryProcessor:
         )
         self.register_process(template_node_reg)
 
-        template_field_correction_scroll = TemplateFieldCorrectionScroll(
+        template_node_link_scroll = TemplateNodeLinkScroll(
             working_dir=self._workspace_dir,
             main_registry=self._main_registry,
             templates_meta=self._templates_meta,
             templates_data=self._templates_data,
         )
-        self.register_process(template_field_correction_scroll)
+        self.register_process(template_node_link_scroll)
 
         template_linkage_scroll = TemplateLinkageScroll(
             working_dir=self._workspace_dir,
@@ -200,6 +201,14 @@ class TemplateRegistryProcessor:
             templates_data=self._templates_data,
         )
         self.register_process(template_field_cert_seal)
+
+        template_field_correct_scroll = TemplateFieldCorrectionScroll(
+            working_dir=self._workspace_dir,
+            main_registry=self._main_registry,
+            templates_meta=self._templates_meta,
+            templates_data=self._templates_data,
+        )
+        self.register_process(template_field_correct_scroll)
 
         template_seal = TemplateSeal(
             working_dir=self._workspace_dir,

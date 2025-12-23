@@ -5,8 +5,7 @@ from .builderbase import BuilderBase
 from .build_ver_mgr import BuildVerMgr
 from ..template.main_registry import MainRegistry
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
-from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
-from ..template.process.prompt.support_processor import SupportProcessor
+from ..template.process.prompt.single.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
 from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
 from ..template.process_single.engines.registry.template_registry_processor import (
@@ -14,6 +13,9 @@ from ..template.process_single.engines.registry.template_registry_processor impo
 )
 from ..template.process_single.engines.templates.template_processor import (
     TemplateProcessor,
+)
+from ..template.process_single.engines.enforcement.enforcement_processor import (
+    EnforcementProcessor,
 )
 
 
@@ -52,6 +54,7 @@ class SingleBuilder(BuilderBase):
         # template_count = 0
         # template_path_list = []
         # pcp = None
+        current_date = self.batch_date.isoformat()
         meta_reader = ReadObsidianTemplateMeta()
         template_meta = meta_reader.read_template_meta()
 
@@ -82,6 +85,24 @@ class SingleBuilder(BuilderBase):
             templates_data=templates_data,
         )
         tp.execute_all(tokens={})
+        support_processor = SupportProcessor(registry=self._main_registry)
+        support_processor.execute_all(
+            tokens={
+                "VER": str(self._build_version),
+                "TEMPLATES_DATA": processed_template_data,
+            }
+        )
+        ep = EnforcementProcessor(
+            workspace_dir=self._destination_path,
+            registry=self._main_registry,
+            templates_data=templates_data,
+        )
+        ep.execute_all(
+            tokens={
+                "DATE": current_date,
+                "VER": str(self._build_version),
+            }
+        )
         template_count = tp.Count
 
     @property

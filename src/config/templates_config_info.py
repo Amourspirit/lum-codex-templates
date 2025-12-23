@@ -34,6 +34,7 @@ class TemplatesConfigInfo:
                     template_version=template_info.get("version", ""),
                     template_family=template_info.get("family", ""),
                     template_type=template_info.get("template_type", ""),
+                    expected_image=template_info.get("image_expected", False),
                     single_fields_omitted=set(
                         template_info.get("single_fields_omitted", [])
                     ),

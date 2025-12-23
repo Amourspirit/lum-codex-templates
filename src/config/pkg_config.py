@@ -6,6 +6,8 @@ from ..meta.singleton import SingletonMeta
 from .template_config import TemplateConfig
 from .templates_config_info import TemplatesConfigInfo
 from .codex_binding_contract import CodexBindingContract
+from .template_cbib_info import TemplateCbibInfo
+from .template_ceib_info import TemplateCeibInfo
 
 
 class PkgConfig(metaclass=SingletonMeta):
@@ -134,6 +136,47 @@ class PkgConfig(metaclass=SingletonMeta):
         )
         self.template_config = TemplateConfig(template_data)
         self.codex_binding_contract = CodexBindingContract(contract_data)
+
+        cbib_data = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("template", {})
+            .get("cbib", {})
+        )
+        self.template_cbib_single = TemplateCbibInfo(
+            id=cbib_data.get("id", ""),
+            title=cbib_data.get("title", ""),
+            version=cbib_data["single"].get("version", ""),
+            cbib_type="single",
+        )
+
+        self.template_cbib_zip = TemplateCbibInfo(
+            id=cbib_data.get("id", ""),
+            title=cbib_data.get("title", ""),
+            version=cbib_data["zip"].get("version", ""),
+            cbib_type="zip",
+        )
+
+        ceib_data = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("template", {})
+            .get("ceib", {})
+        )
+        self.template_ceib_single = TemplateCeibInfo(
+            executor_mode=ceib_data.get("executor_mode", ""),
+            title=ceib_data.get("title", ""),
+            version=ceib_data["single"].get("version", ""),
+        )
+
+        self.template_ceib_zip = TemplateCeibInfo(
+            executor_mode=ceib_data.get("executor_mode", ""),
+            title=ceib_data.get("title", ""),
+            version=ceib_data["zip"].get("version", ""),
+        )
+
         self._env_user = self._get_env_user()
 
     def _load_config(self):

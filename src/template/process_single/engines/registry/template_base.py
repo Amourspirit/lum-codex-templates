@@ -83,8 +83,10 @@ class TemplateBase:
         result["registry_id"] = (
             f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY"
         )
+        result["registry_version"] = self.tci.template_version
         result["registry_scope"] = self.tci.template_type
         result["template_type"] = self.tci.template_type
+        result["template_hash"] = self.fm.sha256
         result["template_filename"] = (
             f"{self.tci.template_type}-template-v{self.tci.template_version}.md"
         )

@@ -109,8 +109,7 @@ ceremonial_objects_used:
 
 rendered_by: ChatGPT-4o
 source_medium: chatgpt
-voice_transmission_format: text
-
+voice_transmission_format: "[[prompt:voice tramsmission format such as text]]"
 cover_image: ../Glyphs/Seals/[[prompt:image-name.png]]
 artifact_image_path:
   - ../Glyphs/Public/[[prompt:IMAGE-FILENAME.png]]

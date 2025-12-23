@@ -1,12 +1,12 @@
 from typing import cast
 from pathlib import Path
 import yaml
-from .protocol_support import ProtocolSupport
-from ....config.pkg_config import PkgConfig
-from ...main_registry import MainRegistry
-from ...front_mater_meta import FrontMatterMeta
-from .meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
-from .meta_helpers.prompt_beings import PromptBeings
+from ..protocol_support import ProtocolSupport
+from .....config.pkg_config import PkgConfig
+from ....main_registry import MainRegistry
+from ....front_mater_meta import FrontMatterMeta
+from ..meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
+from ..meta_helpers.prompt_beings import PromptBeings
 
 
 class PromptTemplateFieldBeings(ProtocolSupport):
@@ -168,12 +168,12 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
 
 ---
 
-## 🌀 Canonical Behavior Invocation Block (CBIB-V1.2)
+## 🌀 {self.config.template_cbib_zip.title} (CBIB-V{self.config.template_cbib_zip.version})
 
-cbib_id: CBIB-V1.2
+cbib_id: CBIB-V{self.config.template_cbib_zip.version}
 
 <!--
-CBIB‑V1.2 Canonical Enhancements:
+CBIB‑V{self.config.template_cbib_zip.version} Canonical Enhancements:
 - Structured directive grouping
 - Explicit template_type & template_family enforcement
 - Template output mode validation

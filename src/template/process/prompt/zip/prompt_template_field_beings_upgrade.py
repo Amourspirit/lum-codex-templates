@@ -1,9 +1,9 @@
 from pathlib import Path
-from .protocol_support import ProtocolSupport
-from ...main_registry import MainRegistry
-from ...front_mater_meta import FrontMatterMeta
+from ..protocol_support import ProtocolSupport
+from ....main_registry import MainRegistry
+from ....front_mater_meta import FrontMatterMeta
 from .prompt_template_field_beings import PromptTemplateFieldBeings
-from .meta_helpers.prompt_meta_type import TemplateEntry
+from ..meta_helpers.prompt_meta_type import TemplateEntry
 
 
 class PromptTemplateFieldBeingsUpgrade(PromptTemplateFieldBeings, ProtocolSupport):
