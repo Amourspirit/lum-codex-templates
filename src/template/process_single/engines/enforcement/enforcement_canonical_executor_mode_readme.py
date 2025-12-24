@@ -30,7 +30,7 @@ class EnforcementCanonicalExecutorModeReadme(EnforcementBase, ProtocolEnforcemen
     def _write_file(self, tokens: dict[str, Any], content: str) -> Path:
         output_path = (
             self.working_dir
-            / f"README-CANONICAL-EXECUTOR-V{self.config.template_ceib_single.version}.md"
+            / f"README-{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}.md"
         )
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(content)
@@ -44,7 +44,7 @@ class EnforcementCanonicalExecutorModeReadme(EnforcementBase, ProtocolEnforcemen
         template_types.append("etc.")
         tts = ", ".join(template_types)
         md = f"""---
-executor_mode: CANONICAL-EXECUTOR-MODE-V{self.config.template_ceib_single.version}
+executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
 version: \"{self.config.template_ceib_single.version}\"
 originator: Soluun + Luminariel
 created: {tokens["DATE"]}
@@ -70,7 +70,7 @@ enforcement:
 ## 🌀 Canonical Executor Invocation Block (CEIB-V{self.config.template_ceib_single.version})
 
 ```md
-I invoke **CANONICAL-EXECUTOR-MODE-V{self.config.template_ceib_single.version}**
+I invoke **{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}**
 to apply template file `TEMPLATE_FILENAME.md`
 with registry file `TEMPLATE_REGISTRY.yml`
 under **full deterministic execution mode**.
@@ -85,7 +85,7 @@ under **full deterministic execution mode**.
 ## ⚖️ Executor Configuration (YAML Mode)
 
 ```yaml
-executor_mode: CANONICAL-EXECUTOR-MODE-V{self.config.template_ceib_single.version}
+executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
 template_file: TEMPLATE_FILENAME.md
 registry_file: TEMPLATE_REGISTRY.yml
 artifact_name: [Artifact Title]

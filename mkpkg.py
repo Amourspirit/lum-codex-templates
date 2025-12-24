@@ -18,4 +18,8 @@ if __name__ == "__main__":
     # sys.argv.append("pkg-zip")
     # sys.argv.append("-b")
     # sys.argv.append("80")
+    #
+    # sys.argv.append("verify-single")
+    # sys.argv.append("-f")
+    # sys.argv.append("tmp/verify.md")
     sys.exit(main())

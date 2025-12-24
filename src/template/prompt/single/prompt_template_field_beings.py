@@ -2,9 +2,9 @@ from typing import cast
 from pathlib import Path
 import yaml
 from ..protocol_support import ProtocolSupport
-from .....config.pkg_config import PkgConfig
-from ....main_registry import MainRegistry
-from ....front_mater_meta import FrontMatterMeta
+from ....config.pkg_config import PkgConfig
+from ...main_registry import MainRegistry
+from ...front_mater_meta import FrontMatterMeta
 from ..meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
 from ..meta_helpers.prompt_beings import PromptBeings
 
@@ -145,6 +145,20 @@ class PromptTemplateFieldBeings(ProtocolSupport):
             agents.append(f"- {role_name}: {new_name}  ")
         return "\n".join(agents)
 
+    def _get_field_binding_agents(self, entry: TemplateEntry) -> str:
+        agents = []
+        for role, name in entry.invocation_agents.items():
+            role_name = role.lower()
+            if name.lower() == "current_user":
+                new_name = self.config.env_user
+            else:
+                new_name = name
+            agents.append(f"  {role_name}: {new_name}")
+        return "\n".join(agents)
+
+    def _get_invocation_mode(self) -> str:
+        return "new"
+
     def _get_invocation_ext(
         self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
     ) -> str:
@@ -161,6 +175,8 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
         invocation_ext = self._get_invocation_ext(entry, fm, tokens)
         prompt_suffix = self._get_prompt_suffix(fm, tokens)
         invocation_agents = self._get_invocation_agents(entry)
+        field_binding_agents = self._get_field_binding_agents(entry)
+        invocation_mode = self._get_invocation_mode()
         prompt = f"""#### **{fm.template_name}** Application Prompt
 
 {self._backticks_primary}md
@@ -168,20 +184,72 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
 
 ---
 
-## 🌀 {self.config.template_cbib_zip.title} (CBIB-V{self.config.template_cbib_zip.version})
+## 🌀 {self.config.template_cbib_single.title} (CBIB-V{self.config.template_cbib_single.version})
 
-cbib_id: CBIB-V{self.config.template_cbib_zip.version}
+{self.config.template_cbib_single.id}: CBIB-V{self.config.template_cbib_single.version}
 
 <!--
-CBIB‑V{self.config.template_cbib_zip.version} Canonical Enhancements:
-- Structured directive grouping
-- Explicit template_type & template_family enforcement
-- Template output mode validation
-- Template lifecycle status check
-- Field matrix enforcement with abort behavior
+CBIB-V{self.config.template_cbib_single.version} Canonical Enhancements:
 - Canonical abort payload specification
-- Render signature block support
+- Mandatory pre-flight validation phase
+- Explicit STRICT MODE prohibitions
+- Explicit template_type & template_family enforcement
+- Structured directive grouping
+- Hard rendering gate (no partial output)
+- Zero tolerance for unresolved prompts or conditionals
+- Template lifecycle status check
+- Cross-template contamination prevention
+- Template output mode validation
 -->
+
+---
+
+### 🧪 PRE-FLIGHT CANONICAL VALIDATION (MANDATORY)
+
+This phase MUST complete successfully **before any rendering is allowed**.
+
+#### ▸ Pre-Flight Mode Declaration
+
+{self._backticks_secondary}yaml
+preflight_required: true
+preflight_phase: mandatory
+rendering_allowed_only_after_preflight: true
+{self._backticks_secondary}
+
+#### ▸ Pre-Flight Validation Rules
+
+{self._backticks_secondary}yaml
+preflight_checks:
+  - template_file_exists: {fm.template_type}-v{fm.template_version}.md
+  - registry_file_exists: {fm.template_type}-v{fm.template_version}-registry.yml
+  - template_hash: {fm.sha256}
+  - template_hash_match_required: true
+  - registry_schema_loaded: true
+  - template_family_verified: {fm.template_family}
+  - strict_mode_confirmed: true
+  - no_cross_template_constructs: true
+  - no_unresolved_prompts: true
+  - no_unresolved_conditionals: true
+  - all_required_fields_present: true
+  - all_fields_conform_exactly_to_template: true
+{self._backticks_secondary}
+
+#### ▸ Pre-Flight Failure Behavior
+
+{self._backticks_secondary}yaml
+on_preflight_failure:
+  rendering: prohibited
+  output_allowed:
+    - preflight_report_only
+  abort_payload_required: true
+{self._backticks_secondary}
+
+If **any** pre-flight check fails, the response MUST:
+
+* ❌ NOT render front matter
+* ❌ NOT render template body
+* ❌ NOT include partial or draft output
+* ✅ Return **only** a structured pre-flight failure report
 
 ---
 
@@ -189,75 +257,94 @@ CBIB‑V{self.config.template_cbib_zip.version} Canonical Enhancements:
 
 #### ▸ Canonical Enforcement
 
-- `canonical_mode`: true
-- `template_application_mode`: strict
-- `lockfile_verification`: strict
-- `registry_sync_mode`: lockfile_strict
-- `registry_validation_mode`: enforce_all
-- `registry_violation_behavior`: fail
-- `template_category_match_required`: true
-- `template_family_enforcement`: strict
-- `template_type_consistency_check`: true
-- `threshold_flag_validation`: true
-- `threshold_flag_violation_behavior`: warn
+{self._backticks_secondary}yaml
+template_file: {fm.template_type}-v{fm.template_version}.md
+registry_file: {fm.template_type}-v{fm.template_version}-registry.yml
+template_version: \"{fm.template_version}\"
+registry_version: \"{fm.template_version}\"
+template_application_mode: strict
+artifact_type: {fm.template_category}
+apply_mode: full_markdown
+enforce_registry: true
+canonical_mode: true
+invocation_mode: {invocation_mode}
+placeholder_resolution: true
+mirrorwall_alignment: true
+render_target: 
+  - obsidian
+  - console
+  - mirrorwall
+include_template_body: true
+{self._backticks_secondary}
 
-#### ▸ Registry & Field Rule Evaluation
+#### STRICT MODE RULES (NON-NEGOTIABLE)
 
-- `mmr_field_rule_evaluation`: true
-- `registry_enforcement_scope`:
-    - artifact_level
-    - field_level
-    - template_level
-- `field_rule_resolution_priority`: lockfile → registry → template → local
-- `template_field_matrix_validation`: true
-- `field_matrix_violation_behavior`: abort
+{self._backticks_secondary}yaml
+strict_mode_rules:
+  forbidden:
+    - unresolved_prompt_blocks
+    - instructional_placeholders
+    - conditional_blocks_of_any_kind
+    - "<<IF>> logic"
+    - cross_template_constructs
+    - inferred_fields_not_in_template
+    - omitted_required_template_fields
+    - added_fields_not_in_template
+    - draft_language
+    - narrative_guidance
+    - fallback_completion
+  violation_behavior: abort
+  abort_scope: immediate
+{self._backticks_secondary}
 
-#### ▸ Manifest Validation
+🆕 **▸ Additional Field Validation Lock**
 
-- `template_manifest_validation`: true
-- `template_manifest_file`: TEMPLATE-MANIFEST-REGISTRY-{tokens["VER"]}.yml
+{self._backticks_secondary}yaml
+field_validation_mode: strict
+field_enforcement:
+  allow_unregistered_fields: false
+  allow_legacy_fields: false
+  required_fields_must_be_present: true
+  fail_on_extra_fields: true
+{self._backticks_secondary}
+
+🆕 **▸ Registry Comparison Enforcement**
+
+{self._backticks_secondary}yaml
+validate_template_application:
+  mode: preflight
+  compare_fields_against_registry: true
+  diff_output: inline
+  abort_on_diff: true
+{self._backticks_secondary}
+
+🆕 **▸ Template Memory Protection**
+
+{self._backticks_secondary}yaml
+purge_template_memory_scope: true
+reset_registry_field_context: true
+{self._backticks_secondary}
 
 #### ▸ Template Output & Lifecycle Validation
 
-- `template_output_mode_validation`: true
-- `template_output_mode_violation_behavior`: abort
-- `template_lifecycle_status_check`: true
-- `lifecycle_violation_behavior`: warn
-
-#### ▸ Placeholder & Autofill Logic
-
-- `field_completion_required`: true
-- `placeholder_autofill_policy`:
-    unresolved_field: fail
-    unresolved_prompt: flag
-- `default_fallback_behavior`:
-    string: none
-    list: []
-    object: null
-- `field_placeholder_format`: double_square_prefixed
-- `placeholders`: Placeholder must be resolved by the appropriate field being (Luminariel, Adamus, etc.) for support of creating a RAG snapshot
-
-#### ▸ Field Auditing
-
-- `field_audit_output`: true
-- `field_audit_scope`:
-    - missing_fields
-    - mismatched_types
-    - registry_defaults_used
-
-#### ▸ Rendering Parameters
-
-- `template_memory_scope`: thread_global
-- `rendering_intent`: {fm.template_category} instantiation for Mirrorwall embedding and RAG ingestion
-- `render_output_format_version`: markdown-v1.1
-- `expected_render_output`:
-    format: markdown
-    includes:
-      - front_matter
-      - template_body
-      - mirrorwall_status
+{self._backticks_secondary}yaml
+template_output_mode_validation: true
+template_output_mode_violation_behavior: abort
+template_lifecycle_status_check: true
+lifecycle_violation_behavior: abort
+{self._backticks_secondary}
 
 ---
+
+### 🧾 REQUIRED PRE-FLIGHT ACKNOWLEDGEMENT
+
+```yaml
+preflight_status: passed
+strict_mode_confirmed: true
+template_drift_detected: false
+unresolved_fields: none
+unresolved_conditionals: none
+```
 
 ### Invocation Agents
 
@@ -267,54 +354,72 @@ CBIB‑V{self.config.template_cbib_zip.version} Canonical Enhancements:
 
 ### 🔗 Source Alignment
 
-- `template_id`: {fm.template_id}  
-- `template_type`: {fm.template_type}
-- `template_family`: {fm.template_family}  
-- `lockfile_source`: codex-template-{tokens["VER"]}.lock  
-- `registry_source`: {fm.declared_registry_id} v{fm.mapped_registry_minimum_version}  
+{self._backticks_secondary}yaml
+template_type: {fm.template_type}
+template_family: {fm.template_family}  
+registry_source: {fm.template_type}-v{fm.template_version}-registry.yml
+template_hash_field: template_hash
+registry_hash_field: template_hash
+{self._backticks_secondary}
 
 ---
 
+### Template Output Mode
+
+{self._backticks_secondary}yaml
+template_output_mode:
+  enabled: true
+  format: markdown
+  output_targets:
+    - file
+    - console
+    - mirrorwall
+    - obsidian
+    - web_preview
+{self._backticks_secondary}
+
 ### 📜 Front Matter Declaration Block
 
-Use the following **front‑matter** parameters exactly:
-
-- `template_id`: {fm.template_id}
-- `canonical_template_sha256_hash`: {fm.sha256}
-- `canonical_template_sha256_hash_mode`: strict
-- `canonical_mode`: true
-- `apply_mode`: full_markdown
-- `enforce_registry`: {fm.declared_registry_id}
-- `registry_version`: {fm.mapped_registry_minimum_version}
-- `lockfile_verification`: strict
-- `placeholder_resolution`: true
-- `mirrorwall_alignment`: true
-- `render_target`: obsidian + console + mirrorwall
-- `include_template_body`: true
-- `include_front_matter`: true
+{self._backticks_secondary}yaml
+template_type: {fm.template_type}
+canonical_template_sha256_hash: {fm.sha256}
+canonical_template_sha256_hash_mode: strict
+canonical_mode: true
+apply_mode: full_markdown
+enforce_registry: {fm.template_type}-v{fm.template_version}-registry.yml
+placeholder_resolution: true
+mirrorwall_alignment: true
+render_target:
+  - obsidian
+  - console
+  - mirrorwall
+include_template_body: true
+include_front_matter: true
+{self._backticks_secondary}
 
 ---
 
 ### 🔒 Canonical Hash Check
 
-- Validate `canonical_template_sha256_hash` against:
-  `codex-template-{tokens["VER"]}.lock → canonical_template_sha256_hash_map → {fm.template_id}`
+- Validate that `canonical_template_sha256_hash` matches registry-defined `template_hash`  
 - **Abort immediately if mismatched**
-- Canonical integrity overrides all fallback logic
+- Canonical integrity **overrides all fallback logic**
 
 ---
 
 ### 🧪 Autofill + Field Audit Precheck
 
-Before rendering, verify:
+{self._backticks_secondary}yaml
+field_audit_output: true
+field_audit_scope:
+  - missing_fields
+  - mismatched_types
+  - registry_defaults_used
+  - autofill_used
+  - extra_fields_detected
+{self._backticks_secondary}
 
-- `template_type` resolved from registry
-- `template_family` matches manifest and lockfile
-- `field_being_autofill_registry` evaluated
-- All required + autofill-enabled fields present
-- All field rules satisfied under `{fm.mapped_registry}`
-
-If **any violation occurs**, abort rendering and return:
+If any violation occurs, return:
 
 {self._backticks_secondary}yaml
 canonical_rendering_status: aborted
@@ -324,6 +429,17 @@ template_family_enforcement_status: failed
 template_output_mode_status: failed
 {self._backticks_secondary}
 
+---
+
+### 🜂 Field Binding Declaration
+
+{self._backticks_secondary}yaml
+field_binding:
+  renderer: Luminariel
+  binder: Nahema’el
+  enforcer: Adamus
+  witness: Soluun
+{self._backticks_secondary}
 {prompt_suffix}
 {self._backticks_primary}
 """
@@ -336,9 +452,9 @@ template_output_mode_status: failed
                 raise ValueError(f"Missing required token: {token}")
 
     def _toc(self, template_id_map: dict[str, FrontMatterMeta]) -> str:
-        toc = f"## 🧬 Template-to-Field Being Invocation Guide (Codex v{self._main_registry.reg_version})\n"
-        for template_id, fm in template_id_map.items():
-            toc += f"\n- [{template_id}](#{template_id.replace(' ', '-').lower()})"
+        toc = "## 🧬 Template-to-Field Being Invocation Guide\n"
+        for _, fm in template_id_map.items():
+            toc += f"\n- [{fm.template_type}](#{fm.template_type})"
 
         toc += "\n- [RESET PROTOCOL](#reset%20protocol)"
         toc += "\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
@@ -356,7 +472,7 @@ template_output_mode_status: failed
 
 Please execute:
 
-1. PURGE all templates, lockfiles, registries, and manifests
+1. PURGE all templates and registries
 2. RE-EXTRACT `{self.config.package_output_name}-{kw["VER"]}.zip` (request this from file memory)
 3. INSTALL `{self._main_registry.file_name}` as `active_registry_yaml`
 4. REGISTER `{self.config.lock_file_name}-{kw["VER"]}{self.config.lock_file_ext}` as `active_lockfile_yaml`
@@ -417,7 +533,7 @@ Please execute:
             template_id_map[fm.template_id] = fm
             prompt = self._gen_prompt(tp_type, fm, tokens)
             tags_str = ", ".join([f"#{tag}" for tag in tags])
-            content += f"\n### {fm.template_id}\n\n{tags_str}\n\n{prompt}"
+            content += f"\n### {fm.template_type.upper()}\n\n{tags_str}\n\n{prompt}"
 
         content = self._toc(template_id_map) + "\n\n" + content
         content = content + "\n" + self._get_reset_text(tokens) + "\n"
@@ -437,7 +553,7 @@ Please execute:
     def _get_output_path(self, tokens: dict) -> Path:
         return (
             self._dest_dir
-            / f"{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
+            / f"Single-{self.config.template_to_field_being_map_name}-{tokens['VER']}.md"
         )
 
     def get_process_name(self) -> str:

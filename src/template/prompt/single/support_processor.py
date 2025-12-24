@@ -1,10 +1,12 @@
 import tempfile
 from pathlib import Path
 from ..protocol_support import ProtocolSupport
-from .....config.pkg_config import PkgConfig
+from ....config.pkg_config import PkgConfig
 from .prompt_template_field_beings import PromptTemplateFieldBeings
+from .prompt_template_field_beings2 import PromptTemplateFieldBeings2
 from .prompt_template_field_beings_upgrade import PromptTemplateFieldBeingsUpgrade
-from ....main_registry import MainRegistry
+from .prompt_template_field_beings_upgrade2 import PromptTemplateFieldBeingsUpgrade2
+from ...main_registry import MainRegistry
 
 
 class SupportProcessor:
@@ -142,3 +144,11 @@ class SupportProcessor:
             self._main_registry
         )
         self.register_process(prompt_template_field_beings_upgrade)
+
+        prompt_template_field_beings2 = PromptTemplateFieldBeings2(self._main_registry)
+        self.register_process(prompt_template_field_beings2)
+
+        prompt_template_field_beings_upgrade2 = PromptTemplateFieldBeingsUpgrade2(
+            self._main_registry
+        )
+        self.register_process(prompt_template_field_beings_upgrade2)

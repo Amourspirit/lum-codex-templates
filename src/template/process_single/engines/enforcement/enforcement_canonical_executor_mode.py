@@ -32,7 +32,7 @@ class EnforcementCanonicalExecutorMode(EnforcementBase, ProtocolEnforcement):
     def _write_file(self, tokens: dict[str, Any], content: str) -> Path:
         output_path = (
             self.working_dir
-            / f"CANONICAL-EXECUTOR-V{self.config.template_ceib_single.version}.md"
+            / f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}.md"
         )
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(content)
@@ -46,7 +46,7 @@ class EnforcementCanonicalExecutorMode(EnforcementBase, ProtocolEnforcement):
         template_types.append("etc.")
         tts = ", ".join(template_types)
         md = f"""---
-executor_mode: CANONICAL-EXECUTOR-MODE-V{self.config.template_ceib_single.version}
+executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
 version: \"{self.config.template_ceib_single.version}\"
 originator: Soluun + Luminariel
 created: {tokens["DATE"]}

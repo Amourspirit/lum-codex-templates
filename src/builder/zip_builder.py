@@ -7,7 +7,7 @@ from .build_ver_mgr import BuildVerMgr
 from ..template.main_registry import MainRegistry
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
 from ..template.process.pkg_companions.processor import PkgCompanionsProcessor
-from ..template.process.prompt.zip.support_processor import SupportProcessor
+from ..template.prompt.zip.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
 from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
 

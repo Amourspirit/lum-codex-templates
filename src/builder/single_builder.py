@@ -5,7 +5,7 @@ from .builderbase import BuilderBase
 from .build_ver_mgr import BuildVerMgr
 from ..template.main_registry import MainRegistry
 from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
-from ..template.process.prompt.single.support_processor import SupportProcessor
+from ..template.prompt.single.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
 from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
 from ..template.process_single.engines.registry.template_registry_processor import (
