@@ -50,34 +50,15 @@ class TemplateProcessor:
 
         self._processes.append(process)
 
-    def execute_all(self, tokens: dict) -> dict[str, Path]:
-        """
-        Execute all registered processes and return their result paths.
-        Executes each process registered in self._processes by calling its
-        process(tokens) method and collects the returned Path objects keyed by the
-        process name (as provided by process.get_process_name()).
+    def execute_all(self, tokens: dict) -> dict[str, FrontMatterMeta]:
+        """Execute all registered processes in sequence.
 
         Args:
-            tokens (dict): A mapping of tokens (input data, configuration, or context)
-                that is passed to each process when executed.
+            tokens (dict): A dictionary of tokens to pass to each process during execution.
 
         Returns:
-            dict[str, Path]: A dictionary mapping process names to the Path returned
-            by the corresponding process. The dictionary insertion order follows the
-            iteration order of self._processes.
-
-        Raises:
-            RuntimeError: If no processes are registered to execute (i.e., self._processes
-                is empty), which may indicate cleanup() has been called previously.
-            Exception: Any exception raised by an individual process during execution
-                will propagate to the caller.
-
-        Notes:
-            - Each registered process is invoked once.
-            - If multiple processes return the same process name, later results will
-            overwrite earlier ones in the returned dictionary.
-            - Side effects (file creation, network I/O, etc.) are performed by the
-            individual processes and are not handled by this method.
+            dict: A dictionary of dict[str, FrontMatterMeta] mapping template types to their processed
+                FrontMatterMeta results.
         """
 
         if not self._processes:
@@ -86,9 +67,11 @@ class TemplateProcessor:
             )
         results = {}
         for process in self._processes:
-            result_path = process.process(tokens)
-            results[result_path[0]] = result_path[1]
-            print(f"Processed Template: {result_path[0]} -> {result_path[1].name}")
+            result_fm = process.process(tokens)
+            results[result_fm.template_type] = result_fm
+            print(
+                f"Processed Template: {result_fm.template_type} -> {result_fm.file_path.name}"
+            )
         return results
 
     def unregister_all(self) -> None:

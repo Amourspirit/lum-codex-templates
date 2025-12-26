@@ -58,8 +58,10 @@ class TemplateConfig:
         self.placeholder_autofill_policy = self._validate_entry(
             self._tp_cfg, "placeholder_autofill_policy", dict
         )
-        self._validate_entry(self.placeholder_autofill_policy, "unresolved_field", str)
-        self._validate_entry(self.placeholder_autofill_policy, "unresolved_prompt", str)
+        self._validate_entry(self.placeholder_autofill_policy, "unresolved_field", dict)
+        self._validate_entry(
+            self.placeholder_autofill_policy, "unresolved_prompt", dict
+        )
 
     def _validate_entry(self, config: dict, key: str, expected_type: type) -> Any:
         """

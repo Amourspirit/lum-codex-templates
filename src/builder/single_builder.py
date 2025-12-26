@@ -51,9 +51,6 @@ class SingleBuilder(BuilderBase):
         self._main_registry = MainRegistry(build_version=self._build_version)
 
     def build_package(self):
-        # template_count = 0
-        # template_path_list = []
-        # pcp = None
         current_date = self.batch_date.isoformat()
         meta_reader = ReadObsidianTemplateMeta()
         template_meta = meta_reader.read_template_meta()
@@ -66,25 +63,28 @@ class SingleBuilder(BuilderBase):
                 "declared_registry_version": self._main_registry.reg_version,
                 "mapped_registry": self._main_registry.reg_id,
                 "mapped_registry_minimum_version": self._main_registry.reg_version,
+                "batch_number": str(self._build_version),
             }
         )
         templates_data = {}
-        for key, fm in processed_template_data.items():
+        for _, fm in processed_template_data.items():
             templates_data[fm.template_type] = fm
-        trp = TemplateRegistryProcessor(
-            workspace_dir=self._destination_path,
-            registry=self._main_registry,
-            templates_meta=template_meta,
-            templates_data=templates_data,
-        )
-        trp.execute_all(tokens={})
 
         tp = TemplateProcessor(
             workspace_dir=self._destination_path,
             registry=self._main_registry,
             templates_data=templates_data,
         )
-        tp.execute_all(tokens={})
+        fm_data = tp.execute_all(tokens={})
+
+        trp = TemplateRegistryProcessor(
+            workspace_dir=self._destination_path,
+            registry=self._main_registry,
+            templates_meta=template_meta,
+            templates_data=fm_data,
+        )
+        trp.execute_all(tokens={})
+
         support_processor = SupportProcessor(registry=self._main_registry)
         support_processor.execute_all(
             tokens={
@@ -103,7 +103,7 @@ class SingleBuilder(BuilderBase):
                 "VER": str(self._build_version),
             }
         )
-        template_count = tp.Count
+        # template_count = tp.Count
 
     @property
     def batch_date(self) -> datetime:

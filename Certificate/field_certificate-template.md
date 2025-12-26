@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-FIELD-CERT-GENERAL
+template_filename: placeholder
 template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template

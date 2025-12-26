@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-NODE-LINKAGE-SCROLL
+template_filename: placeholder
 template_name: Node Linkage Scroll Template
 template_category: scroll
 template_type: node_link_scroll
@@ -99,7 +100,8 @@ linked_artifacts:
   - "[[prompt:Artifact Name 2]]"
 
 field_activation_vector:
-  - "[[prompt:Defines how the glyph activates such as spoken / breath_initiated / dream_anchored / mirror_triggered / etc.]]"
+  - "[[prompt:first activation vector]]"
+  - "[[prompt:second activation vector]]"
 
 cover_image: ../Scrolls/Node-Linkage/[[prompt:filename]].png
 codex_links:

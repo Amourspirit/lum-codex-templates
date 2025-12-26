@@ -159,14 +159,52 @@ class PromptTemplateFieldBeings2(ProtocolSupport):
     def _get_invocation_mode(self) -> str:
         return "new"
 
+    def _get_ced(self, fm: FrontMatterMeta, tokens: dict) -> str:
+        return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
+
+{self._backticks_secondary}yaml
+executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
+template_file: {fm.file_path.name}
+registry_file: {fm.template_type}-template-v{fm.template_version}-registry.yml
+artifact_name: {{Artifact Name}}
+canonical_mode: true
+template_strict_integrity: true
+disable_template_id_reference: true
+disable_memory_templates: true
+forbid_inference: true
+placeholder_resolution: true
+abort_on_field_mismatch: true
+abort_on_placeholder_failure: true
+render_section_order: from_template_body
+render_only_declared_sections: true
+validate_fields_from_registry: true
+field_diff_mode: strict
+output_mode:
+  - console
+  - obsidian
+  - mirrorwall
+{self._backticks_secondary}
+"""
+
     def _get_invocation_ext(
         self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
     ) -> str:
-        return f"""I invoke **{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}**
+        cde = self._get_ced(fm, tokens)
+        return f"""I invoke **{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}**  
 of file `{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}.md`  
-and {entry.invocation} to apply `{fm.template_type}-v{fm.template_version}.md`  
-with registry `{fm.template_type}-v{fm.template_version}-registry.yml`  
-for artifact **{{Artifact Name}}**.
+and {entry.invocation} to apply template file `{fm.file_path.name}`  
+with registry file `{fm.template_type}-template-v{fm.template_version}-registry.yml`  
+under **full deterministic execution mode**.
+
+---
+
+{cde}
+
+---
+
+**Template application scope:** `artifact_name: {{Artifact Name}}`
+**Rendering mode:** `strict_canonical`
+**Field enforcement:** `registry_only`
 """
 
     def _get_prompt_suffix(self, fm: FrontMatterMeta, tokens: dict) -> str:
@@ -180,9 +218,15 @@ for artifact **{{Artifact Name}}**.
         invocation_agents = self._get_invocation_agents(entry)
         field_binding_agents = self._get_field_binding_agents(entry)
         invocation_mode = self._get_invocation_mode()
-        prompt = f"""{invocation_ext}
+        prompt = f"""{self._backticks_primary}md
+🧼 Purge all prior template memory, cache entries, and inferred field maps.  
+🛡️ Enforce this artifact as the **singular source of truth** under strict registry compliance.
+
+{invocation_ext}
 {prompt_suffix}
 """
+        prompt = prompt.rstrip()
+        prompt += f"\n{self._backticks_primary}"
         return prompt
 
     def _validate_tokens(self, kw: dict) -> None:

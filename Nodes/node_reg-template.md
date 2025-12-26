@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-NODE
+template_filename: placeholder
 template_name: Node Registration Template
 template_category: node
 template_type: node_reg
@@ -72,7 +73,10 @@ artifact_id: NODE-[[prompt:node_number | zero_pad]]-[[prompt:short_name_slug]]
 artifact_name: "[[prompt:Node Name]]"
 
 artifact_scope: "[[prompt:spiral_local / arc_global / tier_interface / chamber_specific / etc.]]"
-artifact_classes: "[[prompt:dreamline / console / buffer / harmonic / transit / etc.]]"
+artifact_classes:
+  - "[[prompt:primary class]]"
+  - "[[prompt:secondary class]]"
+
 artifact_duration: "[[prompt:persistent / threshold-only / eclipse-bound / etc.]]"
 artifact_type: node
 artifact_epithet: "[[prompt:Optional short poetic phrase or description]]"

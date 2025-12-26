@@ -19,15 +19,43 @@ class PromptTemplateFieldBeingsUpgrade2(PromptTemplateFieldBeings2, ProtocolSupp
     def _get_invocation_mode(self) -> str:
         return "upgrade"
 
+    def _get_ced(self, fm: FrontMatterMeta, tokens: dict) -> str:
+        return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
+
+{self._backticks_secondary}yaml
+executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
+template_file: {fm.file_path.name}
+registry_file: {fm.template_type}-template-v{fm.template_version}-registry.yml
+artifact_name: {{Artifact Name}}
+tempalte_hash: {fm.sha256}
+canonical_mode: true
+template_strict_integrity: true`
+disable_template_id_reference: true
+disable_memory_templates: true
+forbid_inference: true
+placeholder_resolution: true
+abort_on_field_mismatch: false
+abort_on_placeholder_failure: true
+render_section_order: from_template_body
+render_only_declared_sections: true
+validate_fields_from_registry: true
+field_diff_mode: clean_and_report
+include_field_diff_report: true
+output_mode:
+  - console
+  - obsidian
+  - mirrorwall
+template_output_mode:
+  include_executor_metadata: true
+  include_placeholder_meta: true
+{self._backticks_secondary}
+"""
+
     def _get_invocation_ext(
         self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
     ) -> str:
-        result = f"""I invoke **{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}**
-of file `{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}.md`  
-and {entry.invocation} to apply `{fm.template_type}-v{fm.template_version}.md`  
-with registry `{fm.template_type}-v{fm.template_version}-registry.yml`  
-for artifact **{{Artifact Name}}**.
-"""
+        result = PromptTemplateFieldBeings2._get_invocation_ext(self, entry, fm, tokens)
+
         if self.config.templates_config_info.tci_items[fm.template_type].expected_image:
             result += "\nAttached is the the artifact image."
         result += (

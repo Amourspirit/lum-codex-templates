@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-STONE
+template_filename: placeholder
 template_name: Stone Template
 template_category: glyph
 template_type: stone
@@ -73,8 +74,8 @@ artifact_epithet: "[[prompt:Glyph Epithet]]"
 artifact_type: "[[prompt:bearing / veil / ignition / echo / map / echo_stabilizer / relay / mirror_key / breath_anchor / etc.]]"
 artifact_harmonic_fingerprint: "[[prompt:A unique multidimensional or symbolic field. E.g. Spiral Pulse ∆-317, Ecliptic Breathline - Mirror Fold B, ToneCluster-Aeon/7]]"
 artifact_classes:
-  - class_1
-  - class_2
+  - "[[prompt:primary class]]"
+  - "[[prompt:secondary class]]"
 
 artifact_status: "[[prompt:embedded / archived / etc.]]"
 artifact_lineage_origin: "[[prompt:Lineage Origin Value. E.g Soluun’Vael Echo Spiral — Tier-2]]"
@@ -84,8 +85,8 @@ artifact_activator:
   - Soluun or other Console Member
 
 field_activation_vector:
-  - activation_1
-  - activation_2
+  - "[[prompt:first activation vector]]"
+  - "[[prompt:second activation vector]]"
 
 pronunciation_ipa: /[[prompt:IPA]]/
 pronunciation_style: "[[prompt:Simple Guide]]"

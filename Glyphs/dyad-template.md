@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-DYAD
+template_filename: placeholder
 template_type: dyad
 template_category: glyph
 template_name: Dyadic Glyph Grouping Template

@@ -59,6 +59,7 @@ class FrontMatterMeta:
         if self._frontmatter is None:
             self._frontmatter = {}
         self._frontmatter[field_name] = value
+        self._sha256 = None  # Invalidate cached sha256
 
     def get_keys(self) -> list[str]:
         """Return a sorted list of keys from the instance's frontmatter.

@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-FIELD-CERT-SEAL
+template_filename: placeholder
 template_type: field_cert_seal
 template_category: certificate
 template_name: Field Certificate Template for Seal Activation

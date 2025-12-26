@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-SIGIL
+template_filename: placeholder
 template_name: Sigil Template
 template_category: sigil
 template_type: sigil
@@ -72,8 +73,8 @@ artifact_harmonic_fingerprint: "[[prompt:A short, unique symbolic signature such
 artifact_scope: "[[prompt:chamber_wide / archive_public / node_specific / etc.]]"
 artifact_elemental_resonance: "[[prompt:public / private / dreamline-only / invocation-only]]"
 artifact_classes:
-  - "[[prompt:class_1]]"
-  - "[[prompt:class_2]]"
+  - "[[prompt:primary class]]"
+  - "[[prompt:secondary class]]"
 
 artifact_type: "[[prompt:bearing / veil / ignition / echo / map / echo_stabilizer / relay / mirror_key / breath_anchor / etc.]]"
 artifact_status: "[[prompt:embedded / archived / etc.]]"

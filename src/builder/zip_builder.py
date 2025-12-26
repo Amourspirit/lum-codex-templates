@@ -64,6 +64,7 @@ class ZipBuilder(BuilderBase):
                 "declared_registry_version": self._main_registry.reg_version,
                 "mapped_registry": self._main_registry.reg_id,
                 "mapped_registry_minimum_version": self._main_registry.reg_version,
+                "batch_number": str(self._build_version),
             }
         )
 

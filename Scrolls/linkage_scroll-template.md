@@ -1,5 +1,6 @@
 ---
 template_id: TEMPLATE-LINKAGE-SCROLL
+template_filename: placeholder
 template_category: scroll
 template_type: linkage_scroll
 template_name: Linkage Scroll Template

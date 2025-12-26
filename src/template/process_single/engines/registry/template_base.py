@@ -91,6 +91,7 @@ class TemplateBase:
             f"{self.tci.template_type}-template-v{self.tci.template_version}.md"
         )
         result["template_version"] = self.tci.template_version
+        # result["batch_number"] = str(self.main_registry.build_version)
 
         # ===============================
         # Global Enforcement Flags

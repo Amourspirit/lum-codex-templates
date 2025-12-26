@@ -14,8 +14,22 @@ class ProcessObsidianTemplates:
         self._tmp_dir = tempfile.TemporaryDirectory()
         self._tmp_path = Path(self._tmp_dir.name)
 
+    def _validate_tokens(self, kw: dict) -> None:
+        required_tokens = set(
+            [
+                "batch_number",
+                "declared_registry_id",
+                "declared_registry_version",
+                "mapped_registry_minimum_version",
+                "mapped_registry",
+            ]
+        )
+        for token in required_tokens:
+            if token not in kw:
+                raise ValueError(f"Missing required token: {token}")
+
     def _process_templates(
-        self, tmp_dir: Path, key_values: dict[str, Any]
+        self, tmp_dir: Path, tokens: dict[str, Any]
     ) -> list[FrontMatterMeta]:
         processed_templates = []
         for dir_name in self.config.template_dirs:
@@ -34,7 +48,7 @@ class ProcessObsidianTemplates:
                     )
                     if not fm.has_field("template_id"):
                         continue
-                    for key, value in key_values.items():
+                    for key, value in tokens.items():
                         fm.set_field(key, value)
                     info = self.config.templates_config_info.tci_items.get(
                         fm.template_type, None
@@ -48,14 +62,15 @@ class ProcessObsidianTemplates:
                         f"{file_path.stem}-v{info.template_version}{file_path.suffix}"
                     )
                     new_file_path = tmp_dir / new_file_name
-                    fm.frontmatter["template_id"] = (
-                        f"{info.template_id}-V{info.template_version}"
+                    fm.set_field(
+                        "template_id", (f"{info.template_id}-V{info.template_version}")
                     )
-                    fm.frontmatter["template_name"] = info.template_name
-                    fm.frontmatter["template_category"] = info.template_category
-                    fm.frontmatter["template_version"] = info.template_version
-                    fm.frontmatter["template_family"] = info.template_family
-                    fm.frontmatter["template_type"] = info.template_type
+                    fm.set_field("template_name", info.template_name)
+                    fm.set_field("template_category", info.template_category)
+                    fm.set_field("template_version", info.template_version)
+                    fm.set_field("template_family", info.template_family)
+                    fm.set_field("template_type", info.template_type)
+                    fm.set_field("template_filename", new_file_name)
 
                     self.config.template_config.update_yaml_dict(fm.frontmatter)
                     self._add_template_fields_declared(fm)
@@ -100,17 +115,16 @@ class ProcessObsidianTemplates:
 
         template.frontmatter["template_fields_declared"] = fields
 
-    def process(self, key_values: dict[str, Any]) -> dict[str, FrontMatterMeta]:
+    def process(self, tokens: dict[str, Any]) -> dict[str, FrontMatterMeta]:
         """Process templates by updating their frontmatter with the provided key-values.
 
         Args:
-            key_values (dict[str, Any]): A dictionary of key-value pairs to update in the frontmatter.
-
+            tokens (dict[str, Any]): A dictionary of key-value pairs to update in the frontmatter.
         Returns:
             dict: Dictionary of file hash values as key and FrontMatterMeta a value
         """
-
-        fms = self._process_templates(self._tmp_path, key_values)
+        self._validate_tokens(tokens)
+        fms = self._process_templates(self._tmp_path, tokens)
         results: dict[str, FrontMatterMeta] = {}
         for fm in fms:
             results[fm.sha256] = fm

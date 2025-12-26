@@ -25,8 +25,9 @@ class TemplateSeal(TemplateBase, ProtocolTemplate):
         # Placeholder for token validation logic
         pass
 
-    def process(self, tokens: dict[str, Any]) -> tuple[str, Path]:
+    def process(self, tokens: dict[str, Any]) -> FrontMatterMeta:
         self._validate_tokens(tokens)
         self._process_common(tokens)
+        self.fm.recompute_sha256()
         p = self._write_file()
-        return self.fm.template_type, p
+        return self.fm
