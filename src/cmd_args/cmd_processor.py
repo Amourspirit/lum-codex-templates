@@ -3,7 +3,8 @@ from typing import cast
 from .protocol_subparser import ProtocolSubparser
 from .rule_pkg_zip import RulePkgZip
 from .rule_single_template import RuleSingleTemplate
-from .rule_verify_single import RuleVerifySingle
+from .rule_single_verify import RuleSingleVerify
+from .rule_single_upgrade import RuleSingleUpgrade
 from ..config.pkg_config import PkgConfig
 
 
@@ -93,8 +94,11 @@ class CmdProcessor:
         single_template = RuleSingleTemplate(self._cmd_sub_parser)
         self.register_process(single_template)
 
-        verify_single = RuleVerifySingle(self._cmd_sub_parser)
+        verify_single = RuleSingleVerify(self._cmd_sub_parser)
         self.register_process(verify_single)
+
+        upgrade_single = RuleSingleUpgrade(self._cmd_sub_parser)
+        self.register_process(upgrade_single)
 
     def process(self) -> int:
         """Process CLI arguments and dispatch to the first matching registered process.

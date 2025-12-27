@@ -4,13 +4,14 @@ __pycache__/
 build/
 dist/
 wheels/
-tmp/
-temp/
 *.egg-info
 
 # Virtual environments
 .venv
 
 # project specific
+tmp/
+temp/
+reports/
 .mkpkg_last
 .python-version

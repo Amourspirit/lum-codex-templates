@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "9.3.0"
+version = "9.4.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -28,6 +28,8 @@ readme_src="Assets/pkg_readme.md"
 reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
+reports_dir="reports"
+upgrade_dir="upgraded"
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
 template_field_being_map_src = "Metadata/template_field_being_map.yml"
 template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"

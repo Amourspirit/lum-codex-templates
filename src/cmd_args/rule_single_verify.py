@@ -1,12 +1,11 @@
 import argparse
 from pathlib import Path
-from xml.etree.ElementInclude import include
 from .sub_parser_base import SubParserBase
 from .sub_parser_args import SubParserArgs
 from .protocol_subparser import ProtocolSubparser
 
 
-class RuleVerifySingle(SubParserBase, ProtocolSubparser):
+class RuleSingleVerify(SubParserBase, ProtocolSubparser):
     def __init__(
         self, cmd_sub_parser: argparse._SubParsersAction[argparse.ArgumentParser]
     ):

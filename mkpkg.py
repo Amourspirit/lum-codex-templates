@@ -23,4 +23,8 @@ if __name__ == "__main__":
     # sys.argv.append("-f")
     # sys.argv.append("tmp/verify.md")
     # sys.argv.append("-m")
+    #
+    # sys.argv.append("upgrade-single")
+    # sys.argv.append("-f")
+    # sys.argv.append("tmp/upgrade.md")
     sys.exit(main())

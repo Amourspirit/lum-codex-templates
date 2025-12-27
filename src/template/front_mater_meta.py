@@ -14,6 +14,34 @@ class FrontMatterMeta:
         if self._frontmatter is None:
             self._frontmatter = {}
 
+    def __copy__(self) -> "FrontMatterMeta":
+        """Create a shallow copy of the FrontMatterMeta instance.
+
+        Returns:
+            FrontMatterMeta: A new instance of FrontMatterMeta with the same
+            frontmatter and content as the original.
+        """
+        new_instance = FrontMatterMeta.__new__(FrontMatterMeta)
+        new_instance.file_path = self.file_path
+        if self._frontmatter is None:
+            new_instance._frontmatter = {}
+        else:
+            new_instance._frontmatter = self._frontmatter.copy()
+
+        new_instance._content = self._content
+        new_instance.config = self.config
+        new_instance._sha256 = self._sha256
+        return new_instance
+
+    def copy(self) -> "FrontMatterMeta":
+        """Create a shallow copy of the FrontMatterMeta instance.
+
+        Returns:
+            FrontMatterMeta: A new instance of FrontMatterMeta with the same
+            frontmatter and content as the original.
+        """
+        return self.__copy__()
+
     def get_field(self, field_name: str, default: Any = None) -> Any:
         """Retrieve a value from the object's frontmatter mapping.
 
@@ -60,6 +88,16 @@ class FrontMatterMeta:
             self._frontmatter = {}
         self._frontmatter[field_name] = value
         self._sha256 = None  # Invalidate cached sha256
+
+    def remove_field(self, field_name: str) -> None:
+        """Remove a key from the instance's frontmatter mapping if it exists.
+
+        Args:
+            field_name (str): The key to remove from `self.frontmatter`.
+        """
+        if self._frontmatter and field_name in self._frontmatter:
+            del self._frontmatter[field_name]
+            self._sha256 = None  # Invalidate cached sha256
 
     def get_keys(self) -> list[str]:
         """Return a sorted list of keys from the instance's frontmatter.

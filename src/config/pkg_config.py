@@ -73,6 +73,9 @@ class PkgConfig(metaclass=SingletonMeta):
         self._strict_field_mode = cast(
             bool, self._cfg["tool"]["project"]["config"]["strict_field_mode"]
         )
+        self._reports_dir = cast(
+            str, self._cfg["tool"]["project"]["config"]["reports_dir"]
+        )
         self._strict_hash_mode = cast(
             bool, self._cfg["tool"]["project"]["config"]["strict_hash_mode"]
         )
@@ -114,6 +117,11 @@ class PkgConfig(metaclass=SingletonMeta):
         )
         self._version = cast(str, self._cfg["project"]["version"])
         # endregion read config values
+
+        self._upgrade_dir = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["upgrade_dir"],
+        )
 
         self._validate_config()
 
@@ -275,6 +283,9 @@ class PkgConfig(metaclass=SingletonMeta):
             assert reg_path.exists(), f"reg_file does not exist: {reg_path}"
         else:
             raise ValueError("reg_file cannot be empty")
+        assert isinstance(self._reports_dir, str), "reports_dir must be a string"
+        if not self._reports_dir:
+            raise ValueError("reports_dir cannot be empty")
         assert isinstance(self._strict_field_mode, bool), (
             "strict_field_mode must be a boolean"
         )
@@ -350,6 +361,10 @@ class PkgConfig(metaclass=SingletonMeta):
         assert isinstance(self._version, str), "version must be a string"
         if not self._version:
             raise ValueError("version cannot be empty")
+
+        assert isinstance(self._upgrade_dir, str), "upgrade_dir must be a string"
+        if not self._upgrade_dir:
+            raise ValueError("upgrade_dir cannot be empty")
 
     def _get_env_user(self) -> str:
         result = ""
@@ -601,6 +616,19 @@ class PkgConfig(metaclass=SingletonMeta):
         return self._reg_file_name
 
     @property
+    def reports_dir(self) -> str:
+        """
+        Return the cached reports directory string, loading it from configuration on first access.
+        If self._reports_dir is already set, that value is returned. Otherwise the method
+        retrieves the value at self._cfg["tool"]["project"]["reports_dir"], casts it to str, stores it
+        in self._reports_dir for future calls, and returns it.
+
+        Returns:
+            str: The reports directory value.
+        """
+        return self._reports_dir
+
+    @property
     def strict_field_mode(self) -> bool:
         """
         Return the cached strict field mode boolean, loading it from configuration on first access.
@@ -746,5 +774,15 @@ class PkgConfig(metaclass=SingletonMeta):
             str: The version value.
         """
         return self._version
+
+    @property
+    def upgrade_dir(self) -> str:
+        """
+        Gets the upgrade directory.
+
+        Returns:
+            str: The upgrade directory.
+        """
+        return self._upgrade_dir
 
     # endregion Properties

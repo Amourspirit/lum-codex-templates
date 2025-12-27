@@ -1,5 +1,4 @@
 from typing import Any
-import yaml
 from ...template.process.read_obsidian_template_meta import (
     ReadObsidianTemplateMeta,
 )
