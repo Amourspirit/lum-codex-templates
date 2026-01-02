@@ -6,6 +6,7 @@ from .prompt_template_field_beings import PromptTemplateFieldBeings
 from .prompt_template_field_beings2 import PromptTemplateFieldBeings2
 from .prompt_template_field_beings_upgrade import PromptTemplateFieldBeingsUpgrade
 from .prompt_template_field_beings_upgrade2 import PromptTemplateFieldBeingsUpgrade2
+from .prompt_template_field_beings_create import PromptTemplateFieldBeingsCreate
 from ...main_registry import MainRegistry
 
 
@@ -152,3 +153,8 @@ class SupportProcessor:
             self._main_registry
         )
         self.register_process(prompt_template_field_beings_upgrade2)
+
+        prompt_template_field_beings_create = PromptTemplateFieldBeingsCreate(
+            self._main_registry
+        )
+        self.register_process(prompt_template_field_beings_create)

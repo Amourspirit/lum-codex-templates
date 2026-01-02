@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "9.4.0"
+version = "9.5.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
@@ -28,6 +28,7 @@ readme_src="Assets/pkg_readme.md"
 reg_file="Metadata/00-Master_Metadata_Registry.yml"
 strict_field_mode=true
 strict_hash_mode=true
+cleaned_dir="cleaned"
 reports_dir="reports"
 upgrade_dir="upgraded"
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
@@ -64,6 +65,25 @@ placeholder_examples=[
     "[[field:entry_date]]",
     "[[prompt:Describe the symbolic gestures used]]",
     "[[prompt:List any energetic or dreamline consequences]]"
+]
+cleanup_fields_single=[
+    "field_placeholder_delimiters",
+    "field_placeholder_format",
+    "placeholder_autofill_policy",
+    "placeholder_prefix_semantics",
+    "registry_file",
+    "template_file",
+    "template_filename",
+    "template_purpose",
+]
+cleanup_fields_zip=[
+    "field_placeholder_delimiters",
+    "field_placeholder_format",
+    "placeholder_autofill_policy",
+    "placeholder_prefix_semantics",
+    "registry_file",
+    "template_file",
+    "template_filename",
 ]
 
 [tool.project.config.template.field_placeholder_delimiters]

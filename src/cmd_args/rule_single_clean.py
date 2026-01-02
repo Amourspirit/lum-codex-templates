@@ -5,13 +5,13 @@ from .sub_parser_args import SubParserArgs
 from .protocol_subparser import ProtocolSubparser
 
 
-class RuleSingleUpgrade(SubParserBase, ProtocolSubparser):
+class RuleSingleClean(SubParserBase, ProtocolSubparser):
     def __init__(
         self, cmd_sub_parser: argparse._SubParsersAction[argparse.ArgumentParser]
     ):
         self._cmd_sub_parser = cmd_sub_parser
 
-        self._cmd = "upgrade-single"
+        self._cmd = "clean-single"
         self._sub_parser = self._cmd_sub_parser.add_parser(
             name=self._cmd, help="Upgrade templates as single template files."
         )
@@ -25,16 +25,25 @@ class RuleSingleUpgrade(SubParserBase, ProtocolSubparser):
             "-f",
             "--file",
             type=str,
-            help="Path to the single template file to verify.",
+            help="Path to the single template file to clean.",
             required=True,
             dest="file",
+        )
+        self._sub_parser.add_argument(
+            "-n",
+            "--name",
+            type=str,
+            help="The Save Name to use for the cleaned template file.",
+            dest="name",
+            required=False,
+            default="",
         )
 
     def is_match(self, command: str) -> bool:
         return command == self._cmd
 
     def action(self, args: argparse.Namespace) -> int:
-        from ..template.single.upgrade.upgrade_to_current import UpgradeToCurrent
+        from ..template.single.clean.cleanup import Cleanup
 
         try:
             file = args.file
@@ -45,8 +54,8 @@ class RuleSingleUpgrade(SubParserBase, ProtocolSubparser):
             if not file_path.exists():
                 print(f"File not found: {file_path}")
                 return 1
-            upgrade = UpgradeToCurrent()
-            upgrade.upgrade(file_path)
+            cleanup = Cleanup()
+            cleanup.clean(file_path, args.name)
 
         except Exception as e:
             print(f"Error during verification: {e}")

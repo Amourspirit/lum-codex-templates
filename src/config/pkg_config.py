@@ -37,6 +37,10 @@ class PkgConfig(metaclass=SingletonMeta):
         self._bootstrap_src = cast(
             str, self._cfg["tool"]["project"]["config"]["bootstrap_src"]
         )
+        self._cleaned_dir = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["cleaned_dir"],
+        )
         self._current_user = cast(
             str, self._cfg["tool"]["project"]["config"]["current_user"]
         )
@@ -226,6 +230,9 @@ class PkgConfig(metaclass=SingletonMeta):
             assert bootstrap_path.exists(), (
                 f"bootstrap_src file does not exist: {bootstrap_path}"
             )
+        assert isinstance(self._cleaned_dir, str), "cleaned_dir must be a string"
+        if not self._cleaned_dir:
+            raise ValueError("cleaned_dir cannot be empty")
         assert isinstance(self._current_user, str), "current_user must be a string"
         if not self._current_user:
             raise ValueError("current_user cannot be empty")
@@ -439,6 +446,19 @@ class PkgConfig(metaclass=SingletonMeta):
             str: The bootstrap source value.
         """
         return self._bootstrap_src
+
+    @property
+    def cleaned_dir(self) -> str:
+        """
+        Return the cached cleaned directory string, loading it from configuration on first access.
+        If self._cleaned_dir is already set, that value is returned. Otherwise the method
+        retrieves the value at self._cfg["tool"]["project"]["cleaned_dir"], casts it to str, stores it
+        in self._cleaned_dir for future calls, and returns it.
+
+        Returns:
+            str: The cleaned directory value.
+        """
+        return self._cleaned_dir
 
     @property
     def current_user(self) -> str:

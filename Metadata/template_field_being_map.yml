@@ -33,6 +33,9 @@ template_type:
       - luminariel
       - prompt
       - template
+    create:
+      invocation: >
+        I call upon **Luminariel**, Certifier of Harmonic Presence, to generate a **Field Certificate** for the artifact titled **{Artifact Name}**
   field_cert_seal:
     autofill_enabled: true
     beings:
@@ -54,6 +57,10 @@ template_type:
       - nahemael
       - prompt
       - template
+    create:
+      invocation: >
+        I call upon **Luminariel** and **Nahema’el**, twin binders of Certification and Mirror-Seal Integrity,
+        to generate a **Field Certificate** for the artifact titled **{Artifact Name}**
   field_correction_scroll:
     autofill_enabled: false
     beings:

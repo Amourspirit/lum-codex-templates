@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 from pathlib import Path
 import yaml
 from ..protocol_support import ProtocolSupport
@@ -169,14 +169,57 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
     def _get_prompt_suffix(self, fm: FrontMatterMeta, tokens: dict) -> str:
         return ""
 
+    def _get_ced(self, fm: FrontMatterMeta, tokens: dict) -> dict[str, Any]:
+        # return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
+        result: dict[str, Any] = {"title": "#### ▸ Canonical Enforcement"}
+        result["data"] = {
+            # "executor_mode": f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}",
+            "template_file": f"{fm.file_path.name}",
+            "registry_file": f"{fm.template_type}-template-v{fm.template_version}-registry.yml",
+            "template_version": f"{fm.template_version}",
+            "registry_version": f"{fm.template_version}",
+            "template_application_mode": "strict",
+            "artifact_type": f"{fm.template_category}",
+            "apply_mode": "full_markdown",
+            "enforce_registry": True,
+            "artifact_name": "{Artifact Name}",
+            "canonical_mode": True,
+            "invocation_mode": self._get_invocation_mode(),
+            "template_type": f"{fm.template_type}",
+            "template_strict_integrity": True,
+            "disable_template_id_reference": True,
+            "disable_memory_templates": True,
+            "forbid_inference": True,
+            "placeholder_resolution": True,
+            "abort_on_field_mismatch": True,
+            "abort_on_placeholder_failure": True,
+            "render_section_order": "from_template_body",
+            "render_only_declared_sections": True,
+            "validate_fields_from_registry": True,
+            "field_diff_mode": "strict",
+            "include_field_diff_report": True,
+            "include_template_body": True,
+            "template_output_mode": {
+                "include_template_metadata": True,
+                "outputs": ["file", "console", "mirrorwall", "obsidian", "web_preview"],
+                "format": "markdown",
+            },
+        }
+        return result
+
     def _gen_prompt(
         self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
     ) -> str:
         invocation_ext = self._get_invocation_ext(entry, fm, tokens)
         prompt_suffix = self._get_prompt_suffix(fm, tokens)
         invocation_agents = self._get_invocation_agents(entry)
-        field_binding_agents = self._get_field_binding_agents(entry)
-        invocation_mode = self._get_invocation_mode()
+        # field_binding_agents = self._get_field_binding_agents(entry)
+        # invocation_mode = self._get_invocation_mode()
+        cde = self._get_ced(fm, tokens)
+        cid_title = cde["title"]
+        cid_data = cde["data"]
+        # convert cid_data to yaml block
+        cid_yaml = yaml.dump(cid_data, sort_keys=False)
         prompt = f"""#### **{fm.template_name}** Application Prompt
 
 {self._backticks_primary}md
@@ -255,26 +298,10 @@ If **any** pre-flight check fails, the response MUST:
 
 ### 🧭 Behavioral Directives
 
-#### ▸ Canonical Enforcement
+{cid_title}
 
 {self._backticks_secondary}yaml
-template_file: {fm.template_type}-v{fm.template_version}.md
-registry_file: {fm.template_type}-v{fm.template_version}-registry.yml
-template_version: \"{fm.template_version}\"
-registry_version: \"{fm.template_version}\"
-template_application_mode: strict
-artifact_type: {fm.template_category}
-apply_mode: full_markdown
-enforce_registry: true
-canonical_mode: true
-invocation_mode: {invocation_mode}
-placeholder_resolution: true
-mirrorwall_alignment: true
-render_target: 
-  - obsidian
-  - console
-  - mirrorwall
-include_template_body: true
+{cid_yaml}
 {self._backticks_secondary}
 
 #### STRICT MODE RULES (NON-NEGOTIABLE)

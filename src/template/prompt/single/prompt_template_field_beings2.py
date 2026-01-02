@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 from pathlib import Path
 import yaml
 from ..protocol_support import ProtocolSupport
@@ -28,6 +28,33 @@ class PromptTemplateFieldBeings2(ProtocolSupport):
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
         prompt_beings = PromptBeings.from_yaml(tfbm_path)
         return prompt_beings
+
+    def _insert_at(self, d: dict, key, value, index: int) -> dict:
+        """
+        Inserts a key-value pair into a dictionary at a specified index, removing any existing entry for the key.
+        This method creates a new dictionary with the key-value pair inserted at the given index. If the key already exists,
+        it is removed from its current position before insertion. Negative indices are supported and count from the end of the dictionary.
+        If the index is out of bounds, it is clamped to the valid range.
+
+        Args:
+          d (dict): The original dictionary to insert into.
+          key: The key to insert. Can be of any hashable type.
+          value: The value associated with the key. Can be of any type.
+          index (int): The position to insert the key-value pair. Supports negative indexing.
+
+        Returns:
+            dict: A new dictionary with the key-value pair inserted at the specified index.
+        """
+
+        items = list(d.items())
+        # remove existing key if present
+        items = [(k, v) for (k, v) in items if k != key]
+        if index < 0:
+            index = max(0, len(items) + 1 + index)
+        if index > len(items):
+            index = len(items)
+        items.insert(index, (key, value))
+        return dict(items)
 
     def _map(self, tokens: dict) -> dict[str, Path]:
         """
@@ -159,37 +186,54 @@ class PromptTemplateFieldBeings2(ProtocolSupport):
     def _get_invocation_mode(self) -> str:
         return "new"
 
-    def _get_ced(self, fm: FrontMatterMeta, tokens: dict) -> str:
-        return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
-
-{self._backticks_secondary}yaml
-executor_mode: {self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}
-template_file: {fm.file_path.name}
-registry_file: {fm.template_type}-template-v{fm.template_version}-registry.yml
-artifact_name: {{Artifact Name}}
-canonical_mode: true
-template_strict_integrity: true
-disable_template_id_reference: true
-disable_memory_templates: true
-forbid_inference: true
-placeholder_resolution: true
-abort_on_field_mismatch: true
-abort_on_placeholder_failure: true
-render_section_order: from_template_body
-render_only_declared_sections: true
-validate_fields_from_registry: true
-field_diff_mode: strict
-output_mode:
-  - console
-  - obsidian
-  - mirrorwall
-{self._backticks_secondary}
-"""
+    def _get_ced(
+        self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
+    ) -> dict[str, Any]:
+        # return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
+        result: dict[str, Any] = {
+            "title": f"## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})"
+        }
+        result["data"] = {
+            "executor_mode": f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}",
+            "template_file": f"{fm.file_path.name}",
+            "registry_file": f"{fm.template_type}-template-v{fm.template_version}-registry.yml",
+            "artifact_name": "{Artifact Name}",
+            "canonical_mode": True,
+            "template_type": f"{fm.template_type}",
+            "template_strict_integrity": True,
+            "disable_template_id_reference": True,
+            "disable_memory_templates": True,
+            "forbid_inference": True,
+            "placeholder_resolution": True,
+            "abort_on_field_mismatch": True,
+            "abort_on_placeholder_failure": True,
+            "render_section_order": "from_template_body",
+            "render_only_declared_sections": True,
+            "validate_fields_from_registry": True,
+            "field_diff_mode": "strict",
+            "include_field_diff_report": True,
+            "placeholder_autofill_policy": {
+                "unresolved_fields": {
+                    "autofill": True,
+                    "autofill_beings": entry.beings,
+                },
+            },
+            "template_output_mode": {
+                "include_template_metadata": True,
+                "outputs": ["file", "console", "mirrorwall", "obsidian", "web_preview"],
+                "format": "markdown",
+            },
+        }
+        return result
 
     def _get_invocation_ext(
         self, entry: TemplateEntry, fm: FrontMatterMeta, tokens: dict
     ) -> str:
-        cde = self._get_ced(fm, tokens)
+        cde = self._get_ced(entry, fm, tokens)
+        cid_title = cde["title"]
+        cid_data = cde["data"]
+        # convert cid_data to yaml block
+        cid_yaml = yaml.dump(cid_data, sort_keys=False)
         return f"""I invoke **{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}**  
 of file `{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}.md`  
 and {entry.invocation} to apply template file `{fm.file_path.name}`  
@@ -198,7 +242,11 @@ under **full deterministic execution mode**.
 
 ---
 
-{cde}
+{cid_title}
+
+{self._backticks_secondary}yaml
+{cid_yaml}
+{self._backticks_secondary}
 
 ---
 
@@ -240,7 +288,7 @@ under **full deterministic execution mode**.
         for _, fm in template_id_map.items():
             toc += f"\n- [{fm.template_type}](#{fm.template_type})"
 
-        toc += "\n- [RESET PROTOCOL](#reset%20protocol)"
+        # toc += "\n- [RESET PROTOCOL](#reset%20protocol)"
         toc += "\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
         # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
         return toc
@@ -249,23 +297,8 @@ under **full deterministic execution mode**.
         return "## RESET PROTOCOL\n\n### 🌀 Codex Bootstrap Declaration — Reinforced Re-Initialization\n"
 
     def _get_reset_text(self, kw: dict) -> str:
-        result = self._get_reset_heading()
-        result = (
-            result
-            + f"""
-
-Please execute:
-
-1. PURGE all templates and registries
-2. RE-EXTRACT `{self.config.package_output_name}-{kw["VER"]}.zip` (request this from file memory)
-3. INSTALL `{self._main_registry.file_name}` as `active_registry_yaml`
-4. REGISTER `{self.config.lock_file_name}-{kw["VER"]}{self.config.lock_file_ext}` as `active_lockfile_yaml`
-5. LOAD and VERIFY `{self.config.template_manifest_name}-{kw["VER"]}.yaml` into `manifest_registry_cache`
-6. CACHE ALL `.md` template bodies using lockfile IDs (strict)
-7. ENFORCE `canonical_mode: true` and `strict_lockfile_enforcement: true`
-"""
-        )
-        return result
+        return ""
+        # result = self._get_reset_heading()
 
     def process(self, tokens: dict) -> None:
         """
@@ -317,10 +350,12 @@ Please execute:
             template_id_map[fm.template_id] = fm
             prompt = self._gen_prompt(tp_type, fm, tokens)
             tags_str = ", ".join([f"#{tag}" for tag in tags])
-            content += f"\n### {fm.template_type.upper()}\n\n{tags_str}\n\n{prompt}"
+            content += f"\n\n### {fm.template_type.upper()}\n\n{tags_str}\n\n{prompt}"
 
         content = self._toc(template_id_map) + "\n\n" + content
-        content = content + "\n" + self._get_reset_text(tokens) + "\n"
+        reset_txt = self._get_reset_text(tokens)
+        if reset_txt:
+            content = content + "\n" + reset_txt + "\n"
         content = (
             content + "\n## 🜂 Field Beings Summary\n\n" + self.yaml_to_markdown_table()
         )

@@ -62,6 +62,16 @@ class TemplateConfig:
         self._validate_entry(
             self.placeholder_autofill_policy, "unresolved_prompt", dict
         )
+        # cleanup_fields are fields that can be removed from template metadata during cleanup
+        cleanup_fields_single = self._validate_entry(
+            self._tp_cfg, "cleanup_fields_single", list
+        )
+        self.cleanup_fields_single = set(cleanup_fields_single)
+
+        cleanup_fields_zip = self._validate_entry(
+            self._tp_cfg, "cleanup_fields_zip", list
+        )
+        self.cleanup_fields_zip = set(cleanup_fields_zip)
 
     def _validate_entry(self, config: dict, key: str, expected_type: type) -> Any:
         """

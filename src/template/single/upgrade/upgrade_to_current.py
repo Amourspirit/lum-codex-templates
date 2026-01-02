@@ -18,25 +18,31 @@ class UpgradeToCurrent:
         reader = ReadObsidianTemplateMeta()
         self._template_meta = reader.read_template_meta()
 
+        self._current_version = self._get_current_version()
         rpt_dir = (
-            self.config.root_path / self.config.pkg_out_dir / self.config.reports_dir
+            self.config.root_path
+            / self.config.pkg_out_dir
+            / f"{self.config.reports_dir}-{self._current_version}"
         )
         if not rpt_dir.exists():
             rpt_dir.mkdir(parents=True)
-        self._current_version = self._get_current_version()
         self._templates_path = (
             self.config.root_path
             / self.config.pkg_out_dir
             / f"single-{self._current_version}"
         )
         self._dest_dir_template = (
-            self.config.root_path / self.config.pkg_out_dir / self.config.upgrade_dir
+            self.config.root_path
+            / self.config.pkg_out_dir
+            / f"{self.config.upgrade_dir}-{self._current_version}"
         )
         if not self._dest_dir_template.exists():
             self._dest_dir_template.mkdir(parents=True)
 
         self._dest_dir_reports = (
-            self.config.root_path / self.config.pkg_out_dir / self.config.reports_dir
+            self.config.root_path
+            / self.config.pkg_out_dir
+            / f"{self.config.reports_dir}-{self._current_version}"
         )
         if not self._dest_dir_reports.exists():
             self._dest_dir_reports.mkdir(parents=True)
@@ -111,7 +117,7 @@ class UpgradeToCurrent:
         """Write new frontmatter to template file."""
 
         new_file_name = self._get_output_file_name(fm)
-        new_template_path = self._dest_dir_template / f"{new_file_name}.md"
+        new_template_path = self._dest_dir_template / f"upgraded-{new_file_name}.md"
         fm.write_template(new_template_path)
 
     def _write_report(self, fm: FrontMatterMeta, extra_fields: set[str]) -> None:
