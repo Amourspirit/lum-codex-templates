@@ -62,6 +62,9 @@ class RuleSingleVerify(SubParserBase, ProtocolSubparser):
                 return 1
             missing = result.get("missing_fields", [])
             extra = result.get("extra_fields", [])
+            incorrect_type_fields = result.get("incorrect_type_fields", [])
+            rule_errors = result.get("rule_errors", None)
+
             print(f"Verification results for file: {file_path.name}")
             print("Template Info:")
             template_info = result["template_info"]
@@ -92,7 +95,20 @@ class RuleSingleVerify(SubParserBase, ProtocolSubparser):
                     )
                     print(s)
                     print()
-
+            if incorrect_type_fields:
+                print("Fields with incorrect types:")
+                print()
+                for field, info in incorrect_type_fields.items():
+                    expected_type = info.get("expected_type", "unknown")
+                    actual_type = info.get("actual_type", "unknown")
+                    print(f"  - {field}: expected {expected_type}, got {actual_type}")
+                print()
+            else:
+                print("No fields with incorrect types.")
+                print()
+            if rule_errors:
+                print(rule_errors)
+                print()
         except Exception as e:
             print(f"Error during verification: {e}")
             return 1
