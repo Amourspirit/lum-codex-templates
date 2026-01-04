@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "field_correction_scroll",
+    "version": "2.9",
+    "hash": "dd34b93e8d18242e498d792082d7ef5a9502bd2c0a3908947c8ee42e48d64fc0",
+    "template_hash": "dd34b93e8d18242e498d792082d7ef5a9502bd2c0a3908947c8ee42e48d64fc0",
+    "registry_id": "TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.353577-05:00"
+}

@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "field_cert_seal",
+    "version": "2.9",
+    "hash": "a15502acc8df194a056fe13fac2b1a99ef266cb2dfcd916ae8686975161d22dc",
+    "template_hash": "a15502acc8df194a056fe13fac2b1a99ef266cb2dfcd916ae8686975161d22dc",
+    "registry_id": "TEMPLATE-FIELD-CERT-SEAL-V2.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.656807-05:00"
+}

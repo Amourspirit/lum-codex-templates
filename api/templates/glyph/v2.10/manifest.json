@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "glyph",
+    "version": "2.10",
+    "hash": "eddac6c5acd9ad5b00c46dec9f0028123a9eb5da96d57813ad544b85c2511c86",
+    "template_hash": "eddac6c5acd9ad5b00c46dec9f0028123a9eb5da96d57813ad544b85c2511c86",
+    "registry_id": "TEMPLATE-GLYPH-V2.10-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:56.888333-05:00"
+}

@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "linkage_scroll",
+    "version": "3.9",
+    "hash": "810824ba301e8da54449803e3a2899096a1944a00838552d6f9dd0ce2bea5fb8",
+    "template_hash": "810824ba301e8da54449803e3a2899096a1944a00838552d6f9dd0ce2bea5fb8",
+    "registry_id": "TEMPLATE-LINKAGE-SCROLL-V3.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.446817-05:00"
+}

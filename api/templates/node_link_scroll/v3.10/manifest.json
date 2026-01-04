@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "node_link_scroll",
+    "version": "3.10",
+    "hash": "b6ad663fa181afb326b6db80761ca85866588cf14b101b0fad6d29cff09264a9",
+    "template_hash": "b6ad663fa181afb326b6db80761ca85866588cf14b101b0fad6d29cff09264a9",
+    "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.549866-05:00"
+}

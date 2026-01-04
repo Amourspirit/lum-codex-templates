@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "dyad",
+    "version": "2.10",
+    "hash": "0ee267c6c2d453b194ca46b74a42d932d59011a6a08ae87fd0c616fb9129f417",
+    "template_hash": "0ee267c6c2d453b194ca46b74a42d932d59011a6a08ae87fd0c616fb9129f417",
+    "registry_id": "TEMPLATE-DYAD-V2.10-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.072928-05:00"
+}

@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "stone",
+    "version": "2.9",
+    "hash": "04962de3a3dfd5d8f492b3f0be175510919ee2f2756a0c3e5f46670958ce87ff",
+    "template_hash": "04962de3a3dfd5d8f492b3f0be175510919ee2f2756a0c3e5f46670958ce87ff",
+    "registry_id": "TEMPLATE-STONE-V2.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.180805-05:00"
+}

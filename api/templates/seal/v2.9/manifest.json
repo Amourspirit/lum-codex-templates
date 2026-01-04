@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "seal",
+    "version": "2.9",
+    "hash": "cb0a93e59c3f48f5d8f8cf7d21808165b5ee9bebe3c219b6d1be9c25f07bf635",
+    "template_hash": "cb0a93e59c3f48f5d8f8cf7d21808165b5ee9bebe3c219b6d1be9c25f07bf635",
+    "registry_id": "TEMPLATE-SEAL-V2.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.842407-05:00"
+}

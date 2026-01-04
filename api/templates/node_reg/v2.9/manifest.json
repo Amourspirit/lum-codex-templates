@@ -1,0 +1,12 @@
+{
+    "template_file": "template.md",
+    "registry_file": "registry.json",
+    "template_type": "node_reg",
+    "version": "2.9",
+    "hash": "12acbdf67f882986e7aafa78d433168e22e684d02a1e8b28e67506df63d93ffd",
+    "template_hash": "12acbdf67f882986e7aafa78d433168e22e684d02a1e8b28e67506df63d93ffd",
+    "registry_id": "TEMPLATE-NODE-V2.9-REGISTRY",
+    "status": "active",
+    "requires_field_being": true,
+    "installed_at": "2026-01-04T11:15:57.270623-05:00"
+}
