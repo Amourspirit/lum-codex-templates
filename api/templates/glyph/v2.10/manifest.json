@@ -3,10 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "glyph",
     "version": "2.10",
-    "hash": "eddac6c5acd9ad5b00c46dec9f0028123a9eb5da96d57813ad544b85c2511c86",
-    "template_hash": "eddac6c5acd9ad5b00c46dec9f0028123a9eb5da96d57813ad544b85c2511c86",
+    "hash": "7c63d1115c29ae96b14d74e5eaf975fcdd196f33fc948ee3fc7e72830fc1d604",
+    "template_hash": "7c63d1115c29ae96b14d74e5eaf975fcdd196f33fc948ee3fc7e72830fc1d604",
     "registry_id": "TEMPLATE-GLYPH-V2.10-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T11:15:56.888333-05:00"
+    "installed_at": "2026-01-04T17:59:39.071866-05:00",
+    "template_id": "TEMPLATE-GLYPH-V2.10"
 }

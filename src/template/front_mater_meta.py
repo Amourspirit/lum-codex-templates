@@ -169,6 +169,10 @@ class FrontMatterMeta:
     def template_id(self) -> str:
         return self.get_field("template_id", "")
 
+    @template_id.setter
+    def template_id(self, value: str) -> None:
+        self.set_field("template_id", value)
+
     @property
     def template_family(self) -> str:
         return self.get_field("template_family", "")

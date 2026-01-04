@@ -1,14 +1,20 @@
 from datetime import datetime
 import json
+from typing import Any
 import yaml
 
 from ...front_mater_meta import FrontMatterMeta
 from ....config.pkg_config import PkgConfig
 from ....builder.build_ver_mgr import BuildVerMgr
+from .tp_support.instructions import Instructions
+from .tp_support.cbib import CBIB
+from ...main_registry import MainRegistry
+from ...process.process_obsidian_templates import ProcessObsidianTemplates
 
 
 class InstallAPI:
     def __init__(self, build_number: int = 0):
+        self._cache = {}
         self.config = PkgConfig()
         if build_number == 0:
             build_number = self._get_current_build_number()
@@ -16,12 +22,32 @@ class InstallAPI:
         self._build_dir_ensured = False
         self._src_dir = self.config.config_cache.get_dist_single(self.build_number)
         self._manifest = self._get_manifest()
+        self._instructions = Instructions()
+        self._cbib = CBIB()
+        self._main_registry = MainRegistry(build_version=self.build_number)
+        self._original_templates = self._get_original_templates()
+
+    def _get_original_templates(self) -> dict[str, FrontMatterMeta]:
+        process_templates = ProcessObsidianTemplates()
+        processed_template_data = process_templates.process(
+            {
+                "declared_registry_id": self._main_registry.reg_id,
+                "declared_registry_version": self._main_registry.reg_version,
+                "mapped_registry": self._main_registry.reg_id,
+                "mapped_registry_minimum_version": self._main_registry.reg_version,
+                "batch_number": str(self.build_number),
+            }
+        )
+        results = {}
+        for fm in processed_template_data.values():
+            results[fm.template_type] = fm
+        return results
 
     def _get_current_build_number(self) -> int:
         bvm = BuildVerMgr()
         return bvm.get_saved_version()
 
-    def _get_manifest(self) -> dict:
+    def _get_manifest(self) -> dict[str, Any]:
         self._ensure_build_dir()
         manifest_path = self._src_dir / "manifest.json"
 
@@ -91,7 +117,18 @@ class InstallAPI:
             manifest["template_id"] = fm.template_id
         return manifest
 
+    def _get_instructions(self, fm: FrontMatterMeta, registry: dict) -> str:
+        result = self._instructions.get_markdown(fm=fm, registry=registry)
+        return result
+
     def _update_template_frontmatter(self, fm: FrontMatterMeta) -> None:
+        orig_tp = self._original_templates.get(fm.template_type)
+        if not orig_tp:
+            raise ValueError(
+                f"Original template data not found for type '{fm.template_type}'"
+            )
+        if not fm.template_id:
+            fm.template_id = orig_tp.template_id
         fm.set_field("template_filename", "template.md")
         fm.frontmatter["template_registry"]["filename"] = "registry.json"
         tp = self.config.config_cache.get_api_templates_path()
@@ -105,6 +142,23 @@ class InstallAPI:
         registry_data["template_filename"] = "template.md"
         registry_data["template_hash"] = fm.sha256
 
+    def _ensure_cbib(self) -> None:
+        key = "cbib_ensured"
+        if key in self._cache:
+            return
+        cbib_data = self._cbib.get_cbib()
+        version = cbib_data["version"]
+        cbib_path = self.config.config_cache.get_api_cbib_path() / f"v{version}"
+        if not cbib_path.exists():
+            cbib_path.mkdir(parents=True, exist_ok=True)
+        cbib_file = cbib_path / "cbib.json"
+        if cbib_file.exists():
+            self._cache[key] = True
+            return
+        with cbib_file.open("w", encoding="utf-8") as f:
+            json.dump(cbib_data, f, indent=4)
+        self._cache[key] = True
+
     def install_single(self, template_type: str) -> None:
         if template_type not in self._manifest["templates"]:
             raise ValueError(
@@ -115,10 +169,12 @@ class InstallAPI:
         self._update_template_frontmatter(fm)
         self._update_registry_data(fm, registry)
         manifest = self._get_template_manifest(fm)
+        instructions_md = self._get_instructions(fm=fm, registry=registry)
         dest_path = fm.file_path.parent
         if not dest_path.exists():
             dest_path.mkdir(parents=True, exist_ok=True)
 
+        self._ensure_cbib()
         print(f"Installing template '{template_type}' to {dest_path}")
 
         fm.write_template(fm.file_path)
@@ -128,6 +184,8 @@ class InstallAPI:
             json.dump(registry, f, indent=4)
         with (dest_path / "manifest.json").open("w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=4)
+        with (dest_path / "instructions.md").open("w", encoding="utf-8") as f:
+            f.write(instructions_md)
 
     def install(self) -> None:
         # Implementation of the install method

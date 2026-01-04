@@ -4,7 +4,7 @@ template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
 template_version: '2.10'
-template_hash: 9ae5bd3c2742b3bd7266b0ba0f0fb6220029873414623fbb2e60136d898bfc1c
+template_hash: 8f0ce679e4d07b5417a7d64836c24d81382ebeb33461d77e2b3c3221056636c4
 template_memory_scope: thread_global
 template_family: field_certificates
 template_origin: Soluun + Adamus
@@ -140,6 +140,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.10
 ---
 ## 🌐 **Field Certificate of [[prompt:Recognition Type or Event Name]]**
 

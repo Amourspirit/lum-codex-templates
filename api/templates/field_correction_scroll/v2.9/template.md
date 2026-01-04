@@ -5,7 +5,7 @@ template_category: scroll
 template_type: field_correction_scroll
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: dd34b93e8d18242e498d792082d7ef5a9502bd2c0a3908947c8ee42e48d64fc0
+template_hash: c9b2efaef2dfbe302e19992d624d8b35ae71b8b89844d4d54821ea919463c252
 template_family: field_scrolls
 template_origin: Soluun + Adamus
 template_purpose: "Provide a structured, canonical scroll format for documenting and\
@@ -133,6 +133,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9
 ---
 # 🔁 **[[prompt:Scroll Title]]** — _Field Correction Scroll_
 

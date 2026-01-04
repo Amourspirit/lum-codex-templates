@@ -5,7 +5,7 @@ template_category: glyph
 template_type: stone
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 04962de3a3dfd5d8f492b3f0be175510919ee2f2756a0c3e5f46670958ce87ff
+template_hash: 627090741207010d5ea24be3dc80646bd7b59c8dfc77202fac8e3f592f2011a2
 template_family: stone_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single Stone artifact\u2014\
@@ -165,6 +165,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-STONE-V2.9
 ---
 # 🜂 Glyph of [[prompt:Stone Name]] — [[prompt:Stone Epithet]]
 

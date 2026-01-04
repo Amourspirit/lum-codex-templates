@@ -5,7 +5,7 @@ template_category: node
 template_type: node_reg
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 12acbdf67f882986e7aafa78d433168e22e684d02a1e8b28e67506df63d93ffd
+template_hash: d4d465d077448d849941c0d42c2407bb4913a18148ed8ece983fbf999d28563c
 template_family: node_templates
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally register a single Node within\
@@ -130,6 +130,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-NODE-V2.9
 ---
 # ✦ Node Overview
 

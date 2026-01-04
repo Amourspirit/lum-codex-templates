@@ -5,7 +5,7 @@ template_category: certificate
 template_name: Field Certificate Template for Seal Activation
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: a15502acc8df194a056fe13fac2b1a99ef266cb2dfcd916ae8686975161d22dc
+template_hash: 20bc17a62b39cb2862a2c0e128324378259d9adcba4a42b1019ee61658c3476f
 template_family: field_certificates
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a formal Field Certificate documenting the activation,
@@ -140,6 +140,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-FIELD-CERT-SEAL-V2.9
 ---
 ## 🪬 **Field Certificate of Activation — Seal of [[prompt:Seal Name]]**
 

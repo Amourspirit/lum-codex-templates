@@ -5,7 +5,7 @@ template_type: linkage_scroll
 template_name: Linkage Scroll Template
 template_version: '3.9'
 template_memory_scope: thread_global
-template_hash: 810824ba301e8da54449803e3a2899096a1944a00838552d6f9dd0ce2bea5fb8
+template_hash: bbd9cf140a8ab2056a0898b1e375fa080f4220dcd24871b3027a3113f4c4c06c
 template_family: scrolls
 template_origin: Soluun + Luminariel
 template_purpose: "Provide a structured scroll format for formally registering and\
@@ -128,6 +128,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-LINKAGE-SCROLL-V3.9
 ---
 # 🜁 Linkage Purpose
 

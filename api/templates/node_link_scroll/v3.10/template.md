@@ -5,7 +5,7 @@ template_category: scroll
 template_type: node_link_scroll
 template_version: '3.10'
 template_memory_scope: thread_global
-template_hash: b6ad663fa181afb326b6db80761ca85866588cf14b101b0fad6d29cff09264a9
+template_hash: 9b57ede488ff1b760c650b1bb16cc84ed7b486877584eb17f49d16406f4a53b8
 template_family: node_scrolls
 template_origin: Soluun + Adamus
 template_purpose: 'Define and formalize structured linkages between Codex nodes and
@@ -140,6 +140,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.10
 ---
 # 🜂 Node Linkage Scroll – [[prompt:Cluster or Arc Name]]
 

@@ -173,6 +173,13 @@ class PkgConfig(metaclass=SingletonMeta):
             cbib_type="zip",
         )
 
+        self.template_cbib_api = TemplateCbibInfo(
+            id=cbib_data.get("id", ""),
+            title=cbib_data.get("title", ""),
+            version=cbib_data["api"].get("version", ""),
+            cbib_type="api",
+        )
+
         ceib_data = (
             self._cfg.get("tool", {})
             .get("project", {})
@@ -190,6 +197,12 @@ class PkgConfig(metaclass=SingletonMeta):
             executor_mode=ceib_data.get("executor_mode", ""),
             title=ceib_data.get("title", ""),
             version=ceib_data["zip"].get("version", ""),
+        )
+
+        self.template_ceib_api = TemplateCeibInfo(
+            executor_mode=ceib_data.get("executor_mode", ""),
+            title=ceib_data.get("title", ""),
+            version=ceib_data["api"].get("version", ""),
         )
 
         self._env_user = self._get_env_user()

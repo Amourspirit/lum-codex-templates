@@ -365,13 +365,13 @@ lifecycle_violation_behavior: abort
 
 ### 🧾 REQUIRED PRE-FLIGHT ACKNOWLEDGEMENT
 
-```yaml
+{self._backticks_secondary}yaml
 preflight_status: passed
 strict_mode_confirmed: true
 template_drift_detected: false
 unresolved_fields: none
 unresolved_conditionals: none
-```
+{self._backticks_secondary}
 
 ### Invocation Agents
 

@@ -3,10 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "sigil",
     "version": "2.9",
-    "hash": "e523673a983ebdb74ebbd7eeb038e9a846c81c1f5347c2bc7e185fc753f3ba85",
-    "template_hash": "e523673a983ebdb74ebbd7eeb038e9a846c81c1f5347c2bc7e185fc753f3ba85",
+    "hash": "6ba989e1ecbd9e08da399598b3550d3b193e5ffec6aff14f71fdf6bb929bd3cc",
+    "template_hash": "6ba989e1ecbd9e08da399598b3550d3b193e5ffec6aff14f71fdf6bb929bd3cc",
     "registry_id": "TEMPLATE-SIGIL-V2.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T11:15:57.946492-05:00"
+    "installed_at": "2026-01-04T17:59:40.275730-05:00",
+    "template_id": "TEMPLATE-SIGIL-V2.9"
 }

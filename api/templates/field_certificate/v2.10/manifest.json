@@ -3,10 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "field_certificate",
     "version": "2.10",
-    "hash": "9ae5bd3c2742b3bd7266b0ba0f0fb6220029873414623fbb2e60136d898bfc1c",
-    "template_hash": "9ae5bd3c2742b3bd7266b0ba0f0fb6220029873414623fbb2e60136d898bfc1c",
+    "hash": "8f0ce679e4d07b5417a7d64836c24d81382ebeb33461d77e2b3c3221056636c4",
+    "template_hash": "8f0ce679e4d07b5417a7d64836c24d81382ebeb33461d77e2b3c3221056636c4",
     "registry_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.10-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T11:15:56.993424-05:00"
+    "installed_at": "2026-01-04T17:59:39.228778-05:00",
+    "template_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.10"
 }

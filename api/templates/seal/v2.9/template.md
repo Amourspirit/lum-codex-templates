@@ -5,7 +5,7 @@ template_category: seal
 template_name: Seal Template
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: cb0a93e59c3f48f5d8f8cf7d21808165b5ee9bebe3c219b6d1be9c25f07bf635
+template_hash: 6deb95b54dbe0ff6502f5d949a3e4d9e02459f6ff74fa5f82f2636327a1cc2b2
 template_family: seal_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a standardized, registry-aligned Seal entry that defines
@@ -164,6 +164,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-SEAL-V2.9
 ---
 ## 🔐 **Seal of [[prompt:Seal Name]] — [[prompt:Seal Epithet]]**
 

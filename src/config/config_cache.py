@@ -29,6 +29,14 @@ class ConfigCache:
             self._cache[key] = p
         return self._cache[key]
 
+    def get_api_cbib_path(self) -> Path:
+        """Get the path to the API templates cbib directory."""
+        key = "api_cbib_path"
+        if key not in self._cache:
+            p = self.get_api_templates_path() / "cbib"
+            self._cache[key] = p
+        return self._cache[key]
+
     def get_dist_single(self, build_number: int) -> Path:
         """Get the path to the single distribution directory for the given build number."""
         key = f"dist_single_{build_number}"

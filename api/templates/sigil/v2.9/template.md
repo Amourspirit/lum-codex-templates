@@ -5,7 +5,7 @@ template_category: sigil
 template_type: sigil
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: e523673a983ebdb74ebbd7eeb038e9a846c81c1f5347c2bc7e185fc753f3ba85
+template_hash: 6ba989e1ecbd9e08da399598b3550d3b193e5ffec6aff14f71fdf6bb929bd3cc
 template_family: sigil_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Define the canonical structure for Codex sigils, supporting breath-activated,
@@ -161,6 +161,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-SIGIL-V2.9
 ---
 # 🕯️ **[[field:artifact_name]]** — _[[prompt:Sigil Epithet]]_
 

@@ -1,10 +1,11 @@
 [project]
 name = "templates"
-version = "9.5.0"
+version = "10.0.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.0"
 dependencies = [
+    "fastapi>=0.128.0",
     "pyyaml>=6.0.3",
     "toml>=0.10.2",
 ]
@@ -100,6 +101,9 @@ version="101.0"
 [tool.project.config.template.cbib.zip]
 version="1.1"
 
+[tool.project.config.template.cbib.api]
+version="1.0"
+
 [tool.project.config.template.ceib]
 executor_mode="CANONICAL-EXECUTOR-MODE"
 title="Canonical Executor Invocation Block"
@@ -108,6 +112,9 @@ title="Canonical Executor Invocation Block"
 version="100.0"
 
 [tool.project.config.template.ceib.zip]
+version="1.0"
+
+[tool.project.config.template.ceib.api]
 version="1.0"
 
 [tool.project.config.template.placeholder_prefix_semantics]
@@ -386,6 +393,11 @@ single_fields_omitted=[
     "declared_registry_version",
     "mapped_registry",
     "mapped_registry_minimum_version",
+]
+
+[dependency-groups]
+dev = [
+    "uvicorn>=0.40.0",
 ]
 
 [tool.project.config.api]

@@ -5,7 +5,7 @@ template_category: glyph
 template_type: glyph
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: eddac6c5acd9ad5b00c46dec9f0028123a9eb5da96d57813ad544b85c2511c86
+template_hash: 7c63d1115c29ae96b14d74e5eaf975fcdd196f33fc948ee3fc7e72830fc1d604
 template_family: glyph_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single glyph artifact\u2014\
@@ -174,6 +174,7 @@ canonical_prompt:
   enforce_registry_match: true
   executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
   executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
+template_id: TEMPLATE-GLYPH-V2.10
 ---
 # 🜂 Glyph of [[field:artifact_name]] — [[prompt:Glpyh Epithet]]
 

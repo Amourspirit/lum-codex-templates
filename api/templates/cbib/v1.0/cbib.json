@@ -1,0 +1,17 @@
+{
+    "id": "CANONICAL-EXECUTOR-MODE-V1.0",
+    "name": "Codex Bootstrap Instruction Bundle",
+    "version": "1.0",
+    "canonical_enhancements": [
+        "Canonical abort payload specification",
+        "Mandatory pre-flight validation phase",
+        "Explicit STRICT MODE prohibitions",
+        "Explicit template_type & template_family enforcement",
+        "Structured directive grouping",
+        "Hard rendering gate (no partial output)",
+        "Zero tolerance for unresolved prompts or conditionals",
+        "Template lifecycle status checks",
+        "Cross-template contamination prevention",
+        "Template output mode validation"
+    ]
+}
