@@ -19,30 +19,18 @@ class UpgradeToCurrent:
         self._template_meta = reader.read_template_meta()
 
         self._current_version = self._get_current_version()
-        rpt_dir = (
-            self.config.root_path
-            / self.config.pkg_out_dir
-            / f"{self.config.reports_dir}-{self._current_version}"
+
+        self._templates_path = self.config.config_cache.get_dist_single(
+            self._current_version
         )
-        if not rpt_dir.exists():
-            rpt_dir.mkdir(parents=True)
-        self._templates_path = (
-            self.config.root_path
-            / self.config.pkg_out_dir
-            / f"single-{self._current_version}"
-        )
-        self._dest_dir_template = (
-            self.config.root_path
-            / self.config.pkg_out_dir
-            / f"{self.config.upgrade_dir}-{self._current_version}"
+        self._dest_dir_template = self.config.config_cache.get_dist_single_upgrade(
+            self._current_version
         )
         if not self._dest_dir_template.exists():
             self._dest_dir_template.mkdir(parents=True)
 
-        self._dest_dir_reports = (
-            self.config.root_path
-            / self.config.pkg_out_dir
-            / f"{self.config.reports_dir}-{self._current_version}"
+        self._dest_dir_reports = self.config.config_cache.get_dist_single_reports(
+            self._current_version
         )
         if not self._dest_dir_reports.exists():
             self._dest_dir_reports.mkdir(parents=True)

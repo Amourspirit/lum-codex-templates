@@ -66,6 +66,8 @@ class TemplateBase:
 
     def _write_file(self) -> Path:
         output_path = self._get_file_path()
+        self.fm.file_path = output_path
+        self.fm.recompute_sha256()
         self.fm.write_template(output_path)
         # print(f"Generated registry file: {output_path.name}")
         return output_path

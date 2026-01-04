@@ -17,6 +17,7 @@ from ..template.process_single.engines.templates.template_processor import (
 from ..template.process_single.engines.enforcement.enforcement_processor import (
     EnforcementProcessor,
 )
+from ..template.process_single.manifest_creator import ManifestCreator
 
 
 class SingleBuilder(BuilderBase):
@@ -41,10 +42,13 @@ class SingleBuilder(BuilderBase):
                 bvm.version = self._build_version
                 bvm.save_current_version()
 
-        self._destination_path = (
-            self.config.root_path
-            / self.config.pkg_out_dir
-            / f"single-{self._build_version}"
+        # self._destination_path = (
+        #     self.config.root_path
+        #     / self.config.pkg_out_dir
+        #     / f"single-{self._build_version}"
+        # )
+        self._destination_path = self.config.config_cache.get_dist_single(
+            self._build_version
         )
         self._destination_path.mkdir(parents=True, exist_ok=True)
 
@@ -83,7 +87,7 @@ class SingleBuilder(BuilderBase):
             templates_meta=template_meta,
             templates_data=fm_data,
         )
-        trp.execute_all(tokens={})
+        _ = trp.execute_all(tokens={})
 
         support_processor = SupportProcessor(registry=self._main_registry)
         support_processor.execute_all(
@@ -97,12 +101,14 @@ class SingleBuilder(BuilderBase):
             registry=self._main_registry,
             templates_data=templates_data,
         )
-        ep.execute_all(
+        _ = ep.execute_all(
             tokens={
                 "DATE": current_date,
                 "VER": str(self._build_version),
             }
         )
+        mc = ManifestCreator(build_number=self._build_version)
+        mc.create_manifest(templates=fm_data)
         # template_count = tp.Count
 
     @property

@@ -387,3 +387,19 @@ single_fields_omitted=[
     "mapped_registry",
     "mapped_registry_minimum_version",
 ]
+
+[tool.project.config.api]
+base_dir="api"
+base_url="https://api.example.com/v1"
+timeout_seconds=30
+retries=3
+
+[tool.project.config.api.headers]
+Content-Type="application/json"
+"User-Agent" = "templates-client/9.5.0"
+
+[tool.project.config.api.templates]
+dir_name="templates"
+
+[tool.project.config.api.auth]
+api_key_env_var="API_KEY"

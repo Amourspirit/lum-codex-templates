@@ -8,6 +8,9 @@ from .templates_config_info import TemplatesConfigInfo
 from .codex_binding_contract import CodexBindingContract
 from .template_cbib_info import TemplateCbibInfo
 from .template_ceib_info import TemplateCeibInfo
+from .api_info_templates import ApiInfoTemplates
+from .api_info import ApiInfo
+from .config_cache import ConfigCache
 
 
 class PkgConfig(metaclass=SingletonMeta):
@@ -190,6 +193,33 @@ class PkgConfig(metaclass=SingletonMeta):
         )
 
         self._env_user = self._get_env_user()
+
+        # API INFO
+        api_config_templates = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("api", {})
+            .get("templates", {})
+        )
+        api_info_templates = ApiInfoTemplates(
+            dir_name=api_config_templates.get("dir_name", "")
+        )
+
+        api_info_data = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("api", {})
+        )
+        self.api_info = ApiInfo(
+            base_dir=api_info_data.get("base_dir", ""),
+            info_templates=api_info_templates,
+        )
+
+        # Config Cache
+        # must be last in init to ensure all config values are set
+        self.config_cache = ConfigCache(self)
 
     def _load_config(self):
         return toml.load(self._project_toml_path)

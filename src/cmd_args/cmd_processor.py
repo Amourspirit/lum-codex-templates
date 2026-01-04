@@ -6,6 +6,7 @@ from .rule_single_template import RuleSingleTemplate
 from .rule_single_verify import RuleSingleVerify
 from .rule_single_upgrade import RuleSingleUpgrade
 from .rule_single_clean import RuleSingleClean
+from .rule_install_api import RuleInstallApi
 from ..config.pkg_config import PkgConfig
 
 
@@ -103,6 +104,9 @@ class CmdProcessor:
 
         clean_single = RuleSingleClean(self._cmd_sub_parser)
         self.register_process(clean_single)
+
+        install_api = RuleInstallApi(self._cmd_sub_parser)
+        self.register_process(install_api)
 
     def process(self) -> int:
         """Process CLI arguments and dispatch to the first matching registered process.

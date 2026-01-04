@@ -66,7 +66,7 @@ class TemplateRegistryProcessor:
                 that is passed to each process when executed.
 
         Returns:
-            dict[str, Path]: A dictionary mapping process names to the Path returned
+            dict: A dictionary of string, path mapping process names to the Path returned
             by the corresponding process. The dictionary insertion order follows the
             iteration order of self._processes.
 
