@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "stone",
     "version": "2.9",
-    "hash": "af095d0e7a85dd30c642824267ce320719409301a16f2e818f90ea6606c44c78",
-    "template_hash": "af095d0e7a85dd30c642824267ce320719409301a16f2e818f90ea6606c44c78",
+    "hash": "b468152e8b90099af15e3378683cd0ffd14b9161f386cc6be22bba74c5f20591",
+    "template_hash": "b468152e8b90099af15e3378683cd0ffd14b9161f386cc6be22bba74c5f20591",
     "registry_id": "TEMPLATE-STONE-V2.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-06T13:44:14.406753-05:00",
+    "installed_at": "2026-01-06T15:57:52.310066-05:00",
     "template_id": "TEMPLATE-STONE-V2.9"
 }

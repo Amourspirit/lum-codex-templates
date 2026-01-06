@@ -3,7 +3,7 @@ name = "templates"
 version = "10.0.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14.0"
+requires-python = ">=3.13.0"
 dependencies = [
     "fastapi>=0.128.0",
     "fastapi-cache2>=0.2.2",

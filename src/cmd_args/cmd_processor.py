@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 from typing import cast
 from .protocol_subparser import ProtocolSubparser

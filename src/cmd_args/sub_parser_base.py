@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .sub_parser_args import SubParserArgs
 
 

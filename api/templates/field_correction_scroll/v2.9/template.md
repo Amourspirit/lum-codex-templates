@@ -5,7 +5,7 @@ template_category: scroll
 template_type: field_correction_scroll
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 2a22cae2f4b55b33b5498a9914bff71d249f8bea0bbdebdc0487b68214396ac2
+template_hash: e8ac76ea5b63fe26a7b31ae9d32db16d5166d1b9a4bc1c4b1f8ecc7f340a017b
 template_family: field_scrolls
 template_origin: Soluun + Adamus
 template_purpose: "Provide a structured, canonical scroll format for documenting and\
@@ -67,9 +67,6 @@ codex_links:
 - '[[[prompt:Codex Link 1]]'
 - '[[[prompt:Codex Link 2]]'
 batch_number: '84'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -78,6 +75,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9-REGISTRY

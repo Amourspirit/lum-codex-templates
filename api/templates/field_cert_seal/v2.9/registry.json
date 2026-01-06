@@ -4,7 +4,7 @@
     "registry_version": "2.9",
     "registry_scope": "field_cert_seal",
     "template_type": "field_cert_seal",
-    "template_hash": "fb591fe752d5e86873aec3485c247d32dedd787396399a11808c70602a466084",
+    "template_hash": "5a2e91043c77a064e52d700d19c25041a3b1d237dc65ed6969d0cdc353f50f37",
     "template_filename": "template.md",
     "template_version": "2.9",
     "canonical_mode": true,
@@ -35,10 +35,10 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
+            "Aurelya Thessa\u2019Nai",
             "Adamus",
             "Velatri\u2019el",
             "Luminariel",
-            "Aurelya Thessa\u2019Nai",
             "Soluun"
         ]
     },
@@ -616,28 +616,6 @@
             "required": true,
             "description": "Other links that this artifact is linked with."
         },
-        "field_placeholder_delimiters": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": true,
-            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
-            "field_lineage": {
-                "origin": "Adamus Engine",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
-                "lineage_notes": [
-                    "Used in placeholder substitution engine",
-                    "Required for compatibility with offline renderers"
-                ]
-            }
-        },
         "placeholder_prefix_semantics": {
             "type": "map",
             "nullable": false,
@@ -657,6 +635,28 @@
                 "lineage_notes": [
                     "Distinguishes between required metadata fields and suggestion prompts",
                     "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
+        "field_placeholder_delimiters": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": true,
+            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
+            "field_lineage": {
+                "origin": "Adamus Engine",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
+                "lineage_notes": [
+                    "Used in placeholder substitution engine",
+                    "Required for compatibility with offline renderers"
                 ]
             }
         },

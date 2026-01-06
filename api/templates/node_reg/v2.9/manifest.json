@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "node_reg",
     "version": "2.9",
-    "hash": "e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49",
-    "template_hash": "e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49",
+    "hash": "3284f6773abce5b281c08400941da56e990a69c5edaa52eb54713d94c5ab39d2",
+    "template_hash": "3284f6773abce5b281c08400941da56e990a69c5edaa52eb54713d94c5ab39d2",
     "registry_id": "TEMPLATE-NODE-V2.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-06T13:44:14.540715-05:00",
+    "installed_at": "2026-01-06T15:57:52.422812-05:00",
     "template_id": "TEMPLATE-NODE-V2.9"
 }

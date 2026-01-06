@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 from .sub_parser_base import SubParserBase
 from .sub_parser_args import SubParserArgs
