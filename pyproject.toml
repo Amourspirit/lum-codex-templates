@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.14.0"
 dependencies = [
     "fastapi>=0.128.0",
+    "fastapi-cache2>=0.2.2",
+    "python-dotenv>=1.2.1",
     "pyyaml>=6.0.3",
     "toml>=0.10.2",
 ]
@@ -86,6 +88,22 @@ cleanup_fields_zip=[
     "template_file",
     "template_filename",
 ]
+# Fields to apply to single and zip builds of tool.project.config.template...
+apply_config_template_fields_signal=[
+    "field_placeholder_delimiters",
+    "placeholder_prefix_semantics",
+]
+apply_config_template_fields_zip=[
+    "field_placeholder_delimiters",
+    "placeholder_prefix_semantics",
+]
+
+# Fields to clean from API-installed templates if they exist
+api_installer_template_cleanup_fields=[
+    "canonical_prompt",
+    "upnote_categories",
+]
+
 
 [tool.project.config.template.field_placeholder_delimiters]
 open="[["

@@ -5,7 +5,7 @@ template_category: scroll
 template_type: field_correction_scroll
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: c9b2efaef2dfbe302e19992d624d8b35ae71b8b89844d4d54821ea919463c252
+template_hash: 2a22cae2f4b55b33b5498a9914bff71d249f8bea0bbdebdc0487b68214396ac2
 template_family: field_scrolls
 template_origin: Soluun + Adamus
 template_purpose: "Provide a structured, canonical scroll format for documenting and\
@@ -67,46 +67,9 @@ codex_links:
 - '[[[prompt:Codex Link 1]]'
 - '[[[prompt:Codex Link 2]]'
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -115,24 +78,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9
 ---
 # 🔁 **[[prompt:Scroll Title]]** — _Field Correction Scroll_

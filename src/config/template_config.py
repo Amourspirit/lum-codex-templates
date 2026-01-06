@@ -73,6 +73,25 @@ class TemplateConfig:
         )
         self.cleanup_fields_zip = set(cleanup_fields_zip)
 
+        apply_config_template_fields_signal = self._validate_entry(
+            self._tp_cfg, "apply_config_template_fields_signal", list
+        )
+        self.apply_config_template_fields_signal = set(
+            apply_config_template_fields_signal
+        )
+
+        apply_config_template_fields_zip = self._validate_entry(
+            self._tp_cfg, "apply_config_template_fields_zip", list
+        )
+        self.apply_config_template_fields_zip = set(apply_config_template_fields_zip)
+
+        api_installer_template_cleanup_fields = self._validate_entry(
+            self._tp_cfg, "api_installer_template_cleanup_fields", list
+        )
+        self.api_installer_template_cleanup_fields = set(
+            api_installer_template_cleanup_fields
+        )
+
     def _validate_entry(self, config: dict, key: str, expected_type: type) -> Any:
         """
         Checks a key for existence, correct type, and non-empty value.
@@ -111,6 +130,11 @@ class TemplateConfig:
             yaml_dict (dict): The YAML dictionary to update.
         """
         yaml_dict.update(self._tp_cfg)
+
+    @property
+    def tp_cfg(self) -> Dict[str, Any]:
+        """Returns the raw template configuration dictionary."""
+        return self._tp_cfg
 
 
 # --- Example Usage ---

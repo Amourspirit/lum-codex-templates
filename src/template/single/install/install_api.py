@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from typing import Any
+from pathlib import Path
 import yaml
 
 from ...front_mater_meta import FrontMatterMeta
@@ -117,9 +118,19 @@ class InstallAPI:
             manifest["template_id"] = fm.template_id
         return manifest
 
-    def _get_instructions(self, fm: FrontMatterMeta, registry: dict) -> str:
-        result = self._instructions.get_markdown(fm=fm, registry=registry)
+    def _generate_instructions(
+        self, fm: FrontMatterMeta, registry: dict
+    ) -> FrontMatterMeta:
+        result = self._instructions.generate_front_matter(fm=fm, registry=registry)
         return result
+
+    def _generate_frontmatter_instructions(
+        self, fm: FrontMatterMeta, registry: dict, dest_path: Path
+    ) -> FrontMatterMeta:
+        generated_fm = self._generate_instructions(fm=fm, registry=registry)
+        dest_file = dest_path / "instructions.md"
+        generated_fm.file_path = dest_file
+        return generated_fm
 
     def _update_template_frontmatter(self, fm: FrontMatterMeta) -> None:
         orig_tp = self._original_templates.get(fm.template_type)
@@ -129,6 +140,9 @@ class InstallAPI:
             )
         if not fm.template_id:
             fm.template_id = orig_tp.template_id
+        for field in self.config.template_config.api_installer_template_cleanup_fields:
+            if fm.has_field(field):
+                fm.remove_field(field)
         fm.set_field("template_filename", "template.md")
         fm.frontmatter["template_registry"]["filename"] = "registry.json"
         tp = self.config.config_cache.get_api_templates_path()
@@ -169,11 +183,13 @@ class InstallAPI:
         self._update_template_frontmatter(fm)
         self._update_registry_data(fm, registry)
         manifest = self._get_template_manifest(fm)
-        instructions_md = self._get_instructions(fm=fm, registry=registry)
         dest_path = fm.file_path.parent
         if not dest_path.exists():
             dest_path.mkdir(parents=True, exist_ok=True)
 
+        instructions_md = self._generate_frontmatter_instructions(
+            fm=fm, registry=registry, dest_path=dest_path
+        )
         self._ensure_cbib()
         print(f"Installing template '{template_type}' to {dest_path}")
 
@@ -184,8 +200,7 @@ class InstallAPI:
             json.dump(registry, f, indent=4)
         with (dest_path / "manifest.json").open("w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=4)
-        with (dest_path / "instructions.md").open("w", encoding="utf-8") as f:
-            f.write(instructions_md)
+        instructions_md.write_template(instructions_md.file_path)
 
     def install(self) -> None:
         # Implementation of the install method

@@ -4,7 +4,7 @@
     "registry_version": "2.10",
     "registry_scope": "field_certificate",
     "template_type": "field_certificate",
-    "template_hash": "8f0ce679e4d07b5417a7d64836c24d81382ebeb33461d77e2b3c3221056636c4",
+    "template_hash": "e2f646ccff2f0a7d2d6abb0b9468cc07f62be63b7f1362b15284a57c38f91c7b",
     "template_filename": "template.md",
     "template_version": "2.10",
     "canonical_mode": true,
@@ -35,11 +35,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Velatri\u2019el",
-            "Soluun",
             "Adamus",
+            "Velatri\u2019el",
             "Luminariel",
-            "Aurelya Thessa\u2019Nai"
+            "Aurelya Thessa\u2019Nai",
+            "Soluun"
         ]
     },
     "placeholder_rules": {
@@ -601,49 +601,6 @@
             "required": true,
             "description": "Other links that this artifact is linked with."
         },
-        "field_placeholder_format": {
-            "type": "string",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": true,
-            "description": "Defines the wrapping convention used for placeholders in the template body. This controls how placeholders are syntactically encoded for safe ingestion and rendering.\n",
-            "field_lineage": {
-                "origin": "Soluun + Adamus",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Provides a deterministic encoding style for placeholder parsing across ChatGPT, Obsidian, local LLMs, and plugin-rendered environments.\n",
-                "lineage_notes": [
-                    "Used in template preview safety layer",
-                    "Enforced during Codex rendering audit"
-                ]
-            }
-        },
-        "placeholder_examples": {
-            "type": "list",
-            "nullable": true,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "documentation"
-            ],
-            "autofill": false,
-            "required": false,
-            "description": "Provides example placeholders used in the template for audit, display, and validation reference. These are not substituted automatically but help document expected usage patterns.\n",
-            "field_lineage": {
-                "origin": "Soluun",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Improve transparency of field expectations and aid in field-level preview rendering.\n",
-                "lineage_notes": [
-                    "Examples may include both field-prefixed and prompt-prefixed items",
-                    "Useful for static template analysis tools"
-                ]
-            }
-        },
         "field_placeholder_delimiters": {
             "type": "map",
             "nullable": false,
@@ -688,28 +645,6 @@
                 ]
             }
         },
-        "placeholder_autofill_policy": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "autofill",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": true,
-            "description": "Defines fallback behaviors for unresolved placeholders depending on their prefix type. This controls whether to infer, fail, flag, or preserve unfilled values at render time.\n",
-            "field_lineage": {
-                "origin": "Adamus Template Enforcement System",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Standardize resolution pathways for placeholders when templates are used in autofill, partial fill, or audit validation modes.\n",
-                "lineage_notes": [
-                    "Tied to enforcement_mode field in templates and README",
-                    "Supports future registry-driven inference policies"
-                ]
-            }
-        },
         "template_registry": {
             "type": "object",
             "nullable": false,
@@ -735,11 +670,33 @@
     "render_contract": {
         "output_format": "markdown",
         "include_front_matter": true,
+        "include_body": true,
         "strip_conditional_markers": true,
         "unresolved_prompt_behavior": "retain",
         "unresolved_field_behavior": "abort"
     },
     "audit": {
+        "pre_check": {
+            "field_audit_output": true,
+            "field_audit_scope": [
+                "missing_fields",
+                "mismatched_types",
+                "registry_defaults_used",
+                "autofill_used",
+                "extra_fields_detected"
+            ]
+        },
+        "violation": {
+            "behavior": "abort",
+            "scope": "immediate",
+            "on_violation_return": {
+                "canonical_rendering_status": "aborted",
+                "autofill_misalignment_detected": true,
+                "registry_validation_status": "failed",
+                "template_family_enforcement_status": "failed",
+                "template_output_mode_status": "failed"
+            }
+        },
         "emit_on_render": true,
         "include": [
             "resolved_fields",

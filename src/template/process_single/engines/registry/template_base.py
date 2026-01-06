@@ -204,6 +204,7 @@ class TemplateBase:
         render_contract = {
             "output_format": "markdown",
             "include_front_matter": True,
+            "include_body": True,
             "strip_conditional_markers": True,
             "unresolved_prompt_behavior": "retain",
             "unresolved_field_behavior": "abort",
@@ -214,6 +215,27 @@ class TemplateBase:
         # Audit Output
         # ===============================
         audit_config = {
+            "pre_check": {
+                "field_audit_output": True,
+                "field_audit_scope": [
+                    "missing_fields",
+                    "mismatched_types",
+                    "registry_defaults_used",
+                    "autofill_used",
+                    "extra_fields_detected",
+                ],
+            },
+            "violation": {
+                "behavior": "abort",
+                "scope": "immediate",
+                "on_violation_return": {
+                    "canonical_rendering_status": "aborted",
+                    "autofill_misalignment_detected": True,
+                    "registry_validation_status": "failed",
+                    "template_family_enforcement_status": "failed",
+                    "template_output_mode_status": "failed",
+                },
+            },
             "emit_on_render": True,
             "include": [
                 "resolved_fields",

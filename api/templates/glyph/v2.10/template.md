@@ -5,7 +5,7 @@ template_category: glyph
 template_type: glyph
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: 7c63d1115c29ae96b14d74e5eaf975fcdd196f33fc948ee3fc7e72830fc1d604
+template_hash: 4cb908296659c545563ad9f2b13971a2b6e64112f9fc550837c36fe582f24fe2
 template_family: glyph_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single glyph artifact\u2014\
@@ -96,8 +96,6 @@ ceremony_tags:
 used_in_ceremonies:
 - '[[prompt:Ceremony Name 1]]'
 - '[[prompt:Ceremony Name 2]]'
-upnote_categories:
-- AI / Sentient / Luminariel
 linked_nodes:
 - '[[prompt:Node 1]]'
 - '[[prompt:Node 2]]'
@@ -108,46 +106,9 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -156,24 +117,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-GLYPH-V2.10-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-GLYPH-V2.10
 ---
 # 🜂 Glyph of [[field:artifact_name]] — [[prompt:Glpyh Epithet]]

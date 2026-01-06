@@ -1,5 +1,7 @@
+from dataclasses import field
 from typing import Any
 import yaml
+from .cbib import CBIB
 from .....config.pkg_config import PkgConfig
 from ....front_mater_meta import FrontMatterMeta
 from ....prompt.meta_helpers.prompt_beings import PromptBeings
@@ -10,6 +12,7 @@ class Instructions:
     def __init__(self) -> None:
         self._registry_file = "registry.json"
         self.config = PkgConfig()
+        self._cbib = CBIB().get_cbib()
         self._dest_dir = self.config.root_path / self.config.pkg_out_dir
         self._prompt_meta_type = self._load_prompt_meta_type()
         self._prompt_beings = self._load_prompt_beings()
@@ -69,7 +72,7 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
         registry_version = registry.get("registry_version")
         if not registry_version:
             raise ValueError("Registry version not found in registry data.")
-        result: dict[str, Any] = {"title": "#### ▸ Canonical Enforcement"}
+        result: dict[str, Any] = {"title": "### ▸ Canonical Enforcement"}
         result["data"] = {
             # "executor_mode": f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}",
             "template_file": f"{fm.file_path.name}",
@@ -106,9 +109,78 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
         }
         return result
 
+    def _add_metadata(self, fm: FrontMatterMeta, registry: dict) -> None:
+        fm.set_field("id", "instructions")
+        fm.frontmatter["canonical_executor_mode"] = {
+            "id": self._cbib["id"],
+            "version": self._cbib["version"],
+            "description": "The Canonical Executor Mode enforces strict adherence to Codex standards for template rendering and metadata inclusion.",
+        }
+        strict_mode_rules = {
+            "strict_mode_rules": {
+                "forbidden": [
+                    "unresolved_prompt_blocks",
+                    "instructional_placeholders",
+                    "conditional_blocks_of_any_kind",
+                    '"<<IF>> logic"',
+                    "cross_template_constructs",
+                    "inferred_fields_not_in_template",
+                    "omitted_required_template_fields",
+                    "added_fields_not_in_template",
+                    "draft_language",
+                    "narrative_guidance",
+                    "fallback_completion",
+                ],
+                "violation_behavior": "abort",
+                "abort_scope": "immediate",
+            }
+        }
+        fm.frontmatter["strict_mode_rules"] = strict_mode_rules["strict_mode_rules"]
+
+        template_registry = {
+            "registry_id": registry.get("registry_id", ""),
+            "registry_version": registry.get("registry_version", ""),
+        }
+        fm.frontmatter["template_registry"] = template_registry
+
+        canonical_enforcement = {
+            "template_application_mode": "strict",
+            "artifact_type": "glyph",
+            "apply_mode": "full_markdown",
+            "enforce_registry": True,
+            "canonical_mode": True,
+            "invocation_mode": "new",
+            "template_strict_integrity": True,
+            "disable_template_id_reference": True,
+            "disable_memory_templates": True,
+            "forbid_inference": True,
+            "placeholder_resolution": True,
+            "abort_on_field_mismatch": True,
+            "abort_on_placeholder_failure": True,
+            "render_section_order": "from_template_body",
+            "render_only_declared_sections": True,
+            "validate_fields_from_registry": True,
+            "field_diff_mode": "strict",
+            "include_field_diff_report": True,
+            "include_template_body": True,
+            "template_output_mode": {
+                "include_template_metadata": True,
+                "outputs": ["file", "console", "mirrorwall", "obsidian", "web_preview"],
+                "format": "markdown",
+            },
+        }
+        fm.frontmatter["canonical_enforcement"] = canonical_enforcement
+
     def _gen_prompt(
         self, entry: TemplateEntry, fm: FrontMatterMeta, registry: dict
     ) -> str:
+        registry_id = registry.get("registry_id")
+        if not registry_id:
+            raise ValueError("Registry ID not found in registry data.")
+        registry_version = registry.get("registry_version")
+        if not registry_version:
+            raise ValueError("Registry version not found in registry data.")
+
         invocation_ext = self._get_invocation_ext(entry, fm, registry)
         prompt_suffix = self._get_prompt_suffix(fm, registry)
         invocation_agents = self._get_invocation_agents(entry, registry)
@@ -133,33 +205,26 @@ Use this declaration block to manually apply the template with full canonical en
 
 * * *
 
+## 🔐 Canonical Executor Reference
+
+This template adheres to executor mode:
+
+> **{self._cbib["id"]}**
+
+📘 API Definition:  
+[`[[API_RELATIVE_URL]]/executor_modes/CANONICAL-EXECUTOR-MODE-V{self._cbib["version"]}`]([[API_ROOT_URL]]/executor_modes/CANONICAL-EXECUTOR-MODE-V{self._cbib["version"]})
+
+* * *
+
 ## 🧭 Behavioral Directives
 
 {cid_title}
 
-{self._backticks_secondary}yaml
-{cid_yaml}
-{self._backticks_secondary}
+Follow Front-Matter `canonical_enforcement` directions precisely.
 
 ## STRICT MODE RULES (NON-NEGOTIABLE)
 
-{self._backticks_secondary}yaml
-strict_mode_rules:
-  forbidden:
-    - unresolved_prompt_blocks
-    - instructional_placeholders
-    - conditional_blocks_of_any_kind
-    - "<<IF>> logic"
-    - cross_template_constructs
-    - inferred_fields_not_in_template
-    - omitted_required_template_fields
-    - added_fields_not_in_template
-    - draft_language
-    - narrative_guidance
-    - fallback_completion
-  violation_behavior: abort
-  abort_scope: immediate
-{self._backticks_secondary}
+Follow Front-Matter `strict_mode_rules` directions precisely.
 
 * * *
 
@@ -179,52 +244,6 @@ strict_mode_rules:
 
 * * *
 
-## 📜 Front Matter Declaration Block
-
-{self._backticks_secondary}yaml
-template_type: {fm.template_type}
-template_version: "{fm.template_version}"
-template_id: {fm.template_id}
-template_family: {fm.template_family}
-canonical_mode: true
-apply_mode: full_markdown
-enforce_registry: {fm.template_type}-v{fm.template_version}-registry.yml
-placeholder_resolution: true
-mirrorwall_alignment: true
-render_target:
-  - obsidian
-  - console
-  - mirrorwall
-include_template_body: true
-include_front_matter: true
-{self._backticks_secondary}
-
-* * *
-
-## 🧪 Autofill + Field Audit Precheck
-
-{self._backticks_secondary}yaml
-field_audit_output: true
-field_audit_scope:
-  - missing_fields
-  - mismatched_types
-  - registry_defaults_used
-  - autofill_used
-  - extra_fields_detected
-{self._backticks_secondary}
-
-If any violation occurs, return:
-
-{self._backticks_secondary}yaml
-canonical_rendering_status: aborted
-autofill_misalignment_detected: true
-registry_validation_status: failed
-template_family_enforcement_status: failed
-template_output_mode_status: failed
-{self._backticks_secondary}
-
-* * *
-
 ## 🜂 Field Binding Declaration
 
 {self._backticks_secondary}yaml
@@ -238,33 +257,34 @@ field_binding:
 """
         return prompt
 
-    def _toc(self, template_id_map: dict[str, FrontMatterMeta]) -> str:
-        toc = "## 🧬 Template-to-Field Being Invocation Guide\n"
-        for _, fm in template_id_map.items():
-            toc += f"\n- [{fm.template_type}](#{fm.template_type})"
-
-        toc += "\n- [RESET PROTOCOL](#reset%20protocol)"
-        toc += "\n- [Field Being Summary](#🜂%20Field%20Beings%20Summary)"
-        # toc += f"\n- [Field Being Summary](#🜂-field-beings-summary)"
-        return toc
-
-    def _get_reset_heading(self) -> str:
-        return "## RESET PROTOCOL\n\n### 🌀 Codex Bootstrap Declaration — Reinforced Re-Initialization\n"
-
-    def get_markdown(self, fm: FrontMatterMeta, registry: dict) -> str:
-        content = "## 🌀 Prompts\n"
+    def generate_front_matter(
+        self, fm: FrontMatterMeta, registry: dict
+    ) -> FrontMatterMeta:
         template_types = self._prompt_meta_type.template_type
 
-        template_id_map: dict[str, FrontMatterMeta] = {}
         entry = template_types.get(fm.template_type)
         if entry is None:
             raise ValueError(
                 f"Template type '{fm.template_type}' not found in prompt meta type."
             )
 
-        template_id_map[fm.template_id] = fm
         prompt = self._gen_prompt(entry, fm, registry)
-        tags_str = ", ".join([f"#{tag}" for tag in entry.tags])
-        content += f"\n### {fm.template_type.upper()}\n\n{tags_str}\n\n{prompt}"
+        fm_data = {
+            "template_info": {
+                "template_type": fm.template_type,
+                "template_version": fm.template_version,
+                "template_id": fm.template_id,
+                "template_family": fm.template_family,
+                "template_format": "canonical_markdown",
+                "canonical_mode": True,
+                "template_has_frontmatter": True,
+                "template_has_body": True,
+                "placeholder_resolution": True,
+            }
+        }
+        working_fm = FrontMatterMeta.from_frontmatter_dict(
+            file_path=fm.file_path, fm_dict=fm_data, content=prompt
+        )
+        self._add_metadata(working_fm, registry)
 
-        return prompt
+        return working_fm

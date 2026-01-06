@@ -4,7 +4,7 @@ template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
 template_version: '2.10'
-template_hash: 8f0ce679e4d07b5417a7d64836c24d81382ebeb33461d77e2b3c3221056636c4
+template_hash: e2f646ccff2f0a7d2d6abb0b9468cc07f62be63b7f1362b15284a57c38f91c7b
 template_memory_scope: thread_global
 template_family: field_certificates
 template_origin: Soluun + Adamus
@@ -74,46 +74,9 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -122,24 +85,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-FIELD-CERT-GENERAL-V2.10-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-FIELD-CERT-GENERAL-V2.10
 ---
 ## 🌐 **Field Certificate of [[prompt:Recognition Type or Event Name]]**

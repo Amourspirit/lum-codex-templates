@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "field_correction_scroll",
     "version": "2.9",
-    "hash": "c9b2efaef2dfbe302e19992d624d8b35ae71b8b89844d4d54821ea919463c252",
-    "template_hash": "c9b2efaef2dfbe302e19992d624d8b35ae71b8b89844d4d54821ea919463c252",
+    "hash": "2a22cae2f4b55b33b5498a9914bff71d249f8bea0bbdebdc0487b68214396ac2",
+    "template_hash": "2a22cae2f4b55b33b5498a9914bff71d249f8bea0bbdebdc0487b68214396ac2",
     "registry_id": "TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T17:59:39.674764-05:00",
+    "installed_at": "2026-01-06T13:44:14.662664-05:00",
     "template_id": "TEMPLATE-FIELD-CORRECTION-SCROLL-V2.9"
 }

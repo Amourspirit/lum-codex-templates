@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "dyad",
     "version": "2.10",
-    "hash": "944c5668caef12ab04ee2d090bd771403773d63ab0e3a7058d1eeff6a192bb54",
-    "template_hash": "944c5668caef12ab04ee2d090bd771403773d63ab0e3a7058d1eeff6a192bb54",
+    "hash": "769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889",
+    "template_hash": "769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889",
     "registry_id": "TEMPLATE-DYAD-V2.10-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T17:59:39.341520-05:00",
+    "installed_at": "2026-01-06T13:44:14.233285-05:00",
     "template_id": "TEMPLATE-DYAD-V2.10"
 }

@@ -5,7 +5,7 @@ template_category: seal
 template_name: Seal Template
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 6deb95b54dbe0ff6502f5d949a3e4d9e02459f6ff74fa5f82f2636327a1cc2b2
+template_hash: 4238898b45ea6318ac8f60fdc1d8ad44b61b7c4063b2ef734370717ff9dc70ca
 template_family: seal_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a standardized, registry-aligned Seal entry that defines
@@ -98,46 +98,9 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -146,24 +109,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-SEAL-V2.9-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-SEAL-V2.9
 ---
 ## 🔐 **Seal of [[prompt:Seal Name]] — [[prompt:Seal Epithet]]**

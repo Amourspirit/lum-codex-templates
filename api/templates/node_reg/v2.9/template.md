@@ -5,7 +5,7 @@ template_category: node
 template_type: node_reg
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: d4d465d077448d849941c0d42c2407bb4913a18148ed8ece983fbf999d28563c
+template_hash: e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49
 template_family: node_templates
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally register a single Node within\
@@ -64,46 +64,9 @@ tags:
 - node_[[prompt:type]]
 - node_[[prompt:function]]
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -112,24 +75,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-NODE-V2.9-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-NODE-V2.9
 ---
 # ✦ Node Overview

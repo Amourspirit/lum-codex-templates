@@ -135,13 +135,22 @@ class FrontMatterMeta:
             file_path, self.frontmatter, self.content
         )
 
+    def get_template_text(self) -> str:
+        """
+        Get the full template string with frontmatter and content.
+
+        Returns:
+            str: The full template string.
+        """
+        return ObsidianEditor().get_template_text(self.frontmatter, self.content)
+
     def _compute_sha256(self) -> str:
         """Compute and return the SHA-256 hash of the frontmatter and content."""
         fm = self.frontmatter.copy()
         _ = fm.pop(
             self.config.template_hash_field_name, None
         )  # Exclude existing sha256 field if present
-        full_text = ObsidianEditor().get_template_str(fm, self.content)
+        full_text = ObsidianEditor().get_template_text(fm, self.content)
         hash = sha.compute_str_sha256(full_text)
         self.frontmatter[self.config.template_hash_field_name] = hash
         return hash

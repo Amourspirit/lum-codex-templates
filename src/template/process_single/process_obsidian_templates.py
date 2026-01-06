@@ -72,9 +72,9 @@ class ProcessObsidianTemplates:
                     fm.set_field("template_type", info.template_type)
                     fm.set_field("template_filename", new_file_name)
 
-                    for (
-                        field
-                    ) in self.config.template_config.apply_config_template_fields_zip:
+                    for field in (
+                        self.config.template_config.apply_config_template_fields_signal
+                    ):
                         if field in self.config.template_config.tp_cfg:
                             fm.set_field(
                                 field, self.config.template_config.tp_cfg[field]

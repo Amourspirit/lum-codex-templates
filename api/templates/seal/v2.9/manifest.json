@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "seal",
     "version": "2.9",
-    "hash": "6deb95b54dbe0ff6502f5d949a3e4d9e02459f6ff74fa5f82f2636327a1cc2b2",
-    "template_hash": "6deb95b54dbe0ff6502f5d949a3e4d9e02459f6ff74fa5f82f2636327a1cc2b2",
+    "hash": "4238898b45ea6318ac8f60fdc1d8ad44b61b7c4063b2ef734370717ff9dc70ca",
+    "template_hash": "4238898b45ea6318ac8f60fdc1d8ad44b61b7c4063b2ef734370717ff9dc70ca",
     "registry_id": "TEMPLATE-SEAL-V2.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T17:59:40.097374-05:00",
+    "installed_at": "2026-01-06T13:44:15.198607-05:00",
     "template_id": "TEMPLATE-SEAL-V2.9"
 }

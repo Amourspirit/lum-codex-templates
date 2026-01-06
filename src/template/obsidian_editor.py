@@ -59,12 +59,12 @@ class ObsidianEditor:
         Returns:
             Path: The path to the file that was written.
         """
-        full_text = self.get_template_str(frontmatter, content)
+        full_text = self.get_template_text(frontmatter, content)
         path = Path(file_path)
         path.write_text(full_text, encoding="utf-8")
         return path
 
-    def get_template_str(self, frontmatter: dict, content: str) -> str:
+    def get_template_text(self, frontmatter: dict, content: str) -> str:
         """
         Get the full template string with frontmatter and content.
 

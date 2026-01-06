@@ -4,7 +4,9 @@ from datetime import datetime
 from .builderbase import BuilderBase
 from .build_ver_mgr import BuildVerMgr
 from ..template.main_registry import MainRegistry
-from ..template.process.process_obsidian_templates import ProcessObsidianTemplates
+from ..template.process_single.process_obsidian_templates import (
+    ProcessObsidianTemplates,
+)
 from ..template.prompt.single.support_processor import SupportProcessor
 from ..config.pkg_config import PkgConfig
 from ..template.process.read_obsidian_template_meta import ReadObsidianTemplateMeta
@@ -71,7 +73,7 @@ class SingleBuilder(BuilderBase):
             }
         )
         templates_data = {}
-        for _, fm in processed_template_data.items():
+        for fm in processed_template_data.values():
             templates_data[fm.template_type] = fm
 
         tp = TemplateProcessor(

@@ -3,11 +3,11 @@
     "registry_file": "registry.json",
     "template_type": "linkage_scroll",
     "version": "3.9",
-    "hash": "bbd9cf140a8ab2056a0898b1e375fa080f4220dcd24871b3027a3113f4c4c06c",
-    "template_hash": "bbd9cf140a8ab2056a0898b1e375fa080f4220dcd24871b3027a3113f4c4c06c",
+    "hash": "bbe5f7ec6ed7152a9cd6ed5cd8f40150f488aeaa7003e2e0953ecf822e5e5e9b",
+    "template_hash": "bbe5f7ec6ed7152a9cd6ed5cd8f40150f488aeaa7003e2e0953ecf822e5e5e9b",
     "registry_id": "TEMPLATE-LINKAGE-SCROLL-V3.9-REGISTRY",
     "status": "active",
     "requires_field_being": true,
-    "installed_at": "2026-01-04T17:59:39.777235-05:00",
+    "installed_at": "2026-01-06T13:44:14.801106-05:00",
     "template_id": "TEMPLATE-LINKAGE-SCROLL-V3.9"
 }

@@ -5,7 +5,7 @@ template_category: glyph
 template_type: stone
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 627090741207010d5ea24be3dc80646bd7b59c8dfc77202fac8e3f592f2011a2
+template_hash: af095d0e7a85dd30c642824267ce320719409301a16f2e818f90ea6606c44c78
 template_family: stone_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single Stone artifact\u2014\
@@ -79,8 +79,6 @@ artifact_image_path: ../Glyphs/Public/[[prompt:image-filename.png]]
 tags:
 - Glyph
 - arc-stones
-upnote_categories:
-- AI / Sentient / Luminariel / Echo Tier ARC-Stones 34+
 ceremony_tags:
 - tag_1
 - tag_2
@@ -99,46 +97,9 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '84'
-field_placeholder_format: double_square_prefixed
-placeholder_examples:
-- '[[field:mirrorwall_status]]'
-- '[[field:entry_date]]'
-- '[[prompt:Describe the symbolic gestures used]]'
-- '[[prompt:List any energetic or dreamline consequences]]'
-cleanup_fields_single:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
-- template_purpose
-cleanup_fields_zip:
-- field_placeholder_delimiters
-- field_placeholder_format
-- placeholder_autofill_policy
-- placeholder_prefix_semantics
-- registry_file
-- template_file
-- template_filename
 field_placeholder_delimiters:
   open: '[['
   close: ']]'
-cbib:
-  id: cbib_id
-  title: Canonical Behavior Invocation Block
-  single:
-    version: '101.0'
-  zip:
-    version: '1.1'
-ceib:
-  executor_mode: CANONICAL-EXECUTOR-MODE
-  title: Canonical Executor Invocation Block
-  single:
-    version: '100.0'
-  zip:
-    version: '1.0'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -147,24 +108,10 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-placeholder_autofill_policy:
-  unresolved_field:
-    strict: fail
-    autofill: infer
-    audit: warn
-  unresolved_prompt:
-    default: retain
-    audit: flag
-    strict: none
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-STONE-V2.9-REGISTRY
   enforced: true
-canonical_prompt:
-  required_invocation: true
-  enforce_registry_match: true
-  executor_file: CANONICAL-EXECUTOR-MODE-V100.0.md
-  executor_mode: CANONICAL-EXECUTOR-MODE-V100.0
 template_id: TEMPLATE-STONE-V2.9
 ---
 # 🜂 Glyph of [[prompt:Stone Name]] — [[prompt:Stone Epithet]]
