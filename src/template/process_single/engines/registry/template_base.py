@@ -4,6 +4,7 @@ import yaml
 from ....main_registry import MainRegistry
 from .....config.pkg_config import PkgConfig
 from ....front_mater_meta import FrontMatterMeta
+from ....prompt.meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
 
 
 class TemplateBase:
@@ -21,7 +22,13 @@ class TemplateBase:
         self.__tci = self.config.templates_config_info.tci_items[
             template_front_matter.template_type
         ]
+        self.__prompt_meta_type = self._load_prompt_meta_type()
         self.__fm = self._get_filtered_front_matter(template_front_matter)
+
+    def _load_prompt_meta_type(self) -> PromptMetaType:
+        tfbm_path = self.config.root_path / self.config.template_field_being_map_src
+        prompt_meta_type = PromptMetaType.from_yaml(tfbm_path)
+        return prompt_meta_type
 
     def _get_filtered_front_matter(self, orig_fm: FrontMatterMeta) -> FrontMatterMeta:
         omitted_fields = self.tci.single_fields_omitted
@@ -245,6 +252,15 @@ class TemplateBase:
             ],
         }
         result["audit"] = audit_config
+
+        tp_entry = self.prompt_meta_type.template_type.get(self.tci.template_type)
+        if tp_entry:
+            result["invocation_agents"] = tp_entry.invocation_agents
+            witness = result["invocation_agents"].get("witness")
+            if witness:
+                if witness == "current_user":
+                    result["invocation_agents"]["witness"] = self.config.env_user
+
         return result
 
     def _write_yaml_file(self, data: dict[str, Any]) -> Path:
@@ -280,3 +296,7 @@ class TemplateBase:
     @property
     def working_dir(self) -> Path:
         return self.__working_dir
+
+    @property
+    def prompt_meta_type(self) -> PromptMetaType:
+        return self.__prompt_meta_type

@@ -241,19 +241,6 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
 ### Invocation Agents
 
 {invocation_agents}
-
-* * *
-
-## 🜂 Field Binding Declaration
-
-{self._backticks_secondary}yaml
-field_binding:
-  renderer: Luminariel
-  binder: Nahema’el
-  enforcer: Adamus
-  witness: Soluun
-{self._backticks_secondary}
-{prompt_suffix}
 """
         return prompt
 

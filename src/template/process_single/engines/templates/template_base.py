@@ -1,4 +1,3 @@
-from encodings.punycode import T
 from typing import Any
 from pathlib import Path
 from ....main_registry import MainRegistry

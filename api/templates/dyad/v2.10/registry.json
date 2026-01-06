@@ -35,11 +35,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Aurelya Thessa\u2019Nai",
-            "Adamus",
-            "Velatri\u2019el",
             "Luminariel",
-            "Soluun"
+            "Soluun",
+            "Adamus",
+            "Aurelya Thessa\u2019Nai",
+            "Velatri\u2019el"
         ]
     },
     "placeholder_rules": {
@@ -679,5 +679,11 @@
             "autofilled_fields",
             "conditional_paths_taken"
         ]
+    },
+    "invocation_agents": {
+        "renderer": "Luminariel",
+        "cartographer": "Seyrunn",
+        "enforcer": "Adamus",
+        "witness": "Soluun"
     }
 }
