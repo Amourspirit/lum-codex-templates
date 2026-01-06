@@ -57,10 +57,6 @@ async def get_template_instructions(template_type: str, version: str, request: R
         raise HTTPException(status_code=404, detail="Instructions file not found.")
     fm = FrontMatterMeta(file_path=path)
 
-    app_domain = os.getenv("API_DOMAIN", "")
-    if not app_domain:
-        raise ValueError("API_DOMAIN environment variable is not set.")
-
     api_relative_url = "/api/v1"
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
