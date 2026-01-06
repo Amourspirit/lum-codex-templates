@@ -61,9 +61,6 @@ class Instructions:
 to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
 for **{{Artifact Name}}**, applying strict Codex enforcement."""
 
-    def _get_prompt_suffix(self, fm: FrontMatterMeta, registry: dict) -> str:
-        return ""
-
     def _get_ced(self, fm: FrontMatterMeta, registry: dict) -> dict[str, Any]:
         # return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
         registry_id = registry.get("registry_id")
@@ -182,16 +179,10 @@ for **{{Artifact Name}}**, applying strict Codex enforcement."""
             raise ValueError("Registry version not found in registry data.")
 
         invocation_ext = self._get_invocation_ext(entry, fm, registry)
-        prompt_suffix = self._get_prompt_suffix(fm, registry)
-        invocation_agents = self._get_invocation_agents(entry, registry)
         # field_binding_agents = self._get_field_binding_agents(entry)
         # invocation_mode = self._get_invocation_mode()
         cde = self._get_ced(fm, registry)
         cid_title = cde["title"]
-        cid_data = cde["data"]
-        # convert cid_data to yaml block
-        cid_yaml = yaml.dump(cid_data, sort_keys=False)
-
         prompt = f"""# 🌀 Template Application Instructions — {fm.template_id}
 
 Use this declaration block to manually apply the template with full canonical enforcement.
@@ -237,10 +228,6 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
 ### Invocation Prompt
 
 {invocation_ext}
-
-### Invocation Agents
-
-{invocation_agents}
 """
         return prompt
 
