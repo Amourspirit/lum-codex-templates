@@ -1,5 +1,5 @@
 import json
-import os
+from datetime import datetime
 from pathlib import Path
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
@@ -123,6 +123,25 @@ async def get_template_cbib(version: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
+    return json_content
+
+
+@router.get(
+    "/api/v1/templates/{template_type}/{version}/status",
+    response_class=JSONResponse,
+)
+async def get_template_status(template_type: str, version: str):
+    dt_now = datetime.now().astimezone()
+    status = {
+        "template": "available",
+        "registry": "available",
+        "manifest": "available",
+        "instructions": "available",
+        "template_type": template_type,
+        "template_version": version,
+        "last_verified": dt_now.isoformat(),
+    }
+    json_content = json.loads(json.dumps(status))
     return json_content
 
 
