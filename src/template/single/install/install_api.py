@@ -155,6 +155,8 @@ class InstallAPI:
     def _update_registry_data(self, fm: FrontMatterMeta, registry_data: dict) -> None:
         registry_data["template_filename"] = "template.md"
         registry_data["template_hash"] = fm.sha256
+        if fm.template_id:
+            registry_data["template_id"] = fm.template_id
 
     def _ensure_cbib(self) -> None:
         key = "cbib_ensured"
@@ -172,6 +174,42 @@ class InstallAPI:
         with cbib_file.open("w", encoding="utf-8") as f:
             json.dump(cbib_data, f, indent=4)
         self._cache[key] = True
+
+    def _get_sorted_registry(self, registry: dict) -> dict:
+        sort_order_identity = [
+            "registry_id",
+            "registry_version",
+            "template_id",
+        ]
+        sort_order_structural = [
+            "template_type",
+            "template_version",
+            "template_filename",
+            "template_hash",
+            "template_strict_integrity",
+            "template_hash_enforcement",
+            "audit",
+            "placeholder_rules",
+            "autofill",
+            "conditionals",
+            "invocation_agents",
+        ]
+        sort_order_execution = [
+            "canonical_mode",
+            "fail_on_unknown_field",
+            "fail_on_unresolved_field_placeholder",
+            "allow_prompt_placeholders",
+            "allow_inference",
+            "fail_on_field_mismatch",
+            "render_contract",
+        ]
+        cp = registry.copy()
+        sorted_registry = {}
+        for key in sort_order_identity + sort_order_structural + sort_order_execution:
+            if key in cp:
+                sorted_registry[key] = cp.pop(key)
+        sorted_registry.update(cp)
+        return sorted_registry
 
     def install_single(self, template_type: str) -> None:
         if template_type not in self._manifest["templates"]:
@@ -195,9 +233,10 @@ class InstallAPI:
 
         fm.write_template(fm.file_path)
         registry_path = dest_path / "registry.json"
+        sorted_registry = self._get_sorted_registry(registry)
         with registry_path.open("w", encoding="utf-8") as f:
             # yaml.dump(registry, f, sort_keys=False)
-            json.dump(registry, f, indent=4)
+            json.dump(sorted_registry, f, indent=4)
         with (dest_path / "manifest.json").open("w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=4)
         instructions_md.write_template(instructions_md.file_path)

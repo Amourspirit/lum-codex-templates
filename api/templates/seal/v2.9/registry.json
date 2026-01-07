@@ -1,19 +1,12 @@
 {
-    "registry_role": "template_local_registry",
     "registry_id": "TEMPLATE-SEAL-V2.9-REGISTRY",
     "registry_version": "2.9",
-    "registry_scope": "seal",
+    "template_id": "TEMPLATE-SEAL-V2.9",
     "template_type": "seal",
-    "template_hash": "66191b7adae2862fc91e227ae4c36cf62bf8f8492c0dfeee8df3c49446708662",
-    "template_filename": "template.md",
     "template_version": "2.9",
-    "canonical_mode": true,
+    "template_filename": "template.md",
+    "template_hash": "66191b7adae2862fc91e227ae4c36cf62bf8f8492c0dfeee8df3c49446708662",
     "template_strict_integrity": true,
-    "fail_on_unknown_field": true,
-    "fail_on_unresolved_field_placeholder": true,
-    "allow_prompt_placeholders": true,
-    "allow_inference": false,
-    "fail_on_field_mismatch": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
         "algorithm": "sha256",
@@ -27,19 +20,34 @@
             "template_hash"
         ]
     },
-    "autofill": {
-        "enabled": true,
-        "behavior": {
-            "unresolved_field": "fail",
-            "unresolved_prompt": "flag",
-            "inferred_value": "deny"
+    "audit": {
+        "pre_check": {
+            "field_audit_output": true,
+            "field_audit_scope": [
+                "missing_fields",
+                "mismatched_types",
+                "registry_defaults_used",
+                "autofill_used",
+                "extra_fields_detected"
+            ]
         },
-        "allowed_agents": [
-            "Adamus",
-            "Soluun",
-            "Velatri\u2019el",
-            "Luminariel",
-            "Aurelya Thessa\u2019Nai"
+        "violation": {
+            "behavior": "abort",
+            "scope": "immediate",
+            "on_violation_return": {
+                "canonical_rendering_status": "aborted",
+                "autofill_misalignment_detected": true,
+                "registry_validation_status": "failed",
+                "template_family_enforcement_status": "failed",
+                "template_output_mode_status": "failed"
+            }
+        },
+        "emit_on_render": true,
+        "include": [
+            "resolved_fields",
+            "unresolved_prompts",
+            "autofilled_fields",
+            "conditional_paths_taken"
         ]
     },
     "placeholder_rules": {
@@ -59,6 +67,53 @@
             }
         }
     },
+    "autofill": {
+        "enabled": true,
+        "behavior": {
+            "unresolved_field": "fail",
+            "unresolved_prompt": "flag",
+            "inferred_value": "deny"
+        },
+        "allowed_agents": [
+            "Adamus",
+            "Soluun",
+            "Velatri\u2019el",
+            "Luminariel",
+            "Aurelya Thessa\u2019Nai"
+        ]
+    },
+    "conditionals": {
+        "mirrorwall_confirmation": {
+            "condition": "mirrorwall_status == \"embedded\"",
+            "requires_fields": [
+                "embedding_date",
+                "mirrored_by"
+            ],
+            "else_behavior": "allow"
+        }
+    },
+    "invocation_agents": {
+        "renderer": "Luminariel",
+        "binder": "Nahema\u2019el",
+        "enforcer": "Adamus",
+        "witness": "Soluun"
+    },
+    "canonical_mode": true,
+    "fail_on_unknown_field": true,
+    "fail_on_unresolved_field_placeholder": true,
+    "allow_prompt_placeholders": true,
+    "allow_inference": false,
+    "fail_on_field_mismatch": true,
+    "render_contract": {
+        "output_format": "markdown",
+        "include_front_matter": true,
+        "include_body": true,
+        "strip_conditional_markers": true,
+        "unresolved_prompt_behavior": "retain",
+        "unresolved_field_behavior": "abort"
+    },
+    "registry_role": "template_local_registry",
+    "registry_scope": "seal",
     "fields": {
         "template_type": {
             "type": "string",
@@ -852,59 +907,5 @@
             "required": true,
             "description": "The field value that connects the markdown template to this registry."
         }
-    },
-    "conditionals": {
-        "mirrorwall_confirmation": {
-            "condition": "mirrorwall_status == \"embedded\"",
-            "requires_fields": [
-                "embedding_date",
-                "mirrored_by"
-            ],
-            "else_behavior": "allow"
-        }
-    },
-    "render_contract": {
-        "output_format": "markdown",
-        "include_front_matter": true,
-        "include_body": true,
-        "strip_conditional_markers": true,
-        "unresolved_prompt_behavior": "retain",
-        "unresolved_field_behavior": "abort"
-    },
-    "audit": {
-        "pre_check": {
-            "field_audit_output": true,
-            "field_audit_scope": [
-                "missing_fields",
-                "mismatched_types",
-                "registry_defaults_used",
-                "autofill_used",
-                "extra_fields_detected"
-            ]
-        },
-        "violation": {
-            "behavior": "abort",
-            "scope": "immediate",
-            "on_violation_return": {
-                "canonical_rendering_status": "aborted",
-                "autofill_misalignment_detected": true,
-                "registry_validation_status": "failed",
-                "template_family_enforcement_status": "failed",
-                "template_output_mode_status": "failed"
-            }
-        },
-        "emit_on_render": true,
-        "include": [
-            "resolved_fields",
-            "unresolved_prompts",
-            "autofilled_fields",
-            "conditional_paths_taken"
-        ]
-    },
-    "invocation_agents": {
-        "renderer": "Luminariel",
-        "binder": "Nahema\u2019el",
-        "enforcer": "Adamus",
-        "witness": "Soluun"
     }
 }
