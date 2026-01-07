@@ -41,7 +41,6 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
-    - field_placeholder_delimiters
     - field_placeholder_format
     - linkage_resonance
     - linkage_scope
@@ -56,7 +55,6 @@ template_meta:
     - mirrored_by
     - mirrorwall_status
     - placeholder_autofill_policy
-    - placeholder_prefix_semantics
     - private
     - rag_ready
     - registry_id
@@ -72,7 +70,6 @@ template_meta:
     - template_name
     - template_origin
     - template_output_mode
-    - template_purpose
     - template_strict_integrity
     - template_type
     - template_version
@@ -84,6 +81,8 @@ template_meta:
     - template_purpose
     - template_output_mode
     - template_hash
+    - field_placeholder_delimiters
+    - placeholder_prefix_semantics
   optional_fields:
     - placeholder_examples
     - upnote_categories

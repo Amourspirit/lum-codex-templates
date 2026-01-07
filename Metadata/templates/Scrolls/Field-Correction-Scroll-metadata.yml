@@ -80,7 +80,6 @@ template_meta:
     - template_name
     - template_origin
     - template_output_mode
-    - template_purpose
     - template_strict_integrity
     - template_type
     - template_version

@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from api.routes import templates
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
-from fastapi_cache.decorator import cache
 
 
 from dotenv import load_dotenv
@@ -16,7 +15,7 @@ load_dotenv()  # reads variables from a .env file and sets them in os.environ
 async def lifespan(app: FastAPI):
     # Load startup resources
     # https://fastapi.tiangolo.com/advanced/events/#async-context-manager
-    FastAPICache.init(InMemoryBackend())
+    FastAPICache.init(backend=InMemoryBackend())
     yield
     # Clean up resources if needed
 

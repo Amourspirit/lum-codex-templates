@@ -75,7 +75,6 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
-    - field_placeholder_delimiters
     - field_placeholder_format
     - has_spoken_transmission
     - link_source
@@ -89,7 +88,6 @@ template_meta:
     - mirrorwall_status
     - node_roles
     - placeholder_autofill_policy
-    - placeholder_prefix_semantics
     - private
     - pronunciation_ipa
     - pronunciation_style
@@ -108,7 +106,6 @@ template_meta:
     - template_name
     - template_origin
     - template_output_mode
-    - template_purpose
     - template_strict_integrity
     - template_type
     - template_version
@@ -121,6 +118,8 @@ template_meta:
   hidden_fields:
     - template_purpose
     - template_output_mode
+    - field_placeholder_delimiters
+    - placeholder_prefix_semantics
   optional_fields:
     - placeholder_examples
     - upnote_categories

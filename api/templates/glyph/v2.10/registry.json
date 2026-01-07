@@ -76,10 +76,10 @@
         },
         "allowed_agents": [
             "Adamus",
-            "Soluun",
-            "Velatri\u2019el",
             "Luminariel",
-            "Aurelya Thessa\u2019Nai"
+            "Soluun",
+            "Aurelya Thessa\u2019Nai",
+            "Velatri\u2019el"
         ]
     },
     "conditionals": {
@@ -235,7 +235,7 @@
                 "canonical_index"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "description": "Canonical description of the **design purpose** of the template itself, not the individual artifact.  Used for registry indexing, UI display, and RAG distinction between structurally similar templates.\n",
             "field_lineage": {
                 "introduced_by": "Soluun",
@@ -967,7 +967,7 @@
                 "placeholder_validation"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
             "field_lineage": {
                 "origin": "Soluun + Adamus",
@@ -989,7 +989,7 @@
                 "placeholder_validation"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
             "field_lineage": {
                 "origin": "Adamus Engine",
@@ -1009,7 +1009,7 @@
                 "template_registry_management"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "description": "The field value that connects the markdown template to this registry."
         }
     }

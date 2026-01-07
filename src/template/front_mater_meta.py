@@ -266,9 +266,37 @@ class FrontMatterMeta:
         instance._content = content
         if instance._frontmatter is None:
             instance._frontmatter = {}
-        instance.file_path = file_path  # or set to a default value if needed
+        instance.file_path = Path(file_path)  # or set to a default value if needed
         instance._sha256 = None
         instance.config = PkgConfig()
         return instance
+
+    @staticmethod
+    def from_content(content: str) -> "FrontMatterMeta":
+        """Create a FrontMatterMeta instance from the given content string.
+        Parses the frontmatter from the content using ObsidianEditor, extracts the
+        frontmatter dictionary and remaining content, and constructs a FrontMatterMeta
+        object from them.
+
+        Args:
+            content (str): The full content string containing frontmatter and body.
+
+        Returns:
+            FrontMatterMeta: An instance of FrontMatterMeta created from the parsed
+            frontmatter and content.
+
+        Raises:
+            ValueError: If no frontmatter is found in the content.
+        """
+
+        fm_dict, content = ObsidianEditor().parse_template(content)
+        if fm_dict is None:
+            raise ValueError("No frontmatter found in content.")
+
+        return FrontMatterMeta.from_frontmatter_dict(
+            file_path="",
+            fm_dict=fm_dict,
+            content=content,
+        )
 
     # endregion Static Methods

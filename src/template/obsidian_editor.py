@@ -20,9 +20,16 @@ class ObsidianEditor:
         if text.startswith("\ufeff"):
             text = text.lstrip("\ufeff")
 
-        lines = text.splitlines(keepends=True)
+        return self.parse_template(text)
+
+    def parse_template(self, template_content: str) -> tuple[dict | None, str]:
+        """
+        Parse the given template content string and return (frontmatter_dict or None, remaining_markdown_text).
+        Expects YAML frontmatter fenced with '---' (start and end) at the top of the content.
+        """
+        lines = template_content.splitlines(keepends=True)
         if not lines or lines[0].strip() != "---":
-            return None, text
+            return None, template_content
 
         fm_lines = []
         i = 1
@@ -32,7 +39,7 @@ class ObsidianEditor:
 
         # no closing fence => treat as no frontmatter
         if i >= len(lines) or lines[i].strip() not in ("---", "..."):
-            return None, text
+            return None, template_content
 
         frontmatter_text = "".join(fm_lines)
         content = "".join(lines[i + 1 :])
@@ -61,6 +68,8 @@ class ObsidianEditor:
         """
         full_text = self.get_template_text(frontmatter, content)
         path = Path(file_path)
+        if str(path) == ".":
+            raise ValueError("Cannot write to current directory '.'")
         path.write_text(full_text, encoding="utf-8")
         return path
 

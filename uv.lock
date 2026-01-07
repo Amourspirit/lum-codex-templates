@@ -277,6 +277,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "fastapi-cache2" },
+    { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "toml" },
@@ -291,6 +292,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "fastapi-cache2", specifier = ">=0.2.2" },
+    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "toml", specifier = ">=0.10.2" },

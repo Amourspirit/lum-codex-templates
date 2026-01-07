@@ -1,16 +1,21 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from fastapi.responses import Response
+
+from src import verify
 from ..responses.markdown_response import MarkdownResponse
 from src.template.front_mater_meta import FrontMatterMeta
+from ..models.artifact_submission import ArtifactSubmission
+from ..lib.util.result import Result
+from ..lib.verify.verify_meta_fields import VerifyMetaFields
 
 router = APIRouter()
+API_RELATIVE_URL = "/api/v1"
 
 
 @router.get(
@@ -23,11 +28,10 @@ async def get_template(template_type: str, version: str, request: Request):
     if not path.exists():
         raise HTTPException(status_code=404, detail="Template file not found.")
     fm = FrontMatterMeta(file_path=path)
-    api_relative_url = "/api/v1"
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + api_relative_url
+    app_root_url = base_url + API_RELATIVE_URL
 
     if fm.has_field("template_registry"):
         api_path = f"{app_root_url}/templates/{template_type}/{version}/registry"
@@ -57,13 +61,11 @@ async def get_template_instructions(template_type: str, version: str, request: R
         raise HTTPException(status_code=404, detail="Instructions file not found.")
     fm = FrontMatterMeta(file_path=path)
 
-    api_relative_url = "/api/v1"
-
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + api_relative_url
+    app_root_url = base_url + API_RELATIVE_URL
 
-    content = fm.content.replace("[[API_RELATIVE_URL]]", api_relative_url).replace(
+    content = fm.content.replace("[[API_RELATIVE_URL]]", API_RELATIVE_URL).replace(
         "[[API_ROOT_URL]]", app_root_url
     )
     fm.content = content
@@ -100,11 +102,10 @@ async def get_template_manifest(template_type: str, version: str, request: Reque
     if not path.exists():
         raise HTTPException(status_code=404, detail="Manifest file not found.")
     json_content: dict = json.loads(path.read_text())
-    api_relative_url = "/api/v1"
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + api_relative_url
+    app_root_url = base_url + API_RELATIVE_URL
     json_content["template_api_path"] = (
         f"{app_root_url}/templates/{template_type}/{version}"
     )
@@ -174,3 +175,89 @@ async def executor_modes(version: str):
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
     return json_content
+
+
+@router.post("/api/v1/templates/verify")
+def verify_artifact(submission: ArtifactSubmission, request: Request):
+    s_fm = submission.template_frontmatter.strip()
+    if not s_fm:
+        raise HTTPException(
+            status_code=400, detail="Template frontmatter cannot be empty."
+        )
+    s_body = submission.template_body.strip()
+    if not s_body:
+        raise HTTPException(
+            status_code=400, detail="Template body content cannot be empty."
+        )
+
+    if not s_fm.startswith("---"):
+        s_fm = "---\n" + s_fm
+    if not s_fm.endswith("---"):
+        s_fm = s_fm + "\n---\n"
+    content = s_fm + "\n" + s_body
+    fm = FrontMatterMeta.from_content(content)
+    if not fm.template_type:
+        raise HTTPException(
+            status_code=400,
+            detail="Field template_type is not specified in frontmatter.",
+        )
+
+    if not fm.template_version:
+        raise HTTPException(
+            status_code=400,
+            detail="Field template_version is not specified in frontmatter.",
+        )
+
+    registry_path = Path(
+        f"api/templates/{fm.template_type}/v{fm.template_version}/registry.json"
+    )
+    if not registry_path.is_absolute():
+        registry_path = Path.cwd() / registry_path
+    if not registry_path.exists():
+        raise HTTPException(
+            status_code=400,
+            detail=f"No registry found for the specified template_type of {fm.template_type} and template_version {fm.template_version} not found.",
+        )
+    registry: dict[str, Any] = json.loads(registry_path.read_text())
+
+    verify_instance = VerifyMetaFields(registry=registry, fm=fm)
+    result = verify_instance.verify()
+    if not result.is_success:
+        raise HTTPException(
+            status_code=500,
+            detail=str(result.error),
+        )
+    # Verification passed, now check hash
+    base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
+    app_root_url = base_url + API_RELATIVE_URL
+    template_api_path = (
+        f"{app_root_url}/templates/{fm.template_type}/v{fm.template_version}"
+    )
+    default_result = {
+        "status": "verified",
+        "template_version": fm.template_version,
+        "registry_id": registry.get("registry_id"),
+        "registry_version": registry.get("registry_version"),
+        "field_validation": "pass",
+        "template_api_path": template_api_path,
+        "registry_api_path": f"{template_api_path}/registry",
+        "manifest_api_path": f"{template_api_path}/manifest",
+        "instructions_api_path": f"{template_api_path}/instructions",
+    }
+    data = result.data
+    if not data:
+        return default_result
+    if "missing_fields" in data and data["missing_fields"]:
+        default_result["status"] = "failed"
+        default_result["field_validation"] = "failed"
+        default_result["missing_fields"] = data["missing_fields"]
+    if "extra_fields" in data and data["extra_fields"]:
+        default_result["extra_fields"] = data["extra_fields"]
+    if "incorrect_type_fields" in data and data["incorrect_type_fields"]:
+        default_result["field_validation"] = "failed"
+        default_result["incorrect_type_fields"] = data["incorrect_type_fields"]
+    if "rule_errors" in data and data["rule_errors"]:
+        default_result["field_validation"] = "failed"
+        default_result["rule_errors"] = data["rule_errors"]
+
+    return default_result

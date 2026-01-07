@@ -74,7 +74,7 @@ class TemplateBase:
             "status": "active",
             "plugin_groups": ["template_registry_management"],
             "autofill": False,
-            "required": True,
+            "required": False,
             "description": "The field value that connects the markdown template to this registry.",
         }
         return result
