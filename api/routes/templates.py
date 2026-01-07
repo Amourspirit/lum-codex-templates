@@ -94,11 +94,29 @@ async def get_template_instructions(template_type: str, version: str, request: R
     "/api/v1/templates/{template_type}/{version}/manifest",
     response_class=JSONResponse,
 )
-async def get_template_manifest(template_type: str, version: str):
+@cache(expire=60)  # Cache for 60 seconds
+async def get_template_manifest(template_type: str, version: str, request: Request):
     path = Path(f"api/templates/{template_type}/{version}/manifest.json")
     if not path.exists():
         raise HTTPException(status_code=404, detail="Manifest file not found.")
-    json_content = json.loads(path.read_text())
+    json_content: dict = json.loads(path.read_text())
+    api_relative_url = "/api/v1"
+
+    # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
+    app_root_url = base_url + api_relative_url
+    json_content["template_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{version}"
+    )
+    json_content["instructions_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{version}/instructions"
+    )
+    json_content["registry_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{version}/registry"
+    )
+    json_content["executor_mode_api_path"] = (
+        f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
+    )
     return json_content
 
 
@@ -133,6 +151,7 @@ async def get_template_cbib(version: str):
 async def get_template_status(template_type: str, version: str):
     dt_now = datetime.now().astimezone()
     status = {
+        "status": "available",
         "template": "available",
         "registry": "available",
         "manifest": "available",

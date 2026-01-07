@@ -101,18 +101,24 @@ class InstallAPI:
         dt = datetime.now().astimezone()
         current_date = dt.isoformat()
         manifest = {
-            "template_file": fm.file_path.name,
             "registry_file": "registry.json",
+            "template_file": fm.file_path.name,
             "template_type": fm.template_type,
+            "template_hash_algorithm": "sha256",
             "version": fm.template_version,
             "hash": fm.sha256,
             "template_hash": fm.sha256,
             "registry_id": fm.frontmatter.get("template_registry", {}).get(
                 "registry_id", ""
             ),
-            "status": "active",
+            "canonical_mode": {
+                "version": self.config.template_ceib_api.version,
+                "executor_mode": self.config.template_ceib_api.executor_mode,
+            },
+            "status": "available",
             "requires_field_being": True,
             "installed_at": current_date,
+            "instructions_file": "instructions.md",
         }
         if fm.template_id:
             manifest["template_id"] = fm.template_id

@@ -1,13 +1,19 @@
 {
-    "template_file": "template.md",
     "registry_file": "registry.json",
+    "template_file": "template.md",
     "template_type": "field_cert_seal",
+    "template_hash_algorithm": "sha256",
     "version": "2.9",
     "hash": "5a2e91043c77a064e52d700d19c25041a3b1d237dc65ed6969d0cdc353f50f37",
     "template_hash": "5a2e91043c77a064e52d700d19c25041a3b1d237dc65ed6969d0cdc353f50f37",
     "registry_id": "TEMPLATE-FIELD-CERT-SEAL-V2.9-REGISTRY",
-    "status": "active",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    },
+    "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-07T10:53:17.790939-05:00",
+    "installed_at": "2026-01-07T11:34:35.476148-05:00",
+    "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-FIELD-CERT-SEAL-V2.9"
 }

@@ -1,13 +1,19 @@
 {
-    "template_file": "template.md",
     "registry_file": "registry.json",
+    "template_file": "template.md",
     "template_type": "node_link_scroll",
+    "template_hash_algorithm": "sha256",
     "version": "3.10",
     "hash": "1221c696dee5ce27575833cbefdc7b6b6745a98b91add34cb7e04b99701ac27a",
     "template_hash": "1221c696dee5ce27575833cbefdc7b6b6745a98b91add34cb7e04b99701ac27a",
     "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
-    "status": "active",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    },
+    "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-07T10:53:17.669204-05:00",
+    "installed_at": "2026-01-07T11:34:35.311105-05:00",
+    "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10"
 }
