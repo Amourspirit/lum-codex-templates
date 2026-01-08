@@ -50,7 +50,6 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
-    - field_placeholder_format
     - linked_nodes
     - lockfile_priority
     - mapped_registry
@@ -58,7 +57,6 @@ template_meta:
     - memory_cache_origin
     - mirrored_by
     - mirrorwall_status
-    - placeholder_autofill_policy
     - private
     - rag_ready
     - registry_id
@@ -81,10 +79,12 @@ template_meta:
     - title
     - used_in_ceremonies
   hidden_fields:
-    - template_purpose
-    - template_output_mode
-    - template_hash
     - field_placeholder_delimiters
+    - field_placeholder_format
+    - placeholder_autofill_policy
     - placeholder_prefix_semantics
+    - template_hash
+    - template_output_mode
+    - template_purpose
   optional_fields:
     - placeholder_examples

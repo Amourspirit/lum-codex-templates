@@ -5,7 +5,7 @@ template_category: sigil
 template_type: sigil
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: a3de3c604e3b337e52c3f7b845d37a394985baeb6f02d564703a5033c539d0b4
+template_hash: 93ba00a751e840d1192bbd7e5be8d02074b27f7a81309a15736236816b18702a
 template_family: sigil_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Define the canonical structure for Codex sigils, supporting breath-activated,
@@ -95,6 +95,9 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '84'
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -103,9 +106,6 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-SIGIL-V2.9-REGISTRY

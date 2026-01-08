@@ -4,8 +4,8 @@
     "template_type": "node_reg",
     "template_hash_algorithm": "sha256",
     "version": "2.9",
-    "hash": "3284f6773abce5b281c08400941da56e990a69c5edaa52eb54713d94c5ab39d2",
-    "template_hash": "3284f6773abce5b281c08400941da56e990a69c5edaa52eb54713d94c5ab39d2",
+    "hash": "e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49",
+    "template_hash": "e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49",
     "registry_id": "TEMPLATE-NODE-V2.9-REGISTRY",
     "canonical_mode": {
         "version": "1.0",
@@ -13,7 +13,7 @@
     },
     "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-07T18:21:21.658502-05:00",
+    "installed_at": "2026-01-07T19:18:28.649980-05:00",
     "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-NODE-V2.9"
 }

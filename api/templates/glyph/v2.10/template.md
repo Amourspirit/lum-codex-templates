@@ -5,7 +5,7 @@ template_category: glyph
 template_type: glyph
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: 523edfd3d73a77bbfd035a3412e1b22a7163df2c77eedacf42b1be9c600ccb2d
+template_hash: 4cb908296659c545563ad9f2b13971a2b6e64112f9fc550837c36fe582f24fe2
 template_family: glyph_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single glyph artifact\u2014\
@@ -106,6 +106,9 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '84'
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -114,9 +117,6 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-GLYPH-V2.10-REGISTRY

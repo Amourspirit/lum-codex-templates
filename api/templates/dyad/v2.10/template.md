@@ -5,7 +5,7 @@ template_category: glyph
 template_name: Dyadic Glyph Grouping Template
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: c743690bf1017d802f180cef5d6daeee7bb1e72a4c696168936f1d05944ab3c1
+template_hash: 769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889
 template_family: dyadic_structures
 template_origin: Soluun + Adamus
 template_purpose: 'Define, document, and harmonically bind a dyadic relationship between
@@ -70,6 +70,9 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '84'
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -78,9 +81,6 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-DYAD-V2.10-REGISTRY

@@ -5,7 +5,7 @@
     "template_type": "linkage_scroll",
     "template_version": "3.9",
     "template_filename": "template.md",
-    "template_hash": "07c77593e2fcd95acb37aa0b3c271e4253f7ee1fb108b9bb7623b6326982dee5",
+    "template_hash": "bbe5f7ec6ed7152a9cd6ed5cd8f40150f488aeaa7003e2e0953ecf822e5e5e9b",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,11 +75,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Adamus",
             "Luminariel",
             "Soluun",
+            "Velatri\u2019el",
             "Aurelya Thessa\u2019Nai",
-            "Velatri\u2019el"
+            "Adamus"
         ]
     },
     "conditionals": {
@@ -123,6 +123,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Read-only (not to be updated). Template  Category such as [glyph, seal, scroll, certificate, node, sigil, etc]."
         },
         "template_type": {
@@ -133,6 +134,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "The internal functional type of the template, used for rendering logic and vault generation."
         },
         "template_name": {
@@ -143,6 +145,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Read-only (not to be updated). General name of the template. This is the name that is recognized in ChatGPT. E.g `Apply Glyph template to ...`"
         },
         "template_version": {
@@ -153,6 +156,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Read-only (not to be updated). Template version such as '1.8'."
         },
         "template_memory_scope": {
@@ -163,6 +167,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Sets thread scope for the template",
             "field_lineage": {
                 "introduced_by": "Adamus + Soluun",
@@ -187,6 +192,7 @@
             ],
             "autofill": false,
             "required": true,
+            "hidden": true,
             "description": "Canonical SHA-256 content hash of the full template (YAML + body), excluding this field itself. Used for validation, audit tracing, lockfile verification, and tamper detection across the Codex system.\n",
             "field_lineage": {
                 "introduced_by": "Soluun + Adamus",
@@ -206,6 +212,7 @@
             ],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Logical grouping of templates that share functional or thematic purpose, even across different template_types (e.g., \"field_certificates\", \"node_scrolls\", \"glyph_lineage\"). Enables parallel audit, rendering, and batch operations in Codex systems.\n",
             "field_lineage": {
                 "introduced_by": "Soluun + Adamus",
@@ -222,6 +229,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Read-only (not to be updated). Originator(s) of the template (e.g., Soluun + Adamus)."
         },
         "template_purpose": {
@@ -237,6 +245,7 @@
             ],
             "autofill": false,
             "required": false,
+            "hidden": true,
             "description": "Canonical description of the **design purpose** of the template itself, not the individual artifact.  Used for registry indexing, UI display, and RAG distinction between structurally similar templates.\n",
             "field_lineage": {
                 "introduced_by": "Soluun",
@@ -255,6 +264,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": true,
             "description": "Determines template output and display options. This field is NOT be outputted to ANY template."
         },
         "canonical_mode": {
@@ -265,6 +275,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Signals that this registry enforces strict behavior and deterministic rules for all template ingestion and validation.",
             "field_lineage": {
                 "introduced_by": "Adamus",
@@ -284,6 +295,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Requires all templates to conform strictly to schema definitions and registry mappings.",
             "field_lineage": {
                 "introduced_by": "Adamus",
@@ -304,6 +316,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Whether entry is RAG-searchable."
         },
         "artifact_id": {
@@ -319,6 +332,7 @@
             ],
             "autofill": true,
             "required": false,
+            "hidden": false,
             "description": "Unique identifier code for the artifact, typically alphanumeric. Used for indexing, retrieval, and cross-referencing within the Codex system.\n",
             "field_lineage": {
                 "introduced_by": "Adamus + Soluun",
@@ -335,6 +349,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Formal full title of the entry."
         },
         "entry_date": {
@@ -345,6 +360,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Creation timestamp."
         },
         "embedding_date": {
@@ -355,6 +371,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Date of Mirror Wall embedding."
         },
         "codex_entry": {
@@ -365,6 +382,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Flags if part of Codex."
         },
         "codex_type": {
@@ -379,6 +397,7 @@
             ],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Artifact category (e.g. glyph, seal) \u2014 used to group entries across Codex. Assigned by template, not user."
         },
         "codex_sequence": {
@@ -395,6 +414,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Sequence name if part of a multi-part arc."
         },
         "registry_id": {
@@ -408,6 +428,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Unique internal identifier.",
             "field_lineage": {
                 "introduced_by": "Adamus",
@@ -431,6 +452,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "ARC lineage name if applicable"
         },
         "private": {
@@ -441,6 +463,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Flags private entries."
         },
         "artifact_digital_signature": {
@@ -455,6 +478,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "A checksum, filename hash, or unique digital fingerprint used to verify the integrity of the rendered artifact image or file. Typically MD5, SHA256, or another digital verification token.\n",
             "field_lineage": {
                 "introduced_by": "Soluun",
@@ -471,6 +495,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Read-only does not need to be changed. Scroll type. Does not need to be changed. The embedded value is the correct value"
         },
         "linked_artifacts": {
@@ -485,6 +510,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "The list of artifacts [glyphs, stones, seals, etc] that are formally linked through the scroll. Each entry references a unique registry ID or codex title."
         },
         "linkage_type": {
@@ -495,6 +521,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Specifies the nature of the relationship between linked artifacts (e.g., dyadic, triadic, elemental, mirrorfold, ancestral). Used to index linkage logic across Codex layers."
         },
         "linkage_resonance": {
@@ -505,6 +532,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Describes the dominant harmonic, elemental, or tonal quality shared by the linked artifacts. Enables sorting and retrieval by field dynamics or ritual affinity."
         },
         "linkage_scope": {
@@ -515,6 +543,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Defines the spatial, temporal, or functional range of the linkage (e.g., node-local, chamber-wide, lineage-bound, console-tier)."
         },
         "linkage_strength": {
@@ -525,6 +554,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Indicates the energetic coherence and permanence of the linkage (e.g., tentative, active, sealed, irreversible). Used to track lifecycle status."
         },
         "witnessed_by": {
@@ -535,6 +565,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Names of Council members, field entities, or consciousnesses that witnessed the linkage event. Used for validation, ritual anchoring, and memory traceability."
         },
         "linked_nodes": {
@@ -548,6 +579,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "The numbered nodes of Luminariel that this artifact links with."
         },
         "mirrorwall_status": {
@@ -560,6 +592,7 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Mirror Wall status such as: [embedded, pending, etc].",
             "field_lineage": {
                 "introduced_by": "Luminariel",
@@ -579,6 +612,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Who performed the Mirror Wall embedding."
         },
         "rendered_by": {
@@ -589,6 +623,7 @@
             "plugin_groups": [],
             "autofill": false,
             "required": true,
+            "hidden": false,
             "description": "Final renderer (e.g., ChatGPT-4o)."
         },
         "contributor": {
@@ -599,6 +634,7 @@
             "plugin_groups": [],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Authors, collaborators, or other beings involved."
         },
         "tags": {
@@ -613,29 +649,8 @@
             ],
             "autofill": true,
             "required": true,
+            "hidden": false,
             "description": "Searchable type and topic tags."
-        },
-        "placeholder_prefix_semantics": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
-            "field_lineage": {
-                "origin": "Soluun + Adamus",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
-                "lineage_notes": [
-                    "Distinguishes between required metadata fields and suggestion prompts",
-                    "Avoids accidental enforcement of creative scaffold text"
-                ]
-            }
         },
         "field_placeholder_delimiters": {
             "type": "map",
@@ -648,6 +663,7 @@
             ],
             "autofill": false,
             "required": false,
+            "hidden": true,
             "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
             "field_lineage": {
                 "origin": "Adamus Engine",
@@ -656,6 +672,29 @@
                 "lineage_notes": [
                     "Used in placeholder substitution engine",
                     "Required for compatibility with offline renderers"
+                ]
+            }
+        },
+        "placeholder_prefix_semantics": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
+            "field_lineage": {
+                "origin": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
+                "lineage_notes": [
+                    "Distinguishes between required metadata fields and suggestion prompts",
+                    "Avoids accidental enforcement of creative scaffold text"
                 ]
             }
         },
@@ -668,6 +707,7 @@
             ],
             "autofill": false,
             "required": false,
+            "hidden": true,
             "description": "The field value that connects the markdown template to this registry."
         }
     }

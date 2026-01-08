@@ -4,8 +4,8 @@
     "template_type": "glyph",
     "template_hash_algorithm": "sha256",
     "version": "2.10",
-    "hash": "523edfd3d73a77bbfd035a3412e1b22a7163df2c77eedacf42b1be9c600ccb2d",
-    "template_hash": "523edfd3d73a77bbfd035a3412e1b22a7163df2c77eedacf42b1be9c600ccb2d",
+    "hash": "4cb908296659c545563ad9f2b13971a2b6e64112f9fc550837c36fe582f24fe2",
+    "template_hash": "4cb908296659c545563ad9f2b13971a2b6e64112f9fc550837c36fe582f24fe2",
     "registry_id": "TEMPLATE-GLYPH-V2.10-REGISTRY",
     "canonical_mode": {
         "version": "1.0",
@@ -13,7 +13,7 @@
     },
     "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-07T18:21:21.168356-05:00",
+    "installed_at": "2026-01-07T19:18:27.510672-05:00",
     "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-GLYPH-V2.10"
 }

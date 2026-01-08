@@ -13,6 +13,7 @@ from src.template.front_mater_meta import FrontMatterMeta
 from ..models.artifact_submission import ArtifactSubmission
 from ..lib.util.result import Result
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
+from ..lib.cleanup.clean_meta_fields import CleanMetaFields
 
 router = APIRouter()
 API_RELATIVE_URL = "/api/v1"
@@ -177,7 +178,7 @@ async def executor_modes(version: str):
     return json_content
 
 
-@router.post("/api/v1/templates/verify")
+@router.get("/api/v1/templates/verify")
 def verify_artifact(submission: ArtifactSubmission, request: Request):
     s_fm = submission.template_frontmatter.strip()
     if not s_fm:
@@ -233,8 +234,11 @@ def verify_artifact(submission: ArtifactSubmission, request: Request):
     template_api_path = (
         f"{app_root_url}/templates/{fm.template_type}/v{fm.template_version}"
     )
+    dt_now = datetime.now().astimezone()
     default_result = {
         "status": "verified",
+        "template_type": fm.template_type,
+        "template_id": fm.template_id,
         "template_version": fm.template_version,
         "registry_id": registry.get("registry_id"),
         "registry_version": registry.get("registry_version"),
@@ -243,6 +247,7 @@ def verify_artifact(submission: ArtifactSubmission, request: Request):
         "registry_api_path": f"{template_api_path}/registry",
         "manifest_api_path": f"{template_api_path}/manifest",
         "instructions_api_path": f"{template_api_path}/instructions",
+        "verified_at": dt_now.isoformat(),
     }
     data = result.data
     if not data:
@@ -259,5 +264,64 @@ def verify_artifact(submission: ArtifactSubmission, request: Request):
     if "rule_errors" in data and data["rule_errors"]:
         default_result["field_validation"] = "failed"
         default_result["rule_errors"] = data["rule_errors"]
+
+    return default_result
+
+
+@router.get("/api/v1/templates/finalize")
+def finalize_artifact(submission: ArtifactSubmission):
+    # cleanup and add any final fields before storage
+    s_fm = submission.template_frontmatter.strip()
+    if not s_fm:
+        raise HTTPException(
+            status_code=400, detail="Template frontmatter cannot be empty."
+        )
+    s_body = submission.template_body.strip()
+    if not s_body:
+        raise HTTPException(
+            status_code=400, detail="Template body content cannot be empty."
+        )
+
+    if not s_fm.startswith("---"):
+        s_fm = "---\n" + s_fm
+    if not s_fm.endswith("---"):
+        s_fm = s_fm + "\n---\n"
+    content = s_fm + "\n" + s_body
+    fm = FrontMatterMeta.from_content(content)
+    if not fm.template_type:
+        raise HTTPException(
+            status_code=400,
+            detail="Field template_type is not specified in frontmatter.",
+        )
+
+    if not fm.template_version:
+        raise HTTPException(
+            status_code=400,
+            detail="Field template_version is not specified in frontmatter.",
+        )
+
+    registry_path = Path(
+        f"api/templates/{fm.template_type}/v{fm.template_version}/registry.json"
+    )
+    if not registry_path.is_absolute():
+        registry_path = Path.cwd() / registry_path
+    if not registry_path.exists():
+        raise HTTPException(
+            status_code=400,
+            detail=f"No registry found for the specified template_type of {fm.template_type} and template_version {fm.template_version} not found.",
+        )
+    registry: dict[str, Any] = json.loads(registry_path.read_text())
+
+    clean_instance = CleanMetaFields(registry=registry, fm=fm)
+    result = clean_instance.cleanup()
+
+    template_frontmatter = result.get_frontmatter_yaml()
+    template_body = result.content
+
+    default_result = {
+        "template_frontmatter": template_frontmatter,
+        "template_body": template_body,
+        "status": "finalized",
+    }
 
     return default_result

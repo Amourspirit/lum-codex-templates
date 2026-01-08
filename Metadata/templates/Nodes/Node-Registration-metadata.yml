@@ -51,7 +51,6 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
-    - field_placeholder_format
     - glyph_activator
     - lockfile_priority
     - mapped_registry
@@ -64,7 +63,6 @@ template_meta:
     - node_role
     - node_status
     - node_type
-    - placeholder_autofill_policy
     - private
     - rag_ready
     - registry_id
@@ -87,12 +85,14 @@ template_meta:
     - threshold_flags_registry_scope
     - title
   hidden_fields:
-    - template_purpose
-    - template_output_mode
-    - template_usage
-    - template_hash
     - field_placeholder_delimiters
+    - field_placeholder_format
+    - placeholder_autofill_policy
     - placeholder_prefix_semantics
+    - template_hash
+    - template_output_mode
+    - template_purpose
+    - template_usage
   optional_fields:
     - placeholder_examples
     - upnote_categories

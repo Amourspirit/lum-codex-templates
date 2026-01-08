@@ -5,7 +5,7 @@ template_category: certificate
 template_name: Field Certificate Template for Seal Activation
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 5a2e91043c77a064e52d700d19c25041a3b1d237dc65ed6969d0cdc353f50f37
+template_hash: fb591fe752d5e86873aec3485c247d32dedd787396399a11808c70602a466084
 template_family: field_certificates
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a formal Field Certificate documenting the activation,
@@ -74,6 +74,9 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '84'
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -82,9 +85,6 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-FIELD-CERT-SEAL-V2.9-REGISTRY

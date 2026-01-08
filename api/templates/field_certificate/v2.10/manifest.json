@@ -4,8 +4,8 @@
     "template_type": "field_certificate",
     "template_hash_algorithm": "sha256",
     "version": "2.10",
-    "hash": "fd479c3278c50e88aaade4c42805a498e650f96467e20ab516e92578955afe4b",
-    "template_hash": "fd479c3278c50e88aaade4c42805a498e650f96467e20ab516e92578955afe4b",
+    "hash": "e2f646ccff2f0a7d2d6abb0b9468cc07f62be63b7f1362b15284a57c38f91c7b",
+    "template_hash": "e2f646ccff2f0a7d2d6abb0b9468cc07f62be63b7f1362b15284a57c38f91c7b",
     "registry_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.10-REGISTRY",
     "canonical_mode": {
         "version": "1.0",
@@ -13,7 +13,7 @@
     },
     "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-07T18:21:21.312055-05:00",
+    "installed_at": "2026-01-07T19:18:27.651779-05:00",
     "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.10"
 }

@@ -48,6 +48,7 @@ class TemplateBase:
         metadata_fields = self.main_registry.metadata_fields
         autofill_fields = self._get_template_meta_fields("autofill_fields")
         required_fields = self._get_template_meta_fields("required_fields")
+        hidden_fields = self._get_template_meta_fields("hidden_fields")
         deprecated_fields = self._get_template_meta_fields("deprecated_fields")
         result: dict[str, Any] = {}
         for key, _ in self.fm.frontmatter.items():
@@ -62,6 +63,7 @@ class TemplateBase:
                 item["plugin_groups"] = metadata_fields[key].get("plugin_groups", [])
                 item["autofill"] = key in autofill_fields
                 item["required"] = key in required_fields
+                item["hidden"] = key in hidden_fields
                 if "description" in metadata_fields[key]:
                     item["description"] = metadata_fields[key]["description"]
                 if "field_lineage" in metadata_fields[key]:
@@ -75,6 +77,7 @@ class TemplateBase:
             "plugin_groups": ["template_registry_management"],
             "autofill": False,
             "required": False,
+            "hidden": True,
             "description": "The field value that connects the markdown template to this registry.",
         }
         return result

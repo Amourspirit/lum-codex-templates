@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+import yaml
 from .obsidian_editor import ObsidianEditor
 from ..config.pkg_config import PkgConfig
 from ..util import sha
@@ -160,6 +161,14 @@ class FrontMatterMeta:
         Value is assigned to self.sha256 property.
         """
         self._sha256 = self._compute_sha256()
+
+    def get_frontmatter_yaml(self) -> str:
+        """Get the frontmatter as a YAML-formatted string.
+
+        Returns:
+            str: The frontmatter in YAML format.
+        """
+        return yaml.dump(self.frontmatter)
 
     # region Properties
     @property

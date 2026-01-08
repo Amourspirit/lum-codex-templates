@@ -13,7 +13,7 @@ from ...process.process_obsidian_templates import ProcessObsidianTemplates
 
 
 class Cleanup:
-    """Upgrade template package to current version."""
+    """Clean template package"""
 
     def __init__(self):
         self.config = PkgConfig()
