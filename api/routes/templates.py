@@ -23,8 +23,10 @@ API_RELATIVE_URL = "/api/v1"
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
-    v = version.lower()
+    v = version.strip().lower()
     v = v.lstrip("v")
+    if not v:
+        return Result(None, Exception("Version cannot be empty."))
     if not v.replace(".", "").isdigit():
         return Result(None, Exception("Invalid version format."))
     if v.isdigit():
@@ -363,14 +365,15 @@ def finalize_artifact(submission: ArtifactSubmission):
 def upgrade_template(submission: UpgradeTemplateContent, request: Request):
     # cleanup and add any final fields before storage
     contents = submission.template_content.strip()
-    new_version = submission.new_version.strip()
+    v_result = _validate_version_str(submission.new_version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    new_version = v_result.data
 
     if not contents:
         raise HTTPException(
             status_code=400, detail="Template contents cannot be empty."
         )
-    if not new_version:
-        raise HTTPException(status_code=400, detail="New version cannot be empty.")
     try:
         upgrade_fm = FrontMatterMeta.from_content(contents)
     except Exception as e:
@@ -385,7 +388,7 @@ def upgrade_template(submission: UpgradeTemplateContent, request: Request):
 
     try:
         path = Path(
-            f"api/templates/{upgrade_fm.template_type}/v{new_version}/template.md"
+            f"api/templates/{upgrade_fm.template_type}/{new_version}/template.md"
         )
         if not path.exists():
             raise HTTPException(status_code=404, detail="Template file not found.")
