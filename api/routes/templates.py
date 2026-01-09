@@ -351,12 +351,8 @@ def finalize_artifact(submission: ArtifactSubmission):
     clean_instance = CleanMetaFields(registry=registry, fm=fm)
     result = clean_instance.cleanup()
 
-    template_frontmatter = result.get_frontmatter_yaml()
-    template_body = result.content
-
     default_result = {
-        "template_frontmatter": template_frontmatter,
-        "template_body": template_body,
+        "template_content": result.get_template_text(),
         "status": "finalized",
     }
 
