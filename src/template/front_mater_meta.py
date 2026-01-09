@@ -199,13 +199,25 @@ class FrontMatterMeta:
     def template_version(self) -> str:
         return self.get_field("template_version", "")
 
+    @template_version.setter
+    def template_version(self, value: str) -> None:
+        self.set_field("template_version", value)
+
     @property
     def template_type(self) -> str:
         return self.get_field("template_type", "")
 
+    @template_type.setter
+    def template_type(self, value: str) -> None:
+        self.set_field("template_type", value)
+
     @property
     def template_category(self) -> str:
         return self.get_field("template_category", "")
+
+    @template_category.setter
+    def template_category(self, value: str) -> None:
+        self.set_field("template_category", value)
 
     @property
     def template_name(self) -> str:

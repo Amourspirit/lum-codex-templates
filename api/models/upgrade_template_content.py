@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 
-class ArtifactSubmission(BaseModel):
+class UpgradeTemplateContent(BaseModel):
     artifact_name: str
     template_content: str
+    new_version: str

@@ -1,3 +1,4 @@
+from curses.ascii import isdigit
 import json
 from datetime import datetime
 from pathlib import Path
@@ -7,16 +8,67 @@ from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi_cache.decorator import cache
 from fastapi.responses import Response
 
-from src import verify
 from ..responses.markdown_response import MarkdownResponse
 from src.template.front_mater_meta import FrontMatterMeta
 from ..models.artifact_submission import ArtifactSubmission
-from ..lib.util.result import Result
+from ..models.upgrade_template_content import UpgradeTemplateContent
+from ..models.template_params import TemplateParams
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
 from ..lib.cleanup.clean_meta_fields import CleanMetaFields
+from ..lib.upgrade.upgrade_template import UpgradeTemplate
 
 router = APIRouter()
 API_RELATIVE_URL = "/api/v1"
+
+
+def _get_template_manifest(template_type: str, version: str, request: Request):
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path.cwd() / f"api/templates/{template_type}/{ver}/manifest.json"
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Manifest file not found.")
+    json_content: dict = json.loads(path.read_text())
+
+    # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
+    app_root_url = base_url + API_RELATIVE_URL
+    json_content["template_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{ver}"
+    )
+    json_content["instructions_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{ver}/instructions"
+    )
+    json_content["registry_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{ver}/registry"
+    )
+    json_content["manifest_api_path"] = (
+        f"{app_root_url}/templates/{template_type}/{ver}/manifest"
+    )
+    json_content["executor_mode_api_path"] = (
+        f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
+    )
+    return json_content
+
+
+def _get_template_registry(template_type: str, version: str):
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path() / f"api/templates/{template_type}/{ver}/registry.json"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Registry file not found.")
+    json_content = json.loads(path.read_text())
+    return json_content
 
 
 @router.get(
@@ -25,7 +77,14 @@ API_RELATIVE_URL = "/api/v1"
 )
 @cache(expire=300)  # Cache for 300 seconds
 async def get_template(template_type: str, version: str, request: Request):
-    path = Path(f"api/templates/{template_type}/{version}/template.md")
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path(f"api/templates/{template_type}/{ver}/template.md")
     if not path.exists():
         raise HTTPException(status_code=404, detail="Template file not found.")
     fm = FrontMatterMeta(file_path=path)
@@ -35,7 +94,7 @@ async def get_template(template_type: str, version: str, request: Request):
     app_root_url = base_url + API_RELATIVE_URL
 
     if fm.has_field("template_registry"):
-        api_path = f"{app_root_url}/templates/{template_type}/{version}/registry"
+        api_path = f"{app_root_url}/templates/{template_type}/{ver}/registry"
         fm.frontmatter["template_registry"]["api_path"] = api_path
         fm.recompute_sha256()
 
@@ -43,7 +102,7 @@ async def get_template(template_type: str, version: str, request: Request):
         fm.set_field("instruction_info", {})
     fm.frontmatter["instruction_info"]["id"] = "instructions"
     fm.frontmatter["instruction_info"]["api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{version}/instructions"
+        f"{app_root_url}/templates/{template_type}/{ver}/instructions"
     )
 
     text = fm.get_template_text()
@@ -57,7 +116,14 @@ async def get_template(template_type: str, version: str, request: Request):
 )
 @cache(expire=300)  # Cache for 300 seconds
 async def get_template_instructions(template_type: str, version: str, request: Request):
-    path = Path(f"api/templates/{template_type}/{version}/instructions.md")
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path(f"api/templates/{template_type}/{ver}/instructions.md")
     if not path.exists():
         raise HTTPException(status_code=404, detail="Instructions file not found.")
     fm = FrontMatterMeta(file_path=path)
@@ -78,11 +144,11 @@ async def get_template_instructions(template_type: str, version: str, request: R
 
     if fm.has_field("template_registry"):
         fm.frontmatter["template_registry"]["api_path"] = (
-            f"{app_root_url}/templates/{template_type}/{version}/registry"
+            f"{app_root_url}/templates/{template_type}/{ver}/registry"
         )
     if fm.has_field("template_info"):
         fm.frontmatter["template_info"]["api_path"] = (
-            f"{app_root_url}/templates/{template_type}/{version}"
+            f"{app_root_url}/templates/{template_type}/{ver}"
         )
 
     # fm.frontmatter["canonical_executor_mode"]["api_path"] = (
@@ -99,27 +165,7 @@ async def get_template_instructions(template_type: str, version: str, request: R
 )
 @cache(expire=60)  # Cache for 60 seconds
 async def get_template_manifest(template_type: str, version: str, request: Request):
-    path = Path(f"api/templates/{template_type}/{version}/manifest.json")
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="Manifest file not found.")
-    json_content: dict = json.loads(path.read_text())
-
-    # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
-    base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + API_RELATIVE_URL
-    json_content["template_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{version}"
-    )
-    json_content["instructions_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{version}/instructions"
-    )
-    json_content["registry_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{version}/registry"
-    )
-    json_content["executor_mode_api_path"] = (
-        f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
-    )
-    return json_content
+    return _get_template_manifest(template_type, version, request)
 
 
 @router.get(
@@ -127,11 +173,7 @@ async def get_template_manifest(template_type: str, version: str, request: Reque
     response_class=JSONResponse,
 )
 async def get_template_registry(template_type: str, version: str):
-    path = Path(f"api/templates/{template_type}/{version}/registry.json")
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="Registry file not found.")
-    json_content = json.loads(path.read_text())
-    return json_content
+    return _get_template_registry(template_type, version)
 
 
 @router.get(
@@ -139,7 +181,14 @@ async def get_template_registry(template_type: str, version: str):
     response_class=JSONResponse,
 )
 async def get_template_cbib(version: str):
-    path = Path(f"api/templates/executor_modes/{version}/cbib.json")
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
@@ -151,6 +200,13 @@ async def get_template_cbib(version: str):
     response_class=JSONResponse,
 )
 async def get_template_status(template_type: str, version: str):
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
     dt_now = datetime.now().astimezone()
     status = {
         "status": "available",
@@ -159,7 +215,7 @@ async def get_template_status(template_type: str, version: str):
         "manifest": "available",
         "instructions": "available",
         "template_type": template_type,
-        "template_version": version,
+        "template_version": ver,
         "last_verified": dt_now.isoformat(),
     }
     json_content = json.loads(json.dumps(status))
@@ -171,31 +227,29 @@ async def get_template_status(template_type: str, version: str):
     response_class=JSONResponse,
 )
 async def executor_modes(version: str):
-    path = Path(f"api/templates/executor_modes/v{version}/cbib.json")
+    # check if version is only a number
+    ver = version
+    if not ver.replace(".", "").isdigit():
+        raise HTTPException(status_code=400, detail="Invalid version format.")
+    if ver.isdigit():
+        ver = f"{ver}.0"
+    if not ver.startswith("v"):
+        ver = "v" + ver
+    path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
     return json_content
 
 
-@router.get("/api/v1/templates/verify")
+@router.post("/api/v1/templates/verify", response_class=JSONResponse)
 def verify_artifact(submission: ArtifactSubmission, request: Request):
-    s_fm = submission.template_frontmatter.strip()
-    if not s_fm:
+    content = submission.template_content.strip()
+    if not content:
         raise HTTPException(
             status_code=400, detail="Template frontmatter cannot be empty."
         )
-    s_body = submission.template_body.strip()
-    if not s_body:
-        raise HTTPException(
-            status_code=400, detail="Template body content cannot be empty."
-        )
 
-    if not s_fm.startswith("---"):
-        s_fm = "---\n" + s_fm
-    if not s_fm.endswith("---"):
-        s_fm = s_fm + "\n---\n"
-    content = s_fm + "\n" + s_body
     fm = FrontMatterMeta.from_content(content)
     if not fm.template_type:
         raise HTTPException(
@@ -268,25 +322,14 @@ def verify_artifact(submission: ArtifactSubmission, request: Request):
     return default_result
 
 
-@router.get("/api/v1/templates/finalize")
+@router.post("/api/v1/templates/finalize", response_class=JSONResponse)
 def finalize_artifact(submission: ArtifactSubmission):
     # cleanup and add any final fields before storage
-    s_fm = submission.template_frontmatter.strip()
-    if not s_fm:
+    content = submission.template_content.strip()
+    if not content:
         raise HTTPException(
             status_code=400, detail="Template frontmatter cannot be empty."
         )
-    s_body = submission.template_body.strip()
-    if not s_body:
-        raise HTTPException(
-            status_code=400, detail="Template body content cannot be empty."
-        )
-
-    if not s_fm.startswith("---"):
-        s_fm = "---\n" + s_fm
-    if not s_fm.endswith("---"):
-        s_fm = s_fm + "\n---\n"
-    content = s_fm + "\n" + s_body
     fm = FrontMatterMeta.from_content(content)
     if not fm.template_type:
         raise HTTPException(
@@ -325,3 +368,71 @@ def finalize_artifact(submission: ArtifactSubmission):
     }
 
     return default_result
+
+
+@router.post("/api/v1/templates/upgrade", response_class=JSONResponse)
+def upgrade_template(submission: UpgradeTemplateContent, request: Request):
+    # cleanup and add any final fields before storage
+    contents = submission.template_content.strip()
+    new_version = submission.new_version.strip()
+
+    if not contents:
+        raise HTTPException(
+            status_code=400, detail="Template contents cannot be empty."
+        )
+    if not new_version:
+        raise HTTPException(status_code=400, detail="New version cannot be empty.")
+    try:
+        upgrade_fm = FrontMatterMeta.from_content(contents)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Error parsing template contents: {e}"
+        )
+    if not upgrade_fm.template_type:
+        raise HTTPException(
+            status_code=400,
+            detail="Field template_type is not specified in frontmatter.",
+        )
+
+    try:
+        path = Path(
+            f"api/templates/{upgrade_fm.template_type}/v{new_version}/template.md"
+        )
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="Template file not found.")
+        template_fm = FrontMatterMeta(file_path=path)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error loading template for type {upgrade_fm.template_type} and version {new_version}: {e}",
+        )
+
+    try:
+        upgrade_template = UpgradeTemplate(
+            upgrade_fm=upgrade_fm, template_fm=template_fm
+        )
+        upgraded_dict = upgrade_template.apply_upgrade()
+        upgraded_fm: FrontMatterMeta = upgraded_dict["frontmatter"]
+        extra_fields = upgraded_dict["extra_fields"]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error applying upgrade: {e}",
+        )
+
+    manifest = _get_template_manifest(upgrade_fm.template_type, new_version, request)
+
+    result = {
+        "status": "success",
+        "content": upgraded_fm.get_template_text(),
+        "artifact_name": submission.artifact_name.strip(),
+        "requires_field_being": True,
+        "template_api_path": manifest["template_api_path"],
+        "registry_api_path": manifest["registry_api_path"],
+        "instructions_api_path": manifest["instructions_api_path"],
+        "manifest_api_path": manifest["manifest_api_path"],
+        "executor_mode_api_path": manifest["executor_mode_api_path"],
+        "extra_fields": extra_fields,
+    }
+
+    return result
