@@ -16,19 +16,30 @@ from ..models.template_params import TemplateParams
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
 from ..lib.cleanup.clean_meta_fields import CleanMetaFields
 from ..lib.upgrade.upgrade_template import UpgradeTemplate
+from ..lib.util.result import Result
 
 router = APIRouter()
 API_RELATIVE_URL = "/api/v1"
 
 
+def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
+    v = version.lower()
+    v = v.lstrip("v")
+    if not v.replace(".", "").isdigit():
+        return Result(None, Exception("Invalid version format."))
+    if v.isdigit():
+        v = f"{v}.0"
+    if not v.startswith("v"):
+        v = "v" + v
+    return Result(v, None)
+
+
 def _get_template_manifest(template_type: str, version: str, request: Request):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
+
     path = Path.cwd() / f"api/templates/{template_type}/{ver}/manifest.json"
 
     if not path.exists():
@@ -57,13 +68,10 @@ def _get_template_manifest(template_type: str, version: str, request: Request):
 
 
 def _get_template_registry(template_type: str, version: str):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     path = Path() / f"api/templates/{template_type}/{ver}/registry.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="Registry file not found.")
@@ -77,13 +85,10 @@ def _get_template_registry(template_type: str, version: str):
 )
 @cache(expire=300)  # Cache for 300 seconds
 async def get_template(template_type: str, version: str, request: Request):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     path = Path(f"api/templates/{template_type}/{ver}/template.md")
     if not path.exists():
         raise HTTPException(status_code=404, detail="Template file not found.")
@@ -116,13 +121,10 @@ async def get_template(template_type: str, version: str, request: Request):
 )
 @cache(expire=300)  # Cache for 300 seconds
 async def get_template_instructions(template_type: str, version: str, request: Request):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     path = Path(f"api/templates/{template_type}/{ver}/instructions.md")
     if not path.exists():
         raise HTTPException(status_code=404, detail="Instructions file not found.")
@@ -181,13 +183,10 @@ async def get_template_registry(template_type: str, version: str):
     response_class=JSONResponse,
 )
 async def get_template_cbib(version: str):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
@@ -200,13 +199,10 @@ async def get_template_cbib(version: str):
     response_class=JSONResponse,
 )
 async def get_template_status(template_type: str, version: str):
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     dt_now = datetime.now().astimezone()
     status = {
         "status": "available",
@@ -228,13 +224,10 @@ async def get_template_status(template_type: str, version: str):
 )
 async def executor_modes(version: str):
     # check if version is only a number
-    ver = version
-    if not ver.replace(".", "").isdigit():
-        raise HTTPException(status_code=400, detail="Invalid version format.")
-    if ver.isdigit():
-        ver = f"{ver}.0"
-    if not ver.startswith("v"):
-        ver = "v" + ver
+    v_result = _validate_version_str(version)
+    if not Result.is_success(v_result):
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    ver = v_result.data
     path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
