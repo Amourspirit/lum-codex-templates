@@ -2,17 +2,22 @@ import json
 import os
 import base64
 from typing import Any, Optional, cast
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Security, HTTPException, Depends, status
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    APIKeyHeader,
+)
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
 
-from ..models.auth.user_response import UserResponse
-from ..models.auth.user_token_data import TokenData
-from ..models.auth.user_token import Token
-from ..models.auth.user import User
 from ..models.auth.hashed_password_response import HashedPasswordResponse
+from ..models.auth.user import User
+from ..models.auth.user_response import UserResponse
+from ..models.auth.user_token import Token
+from ..models.auth.user_token_data import TokenData
+from ..models.auth.verify_token_response import VerifyTokenResponse
 
 # Security Config
 SECRET_KEY = cast(str, os.getenv("API_SECRET_KEY"))
@@ -30,12 +35,17 @@ if not _API_ENV_DATA:
 API_ENV_DB: dict[str, dict[str, Any]] = json.loads(
     base64.b64decode(_API_ENV_DATA).decode("utf-8")
 )
+_API_ENV_DATA = None  # Clear sensitive data from memory
+
+# API key via header
+api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
+
 # print("Env Data:", API_ENV_DB)
 router = APIRouter()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token", auto_error=False)
 
 
 def _get_db_users() -> dict[str, User]:
@@ -94,27 +104,70 @@ def verify_token(token: str) -> TokenData:
 # region Auth Dependencies
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    token_data = verify_token(token)
+def get_user(username: str) -> User:
     users = _get_db_users()
-    if token_data.username not in users:
+    if username not in users:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not authorized",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
         )
-    # user = User(**API_ENV_DB[token_data.username])
-    user = users[token_data.username]
+    user = users[username]
     return user
 
 
-def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+def get_current_principal(
+    token: str | None = Depends(oauth2_scheme),
+    api_key: str | None = Security(api_key_header),
+):
+    print("Authenticating request...")
+    # If API key present and valid, accept it
+    if api_key:
+        valid_api_keys = API_ENV_DB.get("data", {}).get("hashed_api_keys", [])
+
+        # print("Valid API keys:", valid_api_keys)
+        for k in valid_api_keys:
+            if verify_pwd(api_key, k):
+                print("Authenticated via API key")
+                return {"type": "api_key", "key": api_key}
+        # print("Invalid API key provided")
+
+    # Otherwise fall back to OAuth2 token auth
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token_data = verify_token(token)
+    if token_data.username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token. Missing username",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = get_user(token_data.username)
+
+    # TODO: verify JWT / token here
+    # user = decode_and_validate_token(token)
+    # if not user: raise HTTPException(401, "Invalid token")
+    return {"type": "oauth2", "sub": user.username}
+
+
+def get_current_active_principle(
+    current_principle: dict[str, str] = Depends(get_current_principal),
+) -> dict[str, str]:
+    # print("Current principle:", current_principle)
+    if current_principle["type"] == "api_key":
+        # For API key auth, we don't have a user context
+        return {"type": "api_key", "key": current_principle["key"]}
+
+    current_user = get_user(current_principle["sub"])
     if not current_user.is_active:
         raise HTTPException(
             status_code=404,
             detail="Inactive User",
         )
-    return current_user
+    return {"type": "oauth2", "sub": current_user.username}
 
 
 # endregion Auth Dependencies
@@ -126,7 +179,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
     response_model=HashedPasswordResponse,
 )
 async def get_hashed_password(
-    password: str, current_user: User = Depends(get_current_active_user)
+    password: str, current_user: User = Depends(get_current_active_principle)
 ):
     """Generate a hashed password from a plain text password.
 
@@ -174,19 +227,44 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/api/v1/profile", response_model=UserResponse)
-def get_profile(current_user: User = Depends(get_current_active_user)):
-    return current_user
+def get_profile(
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
+):
+    if current_principle["type"] == "api_key":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API Key authentication does not have a user profile",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = get_user(current_principle["sub"])
+    return UserResponse(
+        username=user.username,
+        name=user.name,
+        email=user.email,
+        roles=user.roles,
+        is_active=user.is_active,
+        monad_name=user.monad_name,
+    )
 
 
-@router.get("/api/v1/verify-token")
-def verify_token_endpoint(current_user: User = Depends(get_current_active_user)):
+@router.get("/api/v1/verify-token", response_model=VerifyTokenResponse)
+def verify_token_endpoint(
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
+):
+    if current_principle["type"] == "api_key":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API Key authentication does not have a user profile",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = get_user(current_principle["sub"])
     return {
         "valid": True,
         "user": {
-            "username": current_user.username,
-            "name": current_user.name,
-            "email": current_user.email,
-            "roles": current_user.roles,
+            "username": user.username,
+            "name": user.name,
+            "email": user.email,
+            "roles": user.roles,
         },
     }
 

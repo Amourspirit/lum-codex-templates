@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
 from fastapi.responses import Response
 
@@ -13,11 +13,9 @@ from ..lib.upgrade.upgrade_template import UpgradeTemplate
 from ..lib.util.result import Result
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
 from ..models.artifact_submission import ArtifactSubmission
-from ..models.auth.user import User
-from ..models.template_params import TemplateParams
 from ..models.upgrade_template_content import UpgradeTemplateContent
 from ..responses.markdown_response import MarkdownResponse
-from ..routes.auth import get_current_active_user
+from ..routes.auth import get_current_active_principle
 from src.template.front_mater_meta import FrontMatterMeta
 
 router = APIRouter()
@@ -92,8 +90,9 @@ async def get_template(
     template_type: str,
     version: str,
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
+    print("Fetching template:", template_type, version)
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -133,7 +132,7 @@ async def get_template_instructions(
     template_type: str,
     version: str,
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -184,7 +183,7 @@ async def get_template_manifest(
     template_type: str,
     version: str,
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     return _get_template_manifest(template_type, version, request)
 
@@ -196,7 +195,7 @@ async def get_template_manifest(
 async def get_template_registry(
     template_type: str,
     version: str,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     return _get_template_registry(template_type, version)
 
@@ -206,7 +205,8 @@ async def get_template_registry(
     response_class=JSONResponse,
 )
 async def get_template_cbib(
-    version: str, current_user: User = Depends(get_current_active_user)
+    version: str,
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -226,7 +226,7 @@ async def get_template_cbib(
 async def get_template_status(
     template_type: str,
     version: str,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -252,7 +252,8 @@ async def get_template_status(
     response_class=JSONResponse,
 )
 async def executor_modes(
-    version: str, current_user: User = Depends(get_current_active_user)
+    version: str,
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     # check if version is only a number
     v_result = _validate_version_str(version)
@@ -270,7 +271,7 @@ async def executor_modes(
 def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     content = submission.template_content.strip()
     if not content:
@@ -353,7 +354,7 @@ def verify_artifact(
 @router.post("/api/v1/templates/finalize", response_class=JSONResponse)
 def finalize_artifact(
     submission: ArtifactSubmission,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     # cleanup and add any final fields before storage
     content = submission.template_content.strip()
@@ -401,7 +402,7 @@ def finalize_artifact(
 def upgrade_template(
     submission: UpgradeTemplateContent,
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     # cleanup and add any final fields before storage
     contents = submission.template_content.strip()
