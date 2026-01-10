@@ -1,10 +1,9 @@
 import json
 import os
 import base64
-from typing import Optional, cast
+from typing import Any, Optional, cast
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -24,15 +23,29 @@ if not ALGORITHM:
     raise ValueError("API_AUTH_ALGORITHM environment variable is not set")
 TOKEN_EXPIRES = int(cast(str, os.getenv("API_TOKEN_EXPIRES_MINUTES", "30")))
 
-_ALLOWED_USERS = os.getenv("API_USERS")
-if not _ALLOWED_USERS:
-    raise ValueError("API_ALLOWED_USERS environment variable is not set")
-ALLOWED_USERS_DB = json.loads(base64.b64decode(_ALLOWED_USERS).decode("utf-8"))["users"]
-# print("Loaded allowed users:", ALLOWED_USERS_DB)
+_API_ENV_DATA = os.getenv("API_ENV_DATA")
+if not _API_ENV_DATA:
+    raise ValueError("API environment data variable is not set")
+
+API_ENV_DB: dict[str, dict[str, Any]] = json.loads(
+    base64.b64decode(_API_ENV_DATA).decode("utf-8")
+)
+# print("Env Data:", API_ENV_DB)
 router = APIRouter()
 
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/token")
+
+
+def _get_db_users() -> dict[str, User]:
+    users = {}
+    for username, user_data in API_ENV_DB.get("data", {}).get("users", {}).items():
+        users[username] = User(**user_data)
+    return users
+
+
+# print("Loaded users:", _get_db_users())
 
 
 # region Security Functions
@@ -83,13 +96,15 @@ def verify_token(token: str) -> TokenData:
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     token_data = verify_token(token)
-    if token_data.username not in ALLOWED_USERS_DB:
+    users = _get_db_users()
+    if token_data.username not in users:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not authorized",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = User(**ALLOWED_USERS_DB[token_data.username])
+    # user = User(**API_ENV_DB[token_data.username])
+    user = users[token_data.username]
     return user
 
 
@@ -134,16 +149,17 @@ async def get_hashed_password(
         )
 
 
-@router.post("/token", response_model=Token)
+@router.post("/api/v1/token", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user_dict = ALLOWED_USERS_DB.get(form_data.username)
-    if not user_dict:
+    user_db = _get_db_users()
+    user = user_db.get(form_data.username)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = User(**user_dict)
+    # user = User(**user_dict)
     if not verify_pwd(form_data.password, user.hashed_pwd):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -157,7 +173,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/profile", response_model=UserResponse)
+@router.get("/api/v1/profile", response_model=UserResponse)
 def get_profile(current_user: User = Depends(get_current_active_user)):
     return current_user
 
