@@ -1,14 +1,13 @@
-import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 
-if not os.getenv("RENDER_SERVICE_NAME"):
-    # only if not running on Render.com
-    from dotenv import load_dotenv
+# if not os.getenv("RENDER_SERVICE_NAME"):
+# only if not running on Render.com
+from dotenv import load_dotenv
 
-    load_dotenv()  # reads variables from a .env file and sets them in os.environ
+load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 
 from api.routes import templates
