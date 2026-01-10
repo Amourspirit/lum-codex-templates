@@ -28,7 +28,7 @@ _ALLOWED_USERS = os.getenv("API_USERS")
 if not _ALLOWED_USERS:
     raise ValueError("API_ALLOWED_USERS environment variable is not set")
 ALLOWED_USERS_DB = json.loads(base64.b64decode(_ALLOWED_USERS).decode("utf-8"))["users"]
-
+# print("Loaded allowed users:", ALLOWED_USERS_DB)
 router = APIRouter()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

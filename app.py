@@ -33,7 +33,7 @@ async def ping():
     return {"msg": "pong"}
 
 
-@app.get("/emv_check/{env_var}")
+@app.get("/env_check/{env_var}")
 async def env_check(env_var: str):
     value = os.getenv(env_var, None)
     if value is None:
