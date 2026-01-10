@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
@@ -8,7 +9,6 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 from dotenv import load_dotenv
 
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
-
 
 from api.routes import templates
 from api.routes import auth
@@ -31,3 +31,11 @@ app.include_router(auth.router)
 @app.get("/ping")
 async def ping():
     return {"msg": "pong"}
+
+
+@app.get("/emv_check/{env_var}")
+async def env_check(env_var: str):
+    value = os.getenv(env_var, None)
+    if value is None:
+        return {"env_var": env_var, "value": "Not Set"}
+    return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
