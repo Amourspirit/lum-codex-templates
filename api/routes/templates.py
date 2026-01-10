@@ -1,22 +1,24 @@
-from curses.ascii import isdigit
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse, JSONResponse
 from fastapi_cache.decorator import cache
 from fastapi.responses import Response
 
-from ..responses.markdown_response import MarkdownResponse
-from src.template.front_mater_meta import FrontMatterMeta
-from ..models.artifact_submission import ArtifactSubmission
-from ..models.upgrade_template_content import UpgradeTemplateContent
-from ..models.template_params import TemplateParams
-from ..lib.verify.verify_meta_fields import VerifyMetaFields
+
 from ..lib.cleanup.clean_meta_fields import CleanMetaFields
 from ..lib.upgrade.upgrade_template import UpgradeTemplate
 from ..lib.util.result import Result
+from ..lib.verify.verify_meta_fields import VerifyMetaFields
+from ..models.artifact_submission import ArtifactSubmission
+from ..models.auth.user import User
+from ..models.template_params import TemplateParams
+from ..models.upgrade_template_content import UpgradeTemplateContent
+from ..responses.markdown_response import MarkdownResponse
+from ..routes.auth import get_current_active_user
+from src.template.front_mater_meta import FrontMatterMeta
 
 router = APIRouter()
 API_RELATIVE_URL = "/api/v1"
@@ -86,7 +88,12 @@ def _get_template_registry(template_type: str, version: str):
     response_class=MarkdownResponse,
 )
 @cache(expire=300)  # Cache for 300 seconds
-async def get_template(template_type: str, version: str, request: Request):
+async def get_template(
+    template_type: str,
+    version: str,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -122,7 +129,12 @@ async def get_template(template_type: str, version: str, request: Request):
     response_class=MarkdownResponse,
 )
 @cache(expire=300)  # Cache for 300 seconds
-async def get_template_instructions(template_type: str, version: str, request: Request):
+async def get_template_instructions(
+    template_type: str,
+    version: str,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -168,7 +180,12 @@ async def get_template_instructions(template_type: str, version: str, request: R
     response_class=JSONResponse,
 )
 @cache(expire=60)  # Cache for 60 seconds
-async def get_template_manifest(template_type: str, version: str, request: Request):
+async def get_template_manifest(
+    template_type: str,
+    version: str,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
     return _get_template_manifest(template_type, version, request)
 
 
@@ -176,7 +193,11 @@ async def get_template_manifest(template_type: str, version: str, request: Reque
     "/api/v1/templates/{template_type}/{version}/registry",
     response_class=JSONResponse,
 )
-async def get_template_registry(template_type: str, version: str):
+async def get_template_registry(
+    template_type: str,
+    version: str,
+    current_user: User = Depends(get_current_active_user),
+):
     return _get_template_registry(template_type, version)
 
 
@@ -184,7 +205,9 @@ async def get_template_registry(template_type: str, version: str):
     "/api/v1/executor_modes/{version}/cbib",
     response_class=JSONResponse,
 )
-async def get_template_cbib(version: str):
+async def get_template_cbib(
+    version: str, current_user: User = Depends(get_current_active_user)
+):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -200,7 +223,11 @@ async def get_template_cbib(version: str):
     "/api/v1/templates/{template_type}/{version}/status",
     response_class=JSONResponse,
 )
-async def get_template_status(template_type: str, version: str):
+async def get_template_status(
+    template_type: str,
+    version: str,
+    current_user: User = Depends(get_current_active_user),
+):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -224,7 +251,9 @@ async def get_template_status(template_type: str, version: str):
     "/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE-V{version}",
     response_class=JSONResponse,
 )
-async def executor_modes(version: str):
+async def executor_modes(
+    version: str, current_user: User = Depends(get_current_active_user)
+):
     # check if version is only a number
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -238,7 +267,11 @@ async def executor_modes(version: str):
 
 
 @router.post("/api/v1/templates/verify", response_class=JSONResponse)
-def verify_artifact(submission: ArtifactSubmission, request: Request):
+def verify_artifact(
+    submission: ArtifactSubmission,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
     content = submission.template_content.strip()
     if not content:
         raise HTTPException(
@@ -318,7 +351,10 @@ def verify_artifact(submission: ArtifactSubmission, request: Request):
 
 
 @router.post("/api/v1/templates/finalize", response_class=JSONResponse)
-def finalize_artifact(submission: ArtifactSubmission):
+def finalize_artifact(
+    submission: ArtifactSubmission,
+    current_user: User = Depends(get_current_active_user),
+):
     # cleanup and add any final fields before storage
     content = submission.template_content.strip()
     if not content:
@@ -362,7 +398,11 @@ def finalize_artifact(submission: ArtifactSubmission):
 
 
 @router.post("/api/v1/templates/upgrade", response_class=JSONResponse)
-def upgrade_template(submission: UpgradeTemplateContent, request: Request):
+def upgrade_template(
+    submission: UpgradeTemplateContent,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+):
     # cleanup and add any final fields before storage
     contents = submission.template_content.strip()
     v_result = _validate_version_str(submission.new_version)
