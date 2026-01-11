@@ -16,6 +16,7 @@ from ..models.artifact_submission import ArtifactSubmission
 from ..models.upgrade_template_content import UpgradeTemplateContent
 from ..responses.markdown_response import MarkdownResponse
 from ..routes.auth import get_current_active_principle
+from ..routes.limiter import limiter
 from src.template.front_mater_meta import FrontMatterMeta
 
 router = APIRouter()
@@ -81,6 +82,8 @@ def _get_template_registry(template_type: str, version: str):
     return json_content
 
 
+# rate limiting not working when caching is enabled
+# https://github.com/laurentS/slowapi/issues/252
 @router.get(
     "/api/v1/templates/{template_type}/{version}",
     response_class=MarkdownResponse,
@@ -123,6 +126,7 @@ async def get_template(
     return text
 
 
+# rate limiting not working when caching is enabled
 @router.get(
     "/api/v1/templates/{template_type}/{version}/instructions",
     response_class=MarkdownResponse,
@@ -174,6 +178,7 @@ async def get_template_instructions(
     return text
 
 
+# rate limiting not working when caching is enabled
 @router.get(
     "/api/v1/templates/{template_type}/{version}/manifest",
     response_class=JSONResponse,
@@ -192,9 +197,11 @@ async def get_template_manifest(
     "/api/v1/templates/{template_type}/{version}/registry",
     response_class=JSONResponse,
 )
+@limiter.limit("15/minute")
 async def get_template_registry(
     template_type: str,
     version: str,
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     return _get_template_registry(template_type, version)
@@ -204,8 +211,10 @@ async def get_template_registry(
     "/api/v1/executor_modes/{version}/cbib",
     response_class=JSONResponse,
 )
+@limiter.limit("15/minute")
 async def get_template_cbib(
     version: str,
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     v_result = _validate_version_str(version)
@@ -223,9 +232,11 @@ async def get_template_cbib(
     "/api/v1/templates/{template_type}/{version}/status",
     response_class=JSONResponse,
 )
+@limiter.limit("15/minute")
 async def get_template_status(
     template_type: str,
     version: str,
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     v_result = _validate_version_str(version)
@@ -251,8 +262,10 @@ async def get_template_status(
     "/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE-V{version}",
     response_class=JSONResponse,
 )
+@limiter.limit("15/minute")
 async def executor_modes(
     version: str,
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     # check if version is only a number
@@ -268,6 +281,7 @@ async def executor_modes(
 
 
 @router.post("/api/v1/templates/verify", response_class=JSONResponse)
+@limiter.limit("15/minute")
 def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
@@ -352,8 +366,10 @@ def verify_artifact(
 
 
 @router.post("/api/v1/templates/finalize", response_class=JSONResponse)
+@limiter.limit("15/minute")
 def finalize_artifact(
     submission: ArtifactSubmission,
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     # cleanup and add any final fields before storage
@@ -399,6 +415,7 @@ def finalize_artifact(
 
 
 @router.post("/api/v1/templates/upgrade", response_class=JSONResponse)
+@limiter.limit("15/minute")
 def upgrade_template(
     submission: UpgradeTemplateContent,
     request: Request,

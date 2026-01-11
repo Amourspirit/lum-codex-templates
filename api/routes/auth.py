@@ -2,7 +2,7 @@ import json
 import os
 import base64
 from typing import Any, Optional, cast
-from fastapi import APIRouter, Security, HTTPException, Depends, status
+from fastapi import APIRouter, Security, HTTPException, Depends, status, Request
 from fastapi.security import (
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
@@ -18,6 +18,7 @@ from ..models.auth.user_response import UserResponse
 from ..models.auth.user_token import Token
 from ..models.auth.user_token_data import TokenData
 from ..models.auth.verify_token_response import VerifyTokenResponse
+from ..routes.limiter import limiter
 
 # Security Config
 SECRET_KEY = cast(str, os.getenv("API_SECRET_KEY"))
@@ -119,7 +120,7 @@ def get_current_principal(
     token: str | None = Depends(oauth2_scheme),
     api_key: str | None = Security(api_key_header),
 ):
-    print("Authenticating request...")
+    # print("Authenticating request...")
     # If API key present and valid, accept it
     if api_key:
         valid_api_keys = API_ENV_DB.get("data", {}).get("hashed_api_keys", [])
@@ -127,7 +128,7 @@ def get_current_principal(
         # print("Valid API keys:", valid_api_keys)
         for k in valid_api_keys:
             if verify_pwd(api_key, k):
-                print("Authenticated via API key")
+                # print("Authenticated via API key")
                 return {"type": "api_key", "key": api_key}
         # print("Invalid API key provided")
 
@@ -178,8 +179,11 @@ def get_current_active_principle(
     "/api/v1/auth/password_hash/{password}",
     response_model=HashedPasswordResponse,
 )
+@limiter.limit("15/minute")
 async def get_hashed_password(
-    password: str, current_user: User = Depends(get_current_active_principle)
+    password: str,
+    request: Request,
+    current_user: User = Depends(get_current_active_principle),
 ):
     """Generate a hashed password from a plain text password.
 
@@ -192,10 +196,10 @@ async def get_hashed_password(
     """
     try:
         hashed_password = get_pwd_hash(password)
-        print("Generated hashed password:", hashed_password)
+        # print("Generated hashed password:", hashed_password)
         return HashedPasswordResponse(hashed_password=hashed_password)
     except Exception as e:
-        print(e)
+        # print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating hashed password: {str(e)}",
@@ -203,7 +207,10 @@ async def get_hashed_password(
 
 
 @router.post("/api/v1/token", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@limiter.limit("5/minute")
+def login_for_access_token(
+    request: Request, form_data: OAuth2PasswordRequestForm = Depends()
+):
     user_db = _get_db_users()
     user = user_db.get(form_data.username)
     if not user:
@@ -227,7 +234,9 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.get("/api/v1/profile", response_model=UserResponse)
+@limiter.limit("15/minute")
 def get_profile(
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     if current_principle["type"] == "api_key":
@@ -248,7 +257,9 @@ def get_profile(
 
 
 @router.get("/api/v1/verify-token", response_model=VerifyTokenResponse)
+@limiter.limit("15/minute")
 def verify_token_endpoint(
+    request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     if current_principle["type"] == "api_key":
@@ -258,15 +269,13 @@ def verify_token_endpoint(
             headers={"WWW-Authenticate": "Bearer"},
         )
     user = get_user(current_principle["sub"])
-    return {
-        "valid": True,
-        "user": {
-            "username": user.username,
-            "name": user.name,
-            "email": user.email,
-            "roles": user.roles,
-        },
-    }
+    return VerifyTokenResponse(
+        valid=True,
+        username=user.username,
+        name=user.name,
+        email=user.email,
+        roles=user.roles,
+    )
 
 
 # endregion Auth Endpoints

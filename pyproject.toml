@@ -14,6 +14,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "python-multipart>=0.0.21",
     "pyyaml>=6.0.3",
+    "slowapi>=0.1.9",
     "toml>=0.10.2",
 ]
 
