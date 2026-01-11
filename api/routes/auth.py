@@ -183,7 +183,7 @@ def get_current_active_principle(
 async def get_hashed_password(
     password: str,
     request: Request,
-    current_user: User = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
     """Generate a hashed password from a plain text password.
 

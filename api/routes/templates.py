@@ -19,7 +19,7 @@ from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
 from src.template.front_mater_meta import FrontMatterMeta
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
 API_RELATIVE_URL = "/api/v1"
 
 
@@ -85,7 +85,7 @@ def _get_template_registry(template_type: str, version: str):
 # rate limiting not working when caching is enabled
 # https://github.com/laurentS/slowapi/issues/252
 @router.get(
-    "/api/v1/templates/{template_type}/{version}",
+    "/{template_type}/{version}",
     response_class=MarkdownResponse,
 )
 @cache(expire=300)  # Cache for 300 seconds
@@ -128,7 +128,7 @@ async def get_template(
 
 # rate limiting not working when caching is enabled
 @router.get(
-    "/api/v1/templates/{template_type}/{version}/instructions",
+    "/{template_type}/{version}/instructions",
     response_class=MarkdownResponse,
 )
 @cache(expire=300)  # Cache for 300 seconds
@@ -180,7 +180,7 @@ async def get_template_instructions(
 
 # rate limiting not working when caching is enabled
 @router.get(
-    "/api/v1/templates/{template_type}/{version}/manifest",
+    "/{template_type}/{version}/manifest",
     response_class=JSONResponse,
 )
 @cache(expire=60)  # Cache for 60 seconds
@@ -208,28 +208,7 @@ async def get_template_registry(
 
 
 @router.get(
-    "/api/v1/executor_modes/{version}/cbib",
-    response_class=JSONResponse,
-)
-@limiter.limit("15/minute")
-async def get_template_cbib(
-    version: str,
-    request: Request,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
-):
-    v_result = _validate_version_str(version)
-    if not Result.is_success(v_result):
-        raise HTTPException(status_code=400, detail=str(v_result.error))
-    ver = v_result.data
-    path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="CBIB file not found.")
-    json_content = json.loads(path.read_text())
-    return json_content
-
-
-@router.get(
-    "/api/v1/templates/{template_type}/{version}/status",
+    "/{template_type}/{version}/status",
     response_class=JSONResponse,
 )
 @limiter.limit("15/minute")
@@ -258,29 +237,7 @@ async def get_template_status(
     return json_content
 
 
-@router.get(
-    "/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE-V{version}",
-    response_class=JSONResponse,
-)
-@limiter.limit("15/minute")
-async def executor_modes(
-    version: str,
-    request: Request,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
-):
-    # check if version is only a number
-    v_result = _validate_version_str(version)
-    if not Result.is_success(v_result):
-        raise HTTPException(status_code=400, detail=str(v_result.error))
-    ver = v_result.data
-    path = Path(f"api/templates/executor_modes/{ver}/cbib.json")
-    if not path.exists():
-        raise HTTPException(status_code=404, detail="CBIB file not found.")
-    json_content = json.loads(path.read_text())
-    return json_content
-
-
-@router.post("/api/v1/templates/verify", response_class=JSONResponse)
+@router.post("/verify", response_class=JSONResponse)
 @limiter.limit("15/minute")
 def verify_artifact(
     submission: ArtifactSubmission,
@@ -365,7 +322,7 @@ def verify_artifact(
     return default_result
 
 
-@router.post("/api/v1/templates/finalize", response_class=JSONResponse)
+@router.post("/finalize", response_class=JSONResponse)
 @limiter.limit("15/minute")
 def finalize_artifact(
     submission: ArtifactSubmission,
@@ -414,14 +371,18 @@ def finalize_artifact(
     return default_result
 
 
-@router.post("/api/v1/templates/upgrade", response_class=JSONResponse)
+@router.post("/upgrade", response_class=JSONResponse)
 @limiter.limit("15/minute")
 def upgrade_template(
     submission: UpgradeTemplateContent,
     request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
-    # cleanup and add any final fields before storage
+    if submission.session_id:
+        print(
+            f"Session {submission.session_id} upgrading {submission.artifact_name} v{submission.new_version}"
+        )
+
     contents = submission.template_content.strip()
     v_result = _validate_version_str(submission.new_version)
     if not Result.is_success(v_result):

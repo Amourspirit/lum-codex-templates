@@ -13,8 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
-from api.routes import templates
-from api.routes import auth
+from api.routes import templates  # noqa: E402
+from api.routes import executor_modes  # noqa: E402
+from api.routes import auth  # noqa: E402
+from api.routes import session  # noqa: E402
 
 
 @asynccontextmanager
@@ -28,7 +30,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Codex Templates", lifespan=lifespan)
 app.include_router(templates.router)
+app.include_router(executor_modes.router)
 app.include_router(auth.router)
+app.include_router(session.router)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
