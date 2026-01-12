@@ -282,8 +282,25 @@ class FrontMatterMeta:
             FrontMatterMeta: An instance of FrontMatterMeta initialized with the
             provided frontmatter dictionary.
         """
+        d = fm_dict.copy()
+        if "template_id" in d and d["template_id"] is not None:
+            d["template_id"] = str(d["template_id"])
+        if "template_version" in d and d["template_version"] is not None:
+            d["template_version"] = str(d["template_version"])
+        if (
+            "mapped_registry_minimum_version" in d
+            and d["mapped_registry_minimum_version"] is not None
+        ):
+            d["mapped_registry_minimum_version"] = str(
+                d["mapped_registry_minimum_version"]
+            )
+        if (
+            "declared_registry_version" in d
+            and d["declared_registry_version"] is not None
+        ):
+            d["declared_registry_version"] = str(d["declared_registry_version"])
         instance = FrontMatterMeta.__new__(FrontMatterMeta)
-        instance._frontmatter = fm_dict
+        instance._frontmatter = d
         instance._content = content
         if instance._frontmatter is None:
             instance._frontmatter = {}

@@ -1,6 +1,0 @@
-from pydantic import BaseModel
-
-
-class ArtifactSubmission(BaseModel):
-    artifact_name: str
-    template_content: str

@@ -131,7 +131,25 @@ class VerifyMetaFields:
         }
         return type_mapping.get(field_type_str.lower())
 
-    def _get_incorrect_type_fields(self, fm: FrontMatterMeta) -> dict[str, Any]:
+    def _get_incorrect_type_fields(
+        self, fm: FrontMatterMeta
+    ) -> dict[str, dict[str, str]]:
+        """
+        Identifies fields in the frontmatter that do not match their expected Python types.
+        This method iterates through all fields in the provided FrontMatterMeta object and
+        compares their actual types against the expected types. It specifically handles
+        list types by verifying the subtypes of the list elements.
+
+        Args:
+            fm (FrontMatterMeta): The frontmatter metadata object to be verified.
+
+        Returns:
+            dict: A dictionary (dict[str, dict[str, str]]) mapping field names with incorrect types
+                to a nested dictionary containing:
+                - "expected_type": A string representation of the type that was expected.
+                - "actual_type": A string representation of the actual type found.
+        """
+
         incorrect_types = {}
         for field_name in fm.frontmatter.keys():
             field_type_info = self._get_field_py_type(field_name)

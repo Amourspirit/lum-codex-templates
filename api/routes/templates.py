@@ -5,15 +5,22 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
-from fastapi.responses import Response
+from pydantic import ValidationError
 
 
 from ..lib.cleanup.clean_meta_fields import CleanMetaFields
 from ..lib.upgrade.upgrade_template import UpgradeTemplate
 from ..lib.util.result import Result
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
-from ..models.artifact_submission import ArtifactSubmission
-from ..models.upgrade_template_content import UpgradeTemplateContent
+from ..models.templates.artifact_submission import ArtifactSubmission
+from ..models.templates.upgrade_to_template_submission import (
+    UpgradeToTemplateSubmission,
+)
+from ..models.templates.template_status_response import TemplateStatusResponse
+from ..models.templates.verify_artifact_response import VerifyArtifactResponse
+from ..models.templates.finalize_artifact_response import FinalizeArtifactResponse
+from ..models.templates.upgrade_artifact_response import UpgradeArtifactResponse
+from ..models.templates.manifest_response import ManifestResponse
 from ..responses.markdown_response import MarkdownResponse
 from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
@@ -181,7 +188,7 @@ async def get_template_instructions(
 # rate limiting not working when caching is enabled
 @router.get(
     "/{template_type}/{version}/manifest",
-    response_class=JSONResponse,
+    response_model=ManifestResponse,
 )
 @cache(expire=60)  # Cache for 60 seconds
 async def get_template_manifest(
@@ -190,7 +197,15 @@ async def get_template_manifest(
     request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
-    return _get_template_manifest(template_type, version, request)
+    try:
+        results_dict = _get_template_manifest(template_type, version, request)
+        manifest = ManifestResponse(**results_dict)
+        return manifest
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Validation error in ManifestResponse: {e}",
+        )
 
 
 @router.get(
@@ -209,7 +224,7 @@ async def get_template_registry(
 
 @router.get(
     "/{template_type}/{version}/status",
-    response_class=JSONResponse,
+    response_model=TemplateStatusResponse,
 )
 @limiter.limit("15/minute")
 async def get_template_status(
@@ -225,19 +240,19 @@ async def get_template_status(
     dt_now = datetime.now().astimezone()
     status = {
         "status": "available",
+        "template_type": template_type,
+        "template_version": ver,
         "template": "available",
         "registry": "available",
         "manifest": "available",
         "instructions": "available",
-        "template_type": template_type,
-        "template_version": ver,
-        "last_verified": dt_now.isoformat(),
+        "last_verified": dt_now,
     }
     json_content = json.loads(json.dumps(status))
     return json_content
 
 
-@router.post("/verify", response_class=JSONResponse)
+@router.post("/verify", response_model=VerifyArtifactResponse)
 @limiter.limit("15/minute")
 def verify_artifact(
     submission: ArtifactSubmission,
@@ -290,7 +305,7 @@ def verify_artifact(
     )
     dt_now = datetime.now().astimezone()
     default_result = {
-        "status": "verified",
+        "status": 200,
         "template_type": fm.template_type,
         "template_id": fm.template_id,
         "template_version": fm.template_version,
@@ -305,24 +320,56 @@ def verify_artifact(
     }
     data = result.data
     if not data:
-        return default_result
+        raise HTTPException(
+            status_code=500,
+            detail="Verification result data is missing.",
+        )
+    errors: list[str] = []
     if "missing_fields" in data and data["missing_fields"]:
-        default_result["status"] = "failed"
+        errors.append("missing fields")
+        default_result["status"] = 422
         default_result["field_validation"] = "failed"
         default_result["missing_fields"] = data["missing_fields"]
     if "extra_fields" in data and data["extra_fields"]:
         default_result["extra_fields"] = data["extra_fields"]
     if "incorrect_type_fields" in data and data["incorrect_type_fields"]:
+        errors.append("incorrect type fields")
+        default_result["status"] = 422
         default_result["field_validation"] = "failed"
         default_result["incorrect_type_fields"] = data["incorrect_type_fields"]
     if "rule_errors" in data and data["rule_errors"]:
+        errors.append("rule errors")
+        default_result["status"] = 422
         default_result["field_validation"] = "failed"
         default_result["rule_errors"] = data["rule_errors"]
 
-    return default_result
+    try:
+        result = VerifyArtifactResponse(**default_result)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Validation error in VerifyArtifactResponse: {e}",
+        )
+    if result.status != 200:
+        details = {"message": "Template verification failed.", "errors": errors}
+        model_details = result.model_dump(
+            exclude={
+                "status",
+                "template_api_path",
+                "registry_api_path",
+                "manifest_api_path",
+                "instructions_api_path",
+            }
+        )
+        details.update(model_details)
+        raise HTTPException(
+            status_code=result.status,
+            detail=details,
+        )
+    return result
 
 
-@router.post("/finalize", response_class=JSONResponse)
+@router.post("/finalize", response_model=FinalizeArtifactResponse)
 @limiter.limit("15/minute")
 def finalize_artifact(
     submission: ArtifactSubmission,
@@ -365,16 +412,23 @@ def finalize_artifact(
 
     default_result = {
         "template_content": result.get_template_text(),
-        "status": "finalized",
+        "status": 200,
     }
 
-    return default_result
+    try:
+        finalize_result = FinalizeArtifactResponse(**default_result)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Validation error in FinalizeArtifactResponse: {e}",
+        )
+    return finalize_result
 
 
-@router.post("/upgrade", response_class=JSONResponse)
+@router.post("/upgrade", response_model=UpgradeArtifactResponse)
 @limiter.limit("15/minute")
-def upgrade_template(
-    submission: UpgradeTemplateContent,
+def upgrade_to_template(
+    submission: UpgradeToTemplateSubmission,
     request: Request,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
 ):
@@ -383,7 +437,7 @@ def upgrade_template(
             f"Session {submission.session_id} upgrading {submission.artifact_name} v{submission.new_version}"
         )
 
-    contents = submission.template_content.strip()
+    contents = submission.markdown_content.strip()
     v_result = _validate_version_str(submission.new_version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -432,18 +486,29 @@ def upgrade_template(
         )
 
     manifest = _get_template_manifest(upgrade_fm.template_type, new_version, request)
-
+    dt_now = datetime.now().astimezone()
     result = {
-        "status": "success",
-        "content": upgraded_fm.get_template_text(),
-        "artifact_name": submission.artifact_name.strip(),
+        "status": 200,
+        "template_type": upgrade_fm.template_type,
+        "template_id": upgrade_fm.template_id,
+        "template_version": new_version,
         "requires_field_being": True,
+        "template_content": upgraded_fm.get_template_text(),
+        "artifact_name": submission.artifact_name.strip(),
+        "upgraded_at": dt_now.isoformat(),
         "template_api_path": manifest["template_api_path"],
         "registry_api_path": manifest["registry_api_path"],
-        "instructions_api_path": manifest["instructions_api_path"],
         "manifest_api_path": manifest["manifest_api_path"],
+        "instructions_api_path": manifest["instructions_api_path"],
         "executor_mode_api_path": manifest["executor_mode_api_path"],
         "extra_fields": extra_fields,
     }
 
-    return result
+    try:
+        upgrade_result = UpgradeArtifactResponse(**result)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Validation error in UpgradeArtifactResponse: {e}",
+        )
+    return upgrade_result
