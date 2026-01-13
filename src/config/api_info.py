@@ -5,18 +5,12 @@ from .api_info_templates import ApiInfoTemplates
 
 @dataclass
 class ApiInfo:
-    base_dir: str
+    ttl_session_cache_seconds: int
     info_templates: ApiInfoTemplates
 
     def __post_init__(self) -> None:
         check(
-            self.base_dir != "",
+            self.ttl_session_cache_seconds > 0,
             f"{self}",
-            "Value of base_dir must not be empty.",
-        )
-        # self.base_dir must contain only alphanumeric characters, hyphens, and underscores
-        check(
-            all(c.isalnum() or c in "-_" for c in self.base_dir),
-            f"{self}",
-            "Value of base_dir must contain only alphanumeric characters, hyphens, and underscores.",
+            "Value of ttl_session_cache_seconds must be greater than zero.",
         )

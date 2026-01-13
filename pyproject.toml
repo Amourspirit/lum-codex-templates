@@ -426,8 +426,9 @@ dev = [
 
 [tool.project.config.api]
 base_dir="api"
-base_url="https://api.example.com/v1"
+# base_url="https://api.example.com/v1"
 timeout_seconds=30
+ttl_session_cache_seconds=14400
 retries=3
 
 [tool.project.config.api.headers]

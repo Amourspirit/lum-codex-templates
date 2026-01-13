@@ -226,7 +226,7 @@ class PkgConfig(metaclass=SingletonMeta):
             .get("api", {})
         )
         self.api_info = ApiInfo(
-            base_dir=api_info_data.get("base_dir", ""),
+            ttl_session_cache_seconds=api_info_data.get("ttl_session_cache_seconds", 0),
             info_templates=api_info_templates,
         )
 

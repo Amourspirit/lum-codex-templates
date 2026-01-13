@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import Any, Optional
+from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
 from pydantic import ValidationError
@@ -24,6 +24,7 @@ from ..models.templates.manifest_response import ManifestResponse
 from ..responses.markdown_response import MarkdownResponse
 from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
+from ..lib.decorators.session_decorator import with_session
 from src.template.front_mater_meta import FrontMatterMeta
 
 router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
@@ -96,11 +97,15 @@ def _get_template_registry(template_type: str, version: str):
     response_class=MarkdownResponse,
 )
 @cache(expire=300)  # Cache for 300 seconds
+@with_session(optional=False)
 async def get_template(
     template_type: str,
     version: str,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     print("Fetching template:", template_type, version)
     v_result = _validate_version_str(version)
@@ -127,8 +132,10 @@ async def get_template(
     fm.frontmatter["instruction_info"]["api_path"] = (
         f"{app_root_url}/templates/{template_type}/{ver}/instructions"
     )
-
     text = fm.get_template_text()
+
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
 
     return text
 

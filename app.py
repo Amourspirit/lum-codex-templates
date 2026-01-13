@@ -17,6 +17,7 @@ from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
 from api.routes import auth  # noqa: E402
 from api.routes import session  # noqa: E402
+from api.routes import user  # noqa: E402
 
 
 @asynccontextmanager
@@ -33,6 +34,7 @@ app.include_router(templates.router)
 app.include_router(executor_modes.router)
 app.include_router(auth.router)
 app.include_router(session.router)
+app.include_router(user.router)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
