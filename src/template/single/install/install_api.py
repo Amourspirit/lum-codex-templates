@@ -179,6 +179,7 @@ class InstallAPI:
             return
         with cbib_file.open("w", encoding="utf-8") as f:
             json.dump(cbib_data, f, indent=4)
+        self._cbib.write_model_to_file()
         self._cache[key] = True
 
     def _get_sorted_registry(self, registry: dict) -> dict:

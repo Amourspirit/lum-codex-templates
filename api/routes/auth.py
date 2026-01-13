@@ -1,7 +1,4 @@
-import json
-import os
-import base64
-from typing import Any, Optional, cast
+from typing import Optional
 from fastapi import APIRouter, Security, HTTPException, Depends, status, Request
 from fastapi.security import (
     OAuth2PasswordBearer,
@@ -19,24 +16,8 @@ from ..models.auth.user_token import Token
 from ..models.auth.user_token_data import TokenData
 from ..models.auth.verify_token_response import VerifyTokenResponse
 from ..routes.limiter import limiter
+from ..lib.env import env_info
 
-# Security Config
-SECRET_KEY = cast(str, os.getenv("API_SECRET_KEY"))
-if not SECRET_KEY:
-    raise ValueError("API_SECRET_KEY environment variable is not set")
-ALGORITHM = cast(str, os.getenv("API_AUTH_ALGORITHM"))
-if not ALGORITHM:
-    raise ValueError("API_AUTH_ALGORITHM environment variable is not set")
-TOKEN_EXPIRES = int(cast(str, os.getenv("API_TOKEN_EXPIRES_MINUTES", "30")))
-
-_API_ENV_DATA = os.getenv("API_ENV_DATA")
-if not _API_ENV_DATA:
-    raise ValueError("API environment data variable is not set")
-
-API_ENV_DB: dict[str, dict[str, Any]] = json.loads(
-    base64.b64decode(_API_ENV_DATA).decode("utf-8")
-)
-_API_ENV_DATA = None  # Clear sensitive data from memory
 
 # API key via header
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
@@ -47,13 +28,6 @@ router = APIRouter()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token", auto_error=False)
-
-
-def _get_db_users() -> dict[str, User]:
-    users = {}
-    for username, user_data in API_ENV_DB.get("data", {}).get("users", {}).items():
-        users[username] = User(**user_data)
-    return users
 
 
 # print("Loaded users:", _get_db_users())
@@ -73,16 +47,20 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=TOKEN_EXPIRES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=env_info.TOKEN_EXPIRES)
 
     to_encode["exp"] = expire
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, env_info.SECRET_KEY, algorithm=env_info.ALGORITHM
+    )
     return encoded_jwt
 
 
 def verify_token(token: str) -> TokenData:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, env_info.SECRET_KEY, algorithms=[env_info.ALGORITHM]
+        )
         username: str = payload.get("sub")
         if username is None:
             raise HTTPException(
@@ -106,13 +84,12 @@ def verify_token(token: str) -> TokenData:
 
 
 def get_user(username: str) -> User:
-    users = _get_db_users()
-    if username not in users:
+    user = env_info.get_user_info(username)
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    user = users[username]
     return user
 
 
@@ -123,7 +100,7 @@ def get_current_principal(
     # print("Authenticating request...")
     # If API key present and valid, accept it
     if api_key:
-        valid_api_keys = API_ENV_DB.get("data", {}).get("hashed_api_keys", [])
+        valid_api_keys = env_info.get_hashed_api_keys()
 
         # print("Valid API keys:", valid_api_keys)
         for k in valid_api_keys:
@@ -148,9 +125,6 @@ def get_current_principal(
         )
     user = get_user(token_data.username)
 
-    # TODO: verify JWT / token here
-    # user = decode_and_validate_token(token)
-    # if not user: raise HTTPException(401, "Invalid token")
     return {"type": "oauth2", "sub": user.username}
 
 
@@ -211,8 +185,7 @@ async def get_hashed_password(
 def login_for_access_token(
     request: Request, form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    user_db = _get_db_users()
-    user = user_db.get(form_data.username)
+    user = env_info.get_user_info(form_data.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -226,7 +199,7 @@ def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=TOKEN_EXPIRES)
+    access_token_expires = timedelta(minutes=env_info.TOKEN_EXPIRES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )

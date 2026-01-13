@@ -1,6 +1,8 @@
-from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Annotated, Optional
 
 
 class TokenData(BaseModel):
-    username: Optional[str] = None
+    username: Annotated[
+        Optional[str], Field(title="Username", description="The user's username.")
+    ] = None

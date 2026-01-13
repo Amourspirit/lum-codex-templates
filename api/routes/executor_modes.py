@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from ..lib.util.result import Result
 from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
+from ..models.executor_modes.v1_0.cbib_response import CbibResponse
 
 router = APIRouter(prefix="/api/v1/executor_modes", tags=["executor_modes"])
 
@@ -27,7 +28,7 @@ def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exce
 
 @router.get(
     "/{version}/cbib",
-    response_class=JSONResponse,
+    response_model=CbibResponse,
 )
 @limiter.limit("15/minute")
 async def get_template_cbib(
@@ -43,12 +44,12 @@ async def get_template_cbib(
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
-    return json_content
+    return CbibResponse(**json_content)
 
 
 @router.get(
     "/CANONICAL-EXECUTOR-MODE-V{version}",
-    response_class=JSONResponse,
+    response_model=CbibResponse,
 )
 @limiter.limit("15/minute")
 async def executor_modes(
@@ -65,4 +66,4 @@ async def executor_modes(
     if not path.exists():
         raise HTTPException(status_code=404, detail="CBIB file not found.")
     json_content = json.loads(path.read_text())
-    return json_content
+    return CbibResponse(**json_content)

@@ -107,7 +107,7 @@ async def get_template(
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
-    print("Fetching template:", template_type, version)
+    # print("Fetching template:", template_type, version)
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))

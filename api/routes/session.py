@@ -4,11 +4,12 @@ from ..lib.cache.session_handler import SessionHandler
 from ..routes.limiter import limiter
 from ..routes.auth import get_current_active_principle
 from ..lib.decorators.session_decorator import with_session
+from ..models.session.session_response import SessionResponse
 
 router = APIRouter(prefix="/api/v1/session", tags=["session"])
 
 
-@router.get("/start")
+@router.get("/start", response_model=SessionResponse)
 @limiter.limit("15/minute")
 @with_session(optional=True, error_on_missing=False)
 async def start_session(
@@ -19,24 +20,26 @@ async def start_session(
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if session:
-        response.headers["X-Session-ID"] = session["session_id"]
-        return {
-            "session_id": session["session_id"],
-            "new_session": False,
-            "message": "Session already exists",
-            "expires_in_seconds": SessionHandler().ttl.total_seconds(),
-        }
+        result = SessionResponse(
+            session_id=session["session_id"],
+            new_session=False,
+            message="Session already exists",
+            expires_in_seconds=SessionHandler().ttl_seconds,
+        )
+        response.headers["X-Session-ID"] = result.session_id
+        return result
     session_handler = SessionHandler()
 
     # session_handler.get_session(x_session_id)
     session_id = session_handler.create_session()
     response.headers["X-Session-ID"] = session_id
-    return {
-        "session_id": session_id,
-        "new_session": True,
-        "message": "New session created",
-        "expires_in_seconds": session_handler.ttl.total_seconds(),
-    }
+    # print("Created new session with ID:", session_id)
+    return SessionResponse(
+        session_id=session_id,
+        new_session=True,
+        message="New session created",
+        expires_in_seconds=session_handler.ttl_seconds,
+    )
 
 
 @router.get("/check")
