@@ -1,5 +1,3 @@
-from pprint import pp
-from typing import Any
 from pathlib import Path
 
 from src.template.front_mater_meta import FrontMatterMeta
@@ -18,7 +16,7 @@ from .pre_processor_sigil import PreProcessorSigil
 from .pre_processor_stone import PreProcessorStone
 
 
-class TemplatePreProcessor:
+class RegPreProcessor:
     """
     Manages and executes a collection of ProtocolTemplatePreProcessor instances. Each process
     is responsible for processing a specific aspect of the package companions.
@@ -104,7 +102,7 @@ class TemplatePreProcessor:
                 result_path = process.write_file(processor_path)
                 init_file = processor_path / "__init__.py"
                 if not init_file.exists():
-                    with open(init_file, "w", encoding="utf-8") as f:
+                    with open(init_file, "w", encoding="utf-8") as f:  # noqa: F841
                         pass
                 return (fm.template_type, result_path)
         raise ValueError(f"No process found for template type '{template_type}'.")
@@ -151,7 +149,7 @@ class TemplatePreProcessor:
             result_path = process.write_file(processor_path)
             init_file = processor_path / "__init__.py"
             if not init_file.exists():
-                with open(init_file, "w", encoding="utf-8") as f:
+                with open(init_file, "w", encoding="utf-8") as f:  # noqa: F841
                     pass
             results[fm.template_type] = result_path
             print(

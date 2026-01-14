@@ -94,6 +94,7 @@ def get_user(username: str) -> User:
 
 
 def get_current_principal(
+    request: Request,
     token: str | None = Depends(oauth2_scheme),
     api_key: str | None = Security(api_key_header),
 ):
@@ -105,7 +106,14 @@ def get_current_principal(
         # print("Valid API keys:", valid_api_keys)
         for k in valid_api_keys:
             if verify_pwd(api_key, k):
-                # print("Authenticated via API key")
+                origin = request.headers.get("origin") or request.headers.get("referer")
+                allowed_origins = env_info.get_api_key_allowed_origins(k)
+                print("Request origin:", origin)
+                if not origin or not any(origin.startswith(o) for o in allowed_origins):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Invalid origin",
+                    )
                 return {"type": "api_key", "key": api_key}
         # print("Invalid API key provided")
 

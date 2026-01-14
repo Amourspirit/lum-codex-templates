@@ -30,8 +30,14 @@ def get_data_value(key: str, default: T = None) -> T:
 
 
 def get_hashed_api_keys() -> set[str]:
-    keys = get_data_value("hashed_api_keys", [])
+    keys = get_data_value("hashed_api_keys", {}).keys()
     return set(keys)
+
+
+def get_api_key_allowed_origins(hashed_key: str) -> set[str]:
+    keys = get_data_value("hashed_api_keys", {})
+    key_data = keys.get(hashed_key, {})
+    return set(key_data.get("allowed_origins", []))
 
 
 def get_user_info(username: str) -> User | None:

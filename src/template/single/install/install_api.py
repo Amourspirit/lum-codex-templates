@@ -9,7 +9,10 @@ from ....config.pkg_config import PkgConfig
 from ....builder.build_ver_mgr import BuildVerMgr
 from .tp_support.instructions import Instructions
 from .tp_support.cbib import CBIB
-from .tp_support.pre_processors.template_pre_processor import TemplatePreProcessor
+from .tp_support.pre_processors.template.template_pre_processor import (
+    TemplatePreProcessor,
+)
+from .tp_support.pre_processors.registry.reg_pre_processor import RegPreProcessor
 from ...main_registry import MainRegistry
 from ...process.process_obsidian_templates import ProcessObsidianTemplates
 
@@ -255,6 +258,11 @@ class InstallAPI:
             print(
                 f"Processed Template Pre-Processor: {tp_result[0]} -> {tp_result[1].name}"
             )
+            reg_process = RegPreProcessor(self._original_templates)
+            reg_result = reg_process.execute_single(template_type)
+            print(
+                f"Processed Registry Pre-Processor: {reg_result[0]} -> {reg_result[1].name}"
+            )
 
     def install(self) -> None:
         # Implementation of the install method
@@ -263,9 +271,13 @@ class InstallAPI:
             for template_type in self._manifest["templates"].keys():
                 self.install_single(template_type)
             tp_processor = TemplatePreProcessor(self._original_templates)
+            reg_process = RegPreProcessor(self._original_templates)
             tp_results = tp_processor.execute_all()
+            reg_results = reg_process.execute_all()
             for tt, path in tp_results.items():
                 print(f"Processed Template Pre-Processor: {tt} -> {path.name}")
+            for tt, path in reg_results.items():
+                print(f"Processed Registry Pre-Processor: {tt} -> {path.name}")
         except Exception as e:
             print(f"Error during installation: {e}")
         finally:

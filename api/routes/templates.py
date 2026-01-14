@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, cast
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
@@ -28,6 +28,9 @@ from ..lib.decorators.session_decorator import with_session
 from ..lib.user.user_info import get_user_monad_name
 from ..lib.content_processors.pre_processors.pre_process_template import (
     PreProcessTemplate,
+)
+from ..lib.content_processors.pre_processors.pre_process_registry import (
+    PreProcessRegistry,
 )
 from src.template.front_mater_meta import FrontMatterMeta
 
@@ -82,7 +85,7 @@ def _get_template_manifest(template_type: str, version: str, request: Request):
     return json_content
 
 
-def _get_template_registry(template_type: str, version: str):
+def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -90,7 +93,7 @@ def _get_template_registry(template_type: str, version: str):
     path = Path() / f"api/templates/{template_type}/{ver}/registry.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="Registry file not found.")
-    json_content = json.loads(path.read_text())
+    json_content = cast(dict[str, Any], json.loads(path.read_text()))
     return json_content
 
 
@@ -239,13 +242,34 @@ async def get_template_manifest(
     response_class=JSONResponse,
 )
 @limiter.limit("15/minute")
+@with_session(optional=False)
 async def get_template_registry(
     template_type: str,
     version: str,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
-    return _get_template_registry(template_type, version)
+    reg = _get_template_registry(template_type, version)
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
+
+    if session:
+        try:
+            monad_name = get_user_monad_name(session)
+            if monad_name:
+                pre_processor = PreProcessRegistry(registry=reg, monad_name=monad_name)
+                processed_reg = pre_processor.pre_process_registry()
+                print(f"Processed registry with monad: {monad_name}")
+                return processed_reg
+            print("No monad name found in session for registry pre-processing.")
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error during registry pre-processing: {e}"
+            )
+    return reg
 
 
 @router.get(
