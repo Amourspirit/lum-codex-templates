@@ -167,12 +167,15 @@ async def get_template(
     "/{template_type}/{version}/instructions",
     response_class=MarkdownResponse,
 )
-@cache(expire=300)  # Cache for 300 seconds
+@with_session(optional=False)
 async def get_template_instructions(
     template_type: str,
     version: str,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -206,9 +209,9 @@ async def get_template_instructions(
             f"{app_root_url}/templates/{template_type}/{ver}"
         )
 
-    # fm.frontmatter["canonical_executor_mode"]["api_path"] = (
-    #     "/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE-V1.0"
-    # )
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
+
     text = fm.get_template_text()
 
     return text
@@ -219,16 +222,21 @@ async def get_template_instructions(
     "/{template_type}/{version}/manifest",
     response_model=ManifestResponse,
 )
-@cache(expire=60)  # Cache for 60 seconds
+@with_session(optional=False)
 async def get_template_manifest(
     template_type: str,
     version: str,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     try:
         results_dict = _get_template_manifest(template_type, version, request)
         manifest = ManifestResponse(**results_dict)
+        if session and "session_id" in session:
+            response.headers["X-Session-ID"] = session["session_id"]
         return manifest
     except ValidationError as e:
         raise HTTPException(
@@ -238,7 +246,7 @@ async def get_template_manifest(
 
 
 @router.get(
-    "/api/v1/templates/{template_type}/{version}/registry",
+    "/{template_type}/{version}/registry",
     response_class=JSONResponse,
 )
 @limiter.limit("15/minute")
@@ -277,11 +285,15 @@ async def get_template_registry(
     response_model=TemplateStatusResponse,
 )
 @limiter.limit("15/minute")
+@with_session(optional=False)
 async def get_template_status(
     template_type: str,
     version: str,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -298,16 +310,23 @@ async def get_template_status(
         "instructions": "available",
         "last_verified": dt_now,
     }
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
+
     json_content = json.loads(json.dumps(status))
     return json_content
 
 
 @router.post("/verify", response_model=VerifyArtifactResponse)
 @limiter.limit("15/minute")
+@with_session(optional=False)
 def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     content = submission.template_content.strip()
     if not content:
@@ -416,15 +435,22 @@ def verify_artifact(
             status_code=result.status,
             detail=details,
         )
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
+
     return result
 
 
 @router.post("/finalize", response_model=FinalizeArtifactResponse)
 @limiter.limit("15/minute")
+@with_session(optional=False)
 def finalize_artifact(
     submission: ArtifactSubmission,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     # cleanup and add any final fields before storage
     content = submission.template_content.strip()
@@ -472,15 +498,21 @@ def finalize_artifact(
             status_code=500,
             detail=f"Validation error in FinalizeArtifactResponse: {e}",
         )
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
     return finalize_result
 
 
 @router.post("/upgrade", response_model=UpgradeArtifactResponse)
 @limiter.limit("15/minute")
+@with_session(optional=False)
 def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
     request: Request,
+    response: Response,
     current_principle: dict[str, str] = Depends(get_current_active_principle),
+    session: Optional[dict] = None,
+    x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if submission.session_id:
         print(
@@ -561,4 +593,6 @@ def upgrade_to_template(
             status_code=500,
             detail=f"Validation error in UpgradeArtifactResponse: {e}",
         )
+    if session and "session_id" in session:
+        response.headers["X-Session-ID"] = session["session_id"]
     return upgrade_result
