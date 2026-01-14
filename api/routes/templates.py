@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, cast
-from fastapi import APIRouter, Depends, HTTPException, Header, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
 from pydantic import ValidationError
@@ -110,6 +110,10 @@ async def get_template(
     version: str,
     request: Request,
     response: Response,
+    artifact_name: str = Query(
+        default=None,
+        description="Optional name of the artifact this template is being applied to",
+    ),
     current_principle: dict[str, str] = Depends(get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
@@ -173,6 +177,10 @@ async def get_template_instructions(
     version: str,
     request: Request,
     response: Response,
+    artifact_name: str = Query(
+        default=None,
+        description="Optional name of the artifact this template is being applied to",
+    ),
     current_principle: dict[str, str] = Depends(get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
@@ -213,6 +221,8 @@ async def get_template_instructions(
         response.headers["X-Session-ID"] = session["session_id"]
 
     text = fm.get_template_text()
+    if artifact_name:
+        text = text.replace("{Artifact Name}", artifact_name)
 
     return text
 
@@ -228,6 +238,10 @@ async def get_template_manifest(
     version: str,
     request: Request,
     response: Response,
+    artifact_name: str = Query(
+        default=None,
+        description="Optional name of the artifact this template is being applied to",
+    ),
     current_principle: dict[str, str] = Depends(get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
@@ -256,6 +270,10 @@ async def get_template_registry(
     version: str,
     request: Request,
     response: Response,
+    artifact_name: str = Query(
+        default=None,
+        description="Optional name of the artifact this template is being applied to",
+    ),
     current_principle: dict[str, str] = Depends(get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
