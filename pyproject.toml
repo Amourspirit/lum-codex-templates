@@ -211,7 +211,7 @@ single_fields_omitted=[
 
 [tool.project.templates.glyph]
 id="TEMPLATE-GLYPH"
-version="2.10"
+version="2.11"
 category="glyph"
 name="Glyph Template"
 family="glyph_artifacts"
@@ -234,7 +234,7 @@ single_fields_omitted=[
 
 [tool.project.templates.stone]
 id="TEMPLATE-STONE"
-version="2.9"
+version="2.10"
 category="glyph"
 name="Stone Template"
 family="stone_artifacts"
@@ -398,7 +398,7 @@ single_fields_omitted=[
 
 [tool.project.templates.sigil]
 id="TEMPLATE-SIGIL"
-version="2.9"
+version="2.10"
 category="sigil"
 name="Sigil Template"
 family="sigil_artifacts"

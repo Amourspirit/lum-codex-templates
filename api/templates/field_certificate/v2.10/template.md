@@ -4,7 +4,7 @@ template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
 template_version: '2.10'
-template_hash: e2f646ccff2f0a7d2d6abb0b9468cc07f62be63b7f1362b15284a57c38f91c7b
+template_hash: 7a9ae8b0713b8623b4b7d02cf59d739c4e98744115cfabe62fc032fd140cae6f
 template_memory_scope: thread_global
 template_family: field_certificates
 template_origin: Soluun + Adamus
@@ -73,7 +73,7 @@ tags:
 codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
-batch_number: '84'
+batch_number: '85'
 field_placeholder_delimiters:
   open: '[['
   close: ']]'

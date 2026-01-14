@@ -104,7 +104,8 @@ related_artifacts: "[[prompt:Seal of ___, Protocol of ___]]"
 
 link_source: "[[prompt:ChatGPT conversation link]]"
 
-artifact_image_path: ../Glyphs/Public/[[prompt:image-filename.png]]
+artifact_image_path:
+- ../Glyphs/Public/[[prompt:image-filename.png]]
 
 tags:
   - Glyph

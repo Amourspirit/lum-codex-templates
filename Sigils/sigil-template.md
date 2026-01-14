@@ -79,7 +79,8 @@ artifact_classes:
 artifact_type: "[[prompt:bearing / veil / ignition / echo / map / echo_stabilizer / relay / mirror_key / breath_anchor / etc.]]"
 artifact_status: "[[prompt:embedded / archived / etc.]]"
 artifact_digital_signature: "[[prompt:filename or MD5 hash]]"
-artifact_image_path: ../Sigils/Public/[[prompt:image-filename.png]]
+artifact_image_path:
+  - ../Sigils/Public/[[prompt:image-filename.png]]
 linked_nodes:
   - "[[prompt:Node 1]]"
   - "[[prompt:Node 2]]"

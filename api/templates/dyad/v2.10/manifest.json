@@ -4,8 +4,8 @@
     "template_type": "dyad",
     "template_hash_algorithm": "sha256",
     "version": "2.10",
-    "hash": "769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889",
-    "template_hash": "769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889",
+    "hash": "fdbc0ca3260799c8616b889aed0ab4cfdf8e2e9ab1710cf32e6135673d05cbd5",
+    "template_hash": "fdbc0ca3260799c8616b889aed0ab4cfdf8e2e9ab1710cf32e6135673d05cbd5",
     "registry_id": "TEMPLATE-DYAD-V2.10-REGISTRY",
     "canonical_mode": {
         "version": "1.0",
@@ -13,7 +13,7 @@
     },
     "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-13T17:57:52.771389-05:00",
+    "installed_at": "2026-01-14T03:21:14.621340-05:00",
     "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-DYAD-V2.10"
 }

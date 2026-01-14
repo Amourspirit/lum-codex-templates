@@ -5,7 +5,7 @@ template_category: glyph
 template_name: Dyadic Glyph Grouping Template
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: 769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889
+template_hash: fdbc0ca3260799c8616b889aed0ab4cfdf8e2e9ab1710cf32e6135673d05cbd5
 template_family: dyadic_structures
 template_origin: Soluun + Adamus
 template_purpose: 'Define, document, and harmonically bind a dyadic relationship between
@@ -69,7 +69,7 @@ tags:
 codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
-batch_number: '84'
+batch_number: '85'
 field_placeholder_delimiters:
   open: '[['
   close: ']]'

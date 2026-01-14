@@ -5,7 +5,7 @@ template_category: seal
 template_name: Seal Template
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 4238898b45ea6318ac8f60fdc1d8ad44b61b7c4063b2ef734370717ff9dc70ca
+template_hash: 98ad3a343969465ff72cb2b48ac11c09c43531d1481d23dd5cc07ba19928f481
 template_family: seal_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a standardized, registry-aligned Seal entry that defines
@@ -97,7 +97,7 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
-batch_number: '84'
+batch_number: '85'
 field_placeholder_delimiters:
   open: '[['
   close: ']]'

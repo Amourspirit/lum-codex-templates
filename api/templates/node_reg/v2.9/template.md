@@ -5,7 +5,7 @@ template_category: node
 template_type: node_reg
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: e4c12d593013c9f44a1f76b95a05ff79349afab1ee87c4f024953e2d81a88b49
+template_hash: a7a652d78f59832308cff9b9894e0be177206e4fd5f2f2103ecf5f07b437772a
 template_family: node_templates
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally register a single Node within\
@@ -63,7 +63,7 @@ tags:
 - arc_[[prompt:arc_name]]
 - node_[[prompt:type]]
 - node_[[prompt:function]]
-batch_number: '84'
+batch_number: '85'
 field_placeholder_delimiters:
   open: '[['
   close: ']]'

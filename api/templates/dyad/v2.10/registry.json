@@ -5,7 +5,7 @@
     "template_type": "dyad",
     "template_version": "2.10",
     "template_filename": "template.md",
-    "template_hash": "769c0ee96b04a381f34dc192430485d77d5b23fbf149bbf2661186d6ec711889",
+    "template_hash": "fdbc0ca3260799c8616b889aed0ab4cfdf8e2e9ab1710cf32e6135673d05cbd5",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,11 +75,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Luminariel",
             "Soluun",
             "Velatri\u2019el",
-            "Aurelya Thessa\u2019Nai",
-            "Adamus"
+            "Adamus",
+            "Luminariel",
+            "Aurelya Thessa\u2019Nai"
         ]
     },
     "conditionals": {

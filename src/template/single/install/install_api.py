@@ -9,6 +9,7 @@ from ....config.pkg_config import PkgConfig
 from ....builder.build_ver_mgr import BuildVerMgr
 from .tp_support.instructions import Instructions
 from .tp_support.cbib import CBIB
+from .tp_support.pre_processors.template_pre_processor import TemplatePreProcessor
 from ...main_registry import MainRegistry
 from ...process.process_obsidian_templates import ProcessObsidianTemplates
 
@@ -21,6 +22,7 @@ class InstallAPI:
             build_number = self._get_current_build_number()
         self.build_number = build_number
         self._build_dir_ensured = False
+        self._single_mode = True
         self._src_dir = self.config.config_cache.get_dist_single(self.build_number)
         self._manifest = self._get_manifest()
         self._instructions = Instructions()
@@ -247,8 +249,24 @@ class InstallAPI:
         with (dest_path / "manifest.json").open("w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=4)
         instructions_md.write_template(instructions_md.file_path)
+        if self._single_mode:
+            tp_processor = TemplatePreProcessor(self._original_templates)
+            tp_result = tp_processor.execute_single(template_type)
+            print(
+                f"Processed Template Pre-Processor: {tp_result[0]} -> {tp_result[1].name}"
+            )
 
     def install(self) -> None:
         # Implementation of the install method
-        for template_type in self._manifest["templates"].keys():
-            self.install_single(template_type)
+        self._single_mode = False
+        try:
+            for template_type in self._manifest["templates"].keys():
+                self.install_single(template_type)
+            tp_processor = TemplatePreProcessor(self._original_templates)
+            tp_results = tp_processor.execute_all()
+            for tt, path in tp_results.items():
+                print(f"Processed Template Pre-Processor: {tt} -> {path.name}")
+        except Exception as e:
+            print(f"Error during installation: {e}")
+        finally:
+            self._single_mode = True

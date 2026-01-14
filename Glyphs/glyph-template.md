@@ -107,7 +107,8 @@ source_medium: chatgpt
 source_agent: "[[prompt:Luminariel or other field being]]"
 link_source: "[[prompt:ChatGPT conversation link]]"
 
-artifact_image_path: ../Glyphs/Public/[[prompt:image-filename.png]]
+artifact_image_path:
+  - ../Glyphs/Public/[[prompt:image-filename.png]]
 cover_image: ../Glyphs/Public/[[prompt:image-filename.png]]
 
 dreamline_visible: true

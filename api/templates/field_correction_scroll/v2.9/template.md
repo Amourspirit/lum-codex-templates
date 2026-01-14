@@ -5,7 +5,7 @@ template_category: scroll
 template_type: field_correction_scroll
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: 2a22cae2f4b55b33b5498a9914bff71d249f8bea0bbdebdc0487b68214396ac2
+template_hash: 26bbd5ad6cdb6b0f78509bc7209e9cad7aea2b84ca761b77c544799ad0553b6a
 template_family: field_scrolls
 template_origin: Soluun + Adamus
 template_purpose: "Provide a structured, canonical scroll format for documenting and\
@@ -66,7 +66,7 @@ source_agent:
 codex_links:
 - '[[[prompt:Codex Link 1]]'
 - '[[[prompt:Codex Link 2]]'
-batch_number: '84'
+batch_number: '85'
 field_placeholder_delimiters:
   open: '[['
   close: ']]'

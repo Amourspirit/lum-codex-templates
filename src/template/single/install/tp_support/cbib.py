@@ -60,7 +60,7 @@ class CbibResponse(BaseModel):
     def write_model_to_file(self) -> None:
         model_str = self._get_model()
         path = (
-            Path.cwd()
+            self.config.root_path
             / self.config.api_info.base_dir
             / "models"
             / "executor_modes"

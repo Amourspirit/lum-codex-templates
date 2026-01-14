@@ -25,6 +25,10 @@ from ..responses.markdown_response import MarkdownResponse
 from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
 from ..lib.decorators.session_decorator import with_session
+from ..lib.user.user_info import get_user_monad_name
+from ..lib.content_processors.pre_processors.pre_process_template import (
+    PreProcessTemplate,
+)
 from src.template.front_mater_meta import FrontMatterMeta
 
 router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
@@ -136,6 +140,21 @@ async def get_template(
 
     if session and "session_id" in session:
         response.headers["X-Session-ID"] = session["session_id"]
+
+    if session:
+        try:
+            monad_name = get_user_monad_name(session)
+            if monad_name:
+                pre_processor = PreProcessTemplate(
+                    template_content=text, monad_name=monad_name
+                )
+                processed_text = pre_processor.pre_process_template()
+                print(f"Processed template with monad: {monad_name}")
+                return processed_text
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error during template pre-processing: {e}"
+            )
 
     return text
 

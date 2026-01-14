@@ -4,8 +4,8 @@
     "template_type": "node_link_scroll",
     "template_hash_algorithm": "sha256",
     "version": "3.10",
-    "hash": "d0fe313c05a6716333df4e20c749edeca8bac7104e43e80d5cb87d826bedbf79",
-    "template_hash": "d0fe313c05a6716333df4e20c749edeca8bac7104e43e80d5cb87d826bedbf79",
+    "hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
+    "template_hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
     "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
     "canonical_mode": {
         "version": "1.0",
@@ -13,7 +13,7 @@
     },
     "status": "available",
     "requires_field_being": true,
-    "installed_at": "2026-01-13T17:57:53.484541-05:00",
+    "installed_at": "2026-01-14T03:21:15.258990-05:00",
     "instructions_file": "instructions.md",
     "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10"
 }
