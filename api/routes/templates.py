@@ -147,6 +147,8 @@ async def get_template(
 
     if session and "session_id" in session:
         response.headers["X-Session-ID"] = session["session_id"]
+    if session and artifact_name:
+        response.headers["X-Artifact-Name"] = artifact_name
 
     if session:
         try:
@@ -219,6 +221,8 @@ async def get_template_instructions(
 
     if session and "session_id" in session:
         response.headers["X-Session-ID"] = session["session_id"]
+    if session and artifact_name:
+        response.headers["X-Artifact-Name"] = artifact_name
 
     text = fm.get_template_text()
     if artifact_name:
@@ -251,6 +255,8 @@ async def get_template_manifest(
         manifest = ManifestResponse(**results_dict)
         if session and "session_id" in session:
             response.headers["X-Session-ID"] = session["session_id"]
+        if session and artifact_name:
+            response.headers["X-Artifact-Name"] = artifact_name
         return manifest
     except ValidationError as e:
         raise HTTPException(
@@ -284,6 +290,9 @@ async def get_template_registry(
 
     if session:
         try:
+            if artifact_name:
+                response.headers["X-Artifact-Name"] = artifact_name
+
             monad_name = get_user_monad_name(session)
             if monad_name:
                 pre_processor = PreProcessRegistry(registry=reg, monad_name=monad_name)
