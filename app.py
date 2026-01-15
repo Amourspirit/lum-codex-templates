@@ -1,5 +1,6 @@
 import os
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 from fastapi import FastAPI, Request
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
@@ -13,11 +14,22 @@ from dotenv import load_dotenv
 
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
+from api.lib.env import env_info  # noqa: E402
 from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
-from api.routes import auth  # noqa: E402
+
 from api.routes import session  # noqa: E402
 from api.routes import user  # noqa: E402
+
+if TYPE_CHECKING:
+    from api.routes import auth1 as auth  # noqa: E402
+else:
+    if env_info.AUTH_VERSION == 1:
+        from api.routes import auth1 as auth  # noqa: E402
+    elif env_info.AUTH_VERSION == 2:
+        from api.routes import auth2 as auth  # noqa: E402
+    else:
+        raise ImportError("Unsupported AUTH_VERSION in env_info")
 
 
 @asynccontextmanager

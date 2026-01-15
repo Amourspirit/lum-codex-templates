@@ -1,10 +1,18 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from fastapi import APIRouter, HTTPException, Depends, Header, Request, Response
 from ..lib.cache.session_handler import SessionHandler
 from ..routes.limiter import limiter
-from ..routes.auth import get_current_active_principle
 from ..lib.decorators.session_decorator import with_session
 from ..models.session.session_response import SessionResponse
+from ..lib.env import env_info
+
+if TYPE_CHECKING:
+    from . import auth1 as auth
+else:
+    if env_info.AUTH_VERSION == 2:
+        from . import auth2 as auth
+    else:
+        from . import auth1 as auth
 
 router = APIRouter(prefix="/api/v1/session", tags=["session"])
 
@@ -16,7 +24,7 @@ async def start_session(
     request: Request,
     response: Response,
     session: Optional[dict] = None,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if session:
@@ -49,7 +57,7 @@ async def check_session(
     request: Request,
     response: Response,
     session: Optional[dict] = None,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if not session:

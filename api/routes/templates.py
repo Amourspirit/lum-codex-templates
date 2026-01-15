@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import Any, Optional, cast, TYPE_CHECKING
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi_cache.decorator import cache
@@ -22,10 +22,10 @@ from ..models.templates.finalize_artifact_response import FinalizeArtifactRespon
 from ..models.templates.upgrade_artifact_response import UpgradeArtifactResponse
 from ..models.templates.manifest_response import ManifestResponse
 from ..responses.markdown_response import MarkdownResponse
-from ..routes.auth import get_current_active_principle
 from ..routes.limiter import limiter
 from ..lib.decorators.session_decorator import with_session
 from ..lib.user.user_info import get_user_monad_name
+from ..lib.env import env_info
 from ..lib.content_processors.pre_processors.pre_process_template import (
     PreProcessTemplate,
 )
@@ -33,6 +33,14 @@ from ..lib.content_processors.pre_processors.pre_process_registry import (
     PreProcessRegistry,
 )
 from src.template.front_mater_meta import FrontMatterMeta
+
+if TYPE_CHECKING:
+    from . import auth1 as auth
+else:
+    if env_info.AUTH_VERSION == 2:
+        from . import auth2 as auth
+    else:
+        from . import auth1 as auth
 
 router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
 API_RELATIVE_URL = "/api/v1"
@@ -114,7 +122,7 @@ async def get_template(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -183,7 +191,7 @@ async def get_template_instructions(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -246,7 +254,7 @@ async def get_template_manifest(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -280,7 +288,7 @@ async def get_template_registry(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -318,7 +326,7 @@ async def get_template_status(
     version: str,
     request: Request,
     response: Response,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -351,7 +359,7 @@ def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
     response: Response,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -475,7 +483,7 @@ def finalize_artifact(
     submission: ArtifactSubmission,
     request: Request,
     response: Response,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -537,7 +545,7 @@ def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
     request: Request,
     response: Response,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
+    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     session: Optional[dict] = None,
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):

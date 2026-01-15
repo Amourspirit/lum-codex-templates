@@ -13,6 +13,7 @@ ALGORITHM = cast(str, os.getenv("API_AUTH_ALGORITHM"))
 if not ALGORITHM:
     raise ValueError("API_AUTH_ALGORITHM environment variable is not set")
 TOKEN_EXPIRES = int(cast(str, os.getenv("API_TOKEN_EXPIRES_MINUTES", "30")))
+AUTH_VERSION = int(os.getenv("API_AUTH_VERSION", "1"))
 
 
 _API_ENV_DATA = os.getenv("API_ENV_DATA")

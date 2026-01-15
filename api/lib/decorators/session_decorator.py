@@ -1,9 +1,7 @@
 from functools import wraps
-from os import error
 from fastapi import Request, HTTPException
-from typing import Callable
-from starlette.requests import Request as StarletteRequest
-from ..cache.session_handler import SessionHandler  # singleton
+from typing import Callable, Optional, cast
+from ..cache.session_handler import SessionHandler
 
 
 def with_session(
@@ -12,33 +10,51 @@ def with_session(
 ) -> Callable[[Callable], Callable]:
     def decorator(func: Callable):
         @wraps(func)
-        async def wrapper(*args, request: Request | StarletteRequest, **kwargs):
-            # 🌀 1. Try to get session from header
+        async def wrapper(*args, **kwargs):
+            request = cast(Request | None, kwargs.get("request"))
+
+            if request is None:
+                raise RuntimeError("with_session requires `request: Request` parameter")
+
+            session_id: Optional[str] = None
+
+            # 1. Header (non-GPT clients)
             session_id = request.headers.get("X-Session-ID")
 
-            # 🌀 2. Fall back to query param if header not found
+            # 2. Query param (GPT-compatible)
             if not session_id:
                 session_id = request.query_params.get("session_id")
 
-            # 🧪 3. Handle session validation
+            # 3. JSON body (POST routes)
+            if not session_id:
+                try:
+                    body = await request.json()
+                    if isinstance(body, dict):
+                        session_id = body.get("session_id") or body.get(
+                            "submission", {}
+                        ).get("session_id")
+                except Exception:
+                    pass  # no body or not JSON
+
+            # Enforce session requirement
+            session_handler_instance = SessionHandler()
             if session_id:
-                if error_on_missing and not SessionHandler().has_session(session_id):
+                if error_on_missing and not session_handler_instance.has_session(
+                    session_id
+                ):
                     raise HTTPException(
                         status_code=404, detail="Session expired or not found"
                     )
-                session = SessionHandler().get_session(session_id)
-                # if not session:
-                #     raise HTTPException(
-                #         status_code=404, detail="Session expired or not found"
-                #     )
+                session = session_handler_instance.get_session(session_id)
                 kwargs["session"] = session
+                kwargs["session_id"] = session_id
             elif not optional:
                 raise HTTPException(
                     status_code=400,
-                    detail="Session ID required (header or query param)",
+                    detail="session_id required (header, query, or body)",
                 )
 
-            return await func(*args, request=request, **kwargs)
+            return await func(*args, **kwargs)
 
         return wrapper
 

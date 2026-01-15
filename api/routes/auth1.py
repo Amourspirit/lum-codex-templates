@@ -15,7 +15,7 @@ from ..models.auth.user_response import UserResponse
 from ..models.auth.user_token import Token
 from ..models.auth.user_token_data import TokenData
 from ..models.auth.verify_token_response import VerifyTokenResponse
-from ..routes.limiter import limiter
+from .limiter import limiter
 from ..lib.env import env_info
 
 
@@ -173,8 +173,6 @@ async def get_hashed_password(
     In production, passwords should be hashed securely and not exposed via an API.
 
     - **password**: The plain text password to be hashed.
-
-    Returns a JSON response containing the hashed password.
     """
     try:
         hashed_password = get_pwd_hash(password)
