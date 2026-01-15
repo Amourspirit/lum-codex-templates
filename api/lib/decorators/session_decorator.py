@@ -1,4 +1,5 @@
 from functools import wraps
+import inspect
 from fastapi import Request, HTTPException
 from typing import Callable, Optional, cast
 from ..cache.session_handler import SessionHandler
@@ -18,15 +19,15 @@ def with_session(
 
             session_id: Optional[str] = None
 
-            # 1. Header (non-GPT clients)
+            # 1. Header (all methods)
             session_id = request.headers.get("X-Session-ID")
 
-            # 2. Query param (GPT-compatible)
+            # 2. Query param (GPT-compatible, all methods)
             if not session_id:
                 session_id = request.query_params.get("session_id")
 
-            # 3. JSON body (POST routes)
-            if not session_id:
+            # 3. JSON body (POST / PUT / PATCH ONLY — NEVER GET)
+            if not session_id and request.method not in {"GET", "HEAD"}:
                 try:
                     body = await request.json()
                     if isinstance(body, dict):
@@ -34,27 +35,35 @@ def with_session(
                             "submission", {}
                         ).get("session_id")
                 except Exception:
-                    pass  # no body or not JSON
+                    # No body or not JSON — safe to ignore
+                    pass
 
-            # Enforce session requirement
+            # Resolve / validate session
             session_handler_instance = SessionHandler()
+
             if session_id:
                 if error_on_missing and not session_handler_instance.has_session(
                     session_id
                 ):
                     raise HTTPException(
-                        status_code=404, detail="Session expired or not found"
+                        status_code=404,
+                        detail="Session expired or not found",
                     )
+
                 session = session_handler_instance.get_session(session_id)
                 kwargs["session"] = session
-                kwargs["session_id"] = session_id
+                # kwargs["session_id"] = session_id
+
             elif not optional:
                 raise HTTPException(
                     status_code=400,
-                    detail="session_id required (header, query, or body)",
+                    detail="session_id required (header or query)",
                 )
 
             return await func(*args, **kwargs)
+
+        # 🔑 CRITICAL: preserve original signature for FastAPI / OpenAPI
+        wrapper.__signature__ = inspect.signature(func)  # type: ignore
 
         return wrapper
 

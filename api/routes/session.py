@@ -5,6 +5,7 @@ from ..routes.limiter import limiter
 from ..lib.decorators.session_decorator import with_session
 from ..models.session.session_response import SessionResponse
 from ..lib.env import env_info
+from ..models.session.session import Session
 
 if TYPE_CHECKING:
     from . import auth1 as auth
@@ -23,13 +24,13 @@ router = APIRouter(prefix="/api/v1/session", tags=["session"])
 async def start_session(
     request: Request,
     response: Response,
-    session: Optional[dict] = None,
+    session: Optional[Session] = None,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if session:
         result = SessionResponse(
-            session_id=session["session_id"],
+            session_id=session.session_id,
             new_session=False,
             message="Session already exists",
             expires_in_seconds=SessionHandler().ttl_seconds,
@@ -56,11 +57,11 @@ async def start_session(
 async def check_session(
     request: Request,
     response: Response,
-    session: Optional[dict] = None,
+    session: Optional[Session] = None,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if not session:
         raise HTTPException(status_code=404, detail="Session expired or not found")
-    response.headers["X-Session-ID"] = session["session_id"]
+    response.headers["X-Session-ID"] = session.session_id
     return session
