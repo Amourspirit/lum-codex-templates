@@ -124,7 +124,7 @@ async def get_template(
         description="Optional name of the artifact this template is being applied to",
     ),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     # print("Fetching template:", template_type, version)
@@ -193,7 +193,7 @@ async def get_template_instructions(
         description="Optional name of the artifact this template is being applied to",
     ),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     v_result = _validate_version_str(version)
@@ -256,7 +256,7 @@ async def get_template_manifest(
         description="Optional name of the artifact this template is being applied to",
     ),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     try:
@@ -290,7 +290,7 @@ async def get_template_registry(
         description="Optional name of the artifact this template is being applied to",
     ),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     reg = _get_template_registry(template_type, version)
@@ -328,7 +328,7 @@ async def get_template_status(
     request: Request,
     response: Response,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     v_result = _validate_version_str(version)
@@ -361,7 +361,7 @@ def verify_artifact(
     request: Request,
     response: Response,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     content = submission.template_content.strip()
@@ -485,7 +485,7 @@ def finalize_artifact(
     request: Request,
     response: Response,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     # cleanup and add any final fields before storage
@@ -547,7 +547,7 @@ def upgrade_to_template(
     request: Request,
     response: Response,
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
     if submission.session_id:

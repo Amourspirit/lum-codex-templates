@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from fastapi import APIRouter, HTTPException, Depends, Header, Request, Response
 from ..routes.limiter import limiter
 from ..lib.decorators.session_decorator import with_session
@@ -23,7 +23,7 @@ async def check_session(
     username: str,
     request: Request,
     response: Response,
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):

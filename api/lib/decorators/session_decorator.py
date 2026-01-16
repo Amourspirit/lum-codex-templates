@@ -19,14 +19,14 @@ def with_session(
 
             session_id: Optional[str] = None
 
-            # 1. Header (all methods)
+            # 1. Header
             session_id = request.headers.get("X-Session-ID")
 
-            # 2. Query param (GPT-compatible, all methods)
+            # 2. Query (GPT-compatible)
             if not session_id:
                 session_id = request.query_params.get("session_id")
 
-            # 3. JSON body (POST / PUT / PATCH ONLY — NEVER GET)
+            # 3. Body ONLY for non-GET
             if not session_id and request.method not in {"GET", "HEAD"}:
                 try:
                     body = await request.json()
@@ -35,24 +35,18 @@ def with_session(
                             "submission", {}
                         ).get("session_id")
                 except Exception:
-                    # No body or not JSON — safe to ignore
                     pass
 
-            # Resolve / validate session
-            session_handler_instance = SessionHandler()
+            handler = SessionHandler()
 
             if session_id:
-                if error_on_missing and not session_handler_instance.has_session(
-                    session_id
-                ):
+                if error_on_missing and not handler.has_session(session_id):
                     raise HTTPException(
                         status_code=404,
                         detail="Session expired or not found",
                     )
-
-                session = session_handler_instance.get_session(session_id)
+                session = handler.get_session(session_id)
                 kwargs["session"] = session
-                # kwargs["session_id"] = session_id
 
             elif not optional:
                 raise HTTPException(
@@ -62,7 +56,7 @@ def with_session(
 
             return await func(*args, **kwargs)
 
-        # 🔑 CRITICAL: preserve original signature for FastAPI / OpenAPI
+        # 🔒 Preserve FastAPI signature EXACTLY
         wrapper.__signature__ = inspect.signature(func)  # type: ignore
 
         return wrapper

@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from fastapi import APIRouter, HTTPException, Depends, Header, Request, Response
 from ..lib.cache.session_handler import SessionHandler
 from ..routes.limiter import limiter
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/api/v1/session", tags=["session"])
 async def start_session(
     request: Request,
     response: Response,
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
@@ -57,7 +57,7 @@ async def start_session(
 async def check_session(
     request: Request,
     response: Response,
-    session: Optional[Session] = None,
+    session: Session | None = Depends(lambda: None),
     current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
     x_session_id: str = Header(default=None, alias="X-Session-ID"),
 ):
