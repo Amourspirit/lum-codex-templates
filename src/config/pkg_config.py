@@ -229,6 +229,9 @@ class PkgConfig(metaclass=SingletonMeta):
             base_dir=api_info_data.get("base_dir", ""),
             ttl_session_cache_seconds=api_info_data.get("ttl_session_cache_seconds", 0),
             info_templates=api_info_templates,
+            title=api_info_data.get("title", ""),
+            description=api_info_data.get("description", ""),
+            version=api_info_data.get("version", ""),
         )
 
         # Config Cache

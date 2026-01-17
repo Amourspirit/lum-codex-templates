@@ -137,33 +137,33 @@ def get_current_active_principle(
 
 
 # region Auth Endpoints
-@router.get(
-    "/api/v1/auth/password_hash/{password}",
-    response_model=HashedPasswordResponse,
-)
-@limiter.limit("15/minute")
-async def get_hashed_password(
-    password: str,
-    request: Request,
-    current_principle: dict[str, str] = Depends(get_current_active_principle),
-):
-    """Generate a hashed password from a plain text password.
+# @router.get(
+#     "/api/v1/auth/password_hash/{password}",
+#     response_model=HashedPasswordResponse,
+# )
+# @limiter.limit("15/minute")
+# async def get_hashed_password(
+#     password: str,
+#     request: Request,
+#     current_principle: dict[str, str] = Depends(get_current_active_principle),
+# ):
+#     """Generate a hashed password from a plain text password.
 
-    This endpoint is primarily for development and testing purposes.
-    In production, passwords should be hashed securely and not exposed via an API.
+#     This endpoint is primarily for development and testing purposes.
+#     In production, passwords should be hashed securely and not exposed via an API.
 
-    - **password**: The plain text password to be hashed.
-    """
-    try:
-        hashed_password = get_pwd_hash(password)
-        # print("Generated hashed password:", hashed_password)
-        return HashedPasswordResponse(hashed_password=hashed_password)
-    except Exception as e:
-        # print(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating hashed password: {str(e)}",
-        )
+#     - **password**: The plain text password to be hashed.
+#     """
+#     try:
+#         hashed_password = get_pwd_hash(password)
+#         # print("Generated hashed password:", hashed_password)
+#         return HashedPasswordResponse(hashed_password=hashed_password)
+#     except Exception as e:
+#         # print(e)
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Error generating hashed password: {str(e)}",
+#         )
 
 
 @router.get("/api/v1/profile", response_model=UserResponse)

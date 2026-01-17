@@ -14,6 +14,7 @@ if not ALGORITHM:
     raise ValueError("API_AUTH_ALGORITHM environment variable is not set")
 TOKEN_EXPIRES = int(cast(str, os.getenv("API_TOKEN_EXPIRES_MINUTES", "30")))
 AUTH_VERSION = int(os.getenv("API_AUTH_VERSION", "1"))
+API_ENV_MODE = cast(str, os.getenv("API_ENV_MODE", "prod"))  # dev or prod
 
 
 _API_ENV_DATA = os.getenv("API_ENV_DATA")
@@ -30,13 +31,18 @@ def get_data_value(key: str, default: T = None) -> T:
     return API_ENV_DB.get("data", {}).get(key, default)
 
 
+def get_api_value(key: str, default: T = None) -> T:
+    data = API_ENV_DB.get("data", {})
+    return data.get("api", {}).get(key, default)
+
+
 def get_hashed_api_keys() -> set[str]:
-    keys = get_data_value("hashed_api_keys", {}).keys()
+    keys = get_api_value("hashed_api_keys", {}).keys()
     return set(keys)
 
 
 def get_api_key_allowed_origins(hashed_key: str) -> set[str]:
-    keys = get_data_value("hashed_api_keys", {})
+    keys = get_api_value("hashed_api_keys", {})
     key_data = keys.get(hashed_key, {})
     return set(key_data.get("allowed_origins", []))
 
@@ -57,3 +63,7 @@ def get_users() -> dict[str, User]:
     for username, user_data in API_ENV_DB.get("data", {}).get("users", {}).items():
         users[username] = User(**user_data)
     return users
+
+
+def get_api_servers() -> list[dict[str, str]]:
+    return get_api_value("servers", [])
