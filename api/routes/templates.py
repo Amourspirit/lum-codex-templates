@@ -1,18 +1,16 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, cast, TYPE_CHECKING
-from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, Response
+from typing import Any, cast
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 
 # from fastapi_cache.decorator import cache
 from pydantic import ValidationError
 
 
-from ..lib.cleanup.clean_meta_fields import CleanMetaFields
-from ..lib.upgrade.upgrade_template import UpgradeTemplate
-from ..lib.util.result import Result
-from ..lib.verify.verify_meta_fields import VerifyMetaFields
+from ..responses.markdown_response import MarkdownResponse
+from ..routes.limiter import limiter
 from ..models.templates.artifact_submission import ArtifactSubmission
 from ..models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
@@ -22,12 +20,13 @@ from ..models.templates.verify_artifact_response import VerifyArtifactResponse
 from ..models.templates.finalize_artifact_response import FinalizeArtifactResponse
 from ..models.templates.upgrade_artifact_response import UpgradeArtifactResponse
 from ..models.templates.manifest_response import ManifestResponse
-from ..models.session.session import Session
-from ..responses.markdown_response import MarkdownResponse
-from ..routes.limiter import limiter
-from ..lib.decorators.session_decorator import with_session
+from ..models.descope.descope_session import DescopeSession
+from ..lib.cleanup.clean_meta_fields import CleanMetaFields
+from ..lib.upgrade.upgrade_template import UpgradeTemplate
+from ..lib.util.result import Result
+from ..lib.verify.verify_meta_fields import VerifyMetaFields
 from ..lib.user.user_info import get_user_monad_name
-from ..lib.env import env_info
+from ..lib.descope.session import get_descope_session
 from ..lib.content_processors.pre_processors.pre_process_template import (
     PreProcessTemplate,
 )
@@ -36,16 +35,9 @@ from ..lib.content_processors.pre_processors.pre_process_registry import (
 )
 from src.template.front_mater_meta import FrontMatterMeta
 
-if TYPE_CHECKING:
-    from . import auth1 as auth
-else:
-    if env_info.AUTH_VERSION == 2:
-        from . import auth2 as auth
-    else:
-        from . import auth1 as auth
 
-router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
-API_RELATIVE_URL = "/api/v1"
+router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
+_API_RELATIVE_URL = "/api/v1"
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
@@ -76,7 +68,7 @@ def _get_template_manifest(template_type: str, version: str, request: Request):
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + API_RELATIVE_URL
+    app_root_url = base_url + _API_RELATIVE_URL
     json_content["template_api_path"] = (
         f"{app_root_url}/templates/{template_type}/{ver}"
     )
@@ -113,7 +105,6 @@ def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
     "/{template_type}/{version}",
     response_class=MarkdownResponse,
 )
-@with_session(optional=False)
 async def get_template(
     template_type: str,
     version: str,
@@ -123,9 +114,7 @@ async def get_template(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     # print("Fetching template:", template_type, version)
     v_result = _validate_version_str(version)
@@ -139,7 +128,7 @@ async def get_template(
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + API_RELATIVE_URL
+    app_root_url = base_url + _API_RELATIVE_URL
 
     if fm.has_field("template_registry"):
         api_path = f"{app_root_url}/templates/{template_type}/{ver}/registry"
@@ -154,8 +143,6 @@ async def get_template(
     )
     text = fm.get_template_text()
 
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
     if session and artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -182,7 +169,6 @@ async def get_template(
     "/{template_type}/{version}/instructions",
     response_class=MarkdownResponse,
 )
-@with_session(optional=False)
 async def get_template_instructions(
     template_type: str,
     version: str,
@@ -192,9 +178,7 @@ async def get_template_instructions(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -207,9 +191,9 @@ async def get_template_instructions(
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + API_RELATIVE_URL
+    app_root_url = base_url + _API_RELATIVE_URL
 
-    content = fm.content.replace("[[API_RELATIVE_URL]]", API_RELATIVE_URL).replace(
+    content = fm.content.replace("[[API_RELATIVE_URL]]", _API_RELATIVE_URL).replace(
         "[[API_ROOT_URL]]", app_root_url
     )
     fm.content = content
@@ -228,8 +212,6 @@ async def get_template_instructions(
             f"{app_root_url}/templates/{template_type}/{ver}"
         )
 
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
     if session and artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -245,7 +227,6 @@ async def get_template_instructions(
     "/{template_type}/{version}/manifest",
     response_model=ManifestResponse,
 )
-@with_session(optional=False)
 async def get_template_manifest(
     template_type: str,
     version: str,
@@ -255,15 +236,11 @@ async def get_template_manifest(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     try:
         results_dict = _get_template_manifest(template_type, version, request)
         manifest = ManifestResponse(**results_dict)
-        if session and session.session_id:
-            response.headers["X-Session-ID"] = session.session_id
         if session and artifact_name:
             response.headers["X-Artifact-Name"] = artifact_name
         return manifest
@@ -279,7 +256,6 @@ async def get_template_manifest(
     response_class=JSONResponse,
 )
 @limiter.limit("15/minute")
-@with_session(optional=False)
 async def get_template_registry(
     template_type: str,
     version: str,
@@ -289,13 +265,9 @@ async def get_template_registry(
         default=None,
         description="Optional name of the artifact this template is being applied to",
     ),
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     reg = _get_template_registry(template_type, version)
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
 
     if session:
         try:
@@ -321,15 +293,11 @@ async def get_template_registry(
     response_model=TemplateStatusResponse,
 )
 @limiter.limit("15/minute")
-@with_session(optional=False)
 async def get_template_status(
     template_type: str,
     version: str,
     request: Request,
-    response: Response,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -346,23 +314,17 @@ async def get_template_status(
         "instructions": "available",
         "last_verified": dt_now,
     }
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
 
     json_content = json.loads(json.dumps(status))
     return json_content
 
 
 @router.post("/verify", response_model=VerifyArtifactResponse)
-@limiter.limit("15/minute")
-@with_session(optional=False)
 def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
     response: Response,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     content = submission.template_content.strip()
     if not content:
@@ -404,7 +366,7 @@ def verify_artifact(
         )
     # Verification passed, now check hash
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
-    app_root_url = base_url + API_RELATIVE_URL
+    app_root_url = base_url + _API_RELATIVE_URL
     template_api_path = (
         f"{app_root_url}/templates/{fm.template_type}/v{fm.template_version}"
     )
@@ -471,22 +433,16 @@ def verify_artifact(
             status_code=result.status,
             detail=details,
         )
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
 
     return result
 
 
 @router.post("/finalize", response_model=FinalizeArtifactResponse)
 @limiter.limit("15/minute")
-@with_session(optional=False)
 def finalize_artifact(
     submission: ArtifactSubmission,
     request: Request,
-    response: Response,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     # cleanup and add any final fields before storage
     content = submission.template_content.strip()
@@ -534,27 +490,16 @@ def finalize_artifact(
             status_code=500,
             detail=f"Validation error in FinalizeArtifactResponse: {e}",
         )
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
     return finalize_result
 
 
 @router.post("/upgrade", response_model=UpgradeArtifactResponse)
 @limiter.limit("15/minute")
-@with_session(optional=False)
 def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
     request: Request,
-    response: Response,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
-    session: Session | None = Depends(lambda: None),
-    x_session_id: str = Header(default=None, alias="X-Session-ID"),
+    session: DescopeSession = Depends(get_descope_session),
 ):
-    if submission.session_id:
-        print(
-            f"Session {submission.session_id} upgrading {submission.artifact_name} v{submission.new_version}"
-        )
-
     contents = submission.markdown_content.strip()
     v_result = _validate_version_str(submission.new_version)
     if not Result.is_success(v_result):
@@ -629,6 +574,5 @@ def upgrade_to_template(
             status_code=500,
             detail=f"Validation error in UpgradeArtifactResponse: {e}",
         )
-    if session and session.session_id:
-        response.headers["X-Session-ID"] = session.session_id
+
     return upgrade_result

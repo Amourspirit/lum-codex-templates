@@ -24,11 +24,3 @@ class UpgradeToTemplateSubmission(BaseModel):
             description="The new version that the template should be upgraded to, e.g., '1.0', '2.10', etc.",
         ),
     ]
-    session_id: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Session ID",
-            description="Session ID associated with the current session.",
-        ),
-    ] = None

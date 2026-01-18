@@ -1,23 +1,16 @@
-from typing import TYPE_CHECKING
 import json
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 
 from ..lib.util.result import Result
-from ..lib.env import env_info
+from ..lib.descope.session import get_descope_session
 from ..routes.limiter import limiter
 from ..models.executor_modes.v1_0.cbib_response import CbibResponse
+from ..models.descope.descope_session import DescopeSession
 
-if TYPE_CHECKING:
-    from . import auth1 as auth
-else:
-    if env_info.AUTH_VERSION == 2:
-        from . import auth2 as auth
-    else:
-        from . import auth1 as auth
 
-router = APIRouter(prefix="/api/v1/executor_modes", tags=["executor_modes"])
+router = APIRouter(prefix="/api/v1/executor_modes", tags=["Executor Modes"])
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
@@ -42,7 +35,7 @@ def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exce
 async def get_template_cbib(
     version: str,
     request: Request,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -63,7 +56,7 @@ async def get_template_cbib(
 async def executor_modes(
     version: str,
     request: Request,
-    current_principle: dict[str, str] = Depends(auth.get_current_active_principle),
+    session: DescopeSession = Depends(get_descope_session),
 ):
     # check if version is only a number
     v_result = _validate_version_str(version)

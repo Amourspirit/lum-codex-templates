@@ -1,11 +1,9 @@
 import os
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING
 from fastapi import FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
-from api.lib import env
 from api.routes.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -20,19 +18,8 @@ load_dotenv()  # reads variables from a .env file and sets them in os.environ
 from api.lib.env import env_info  # noqa: E402
 from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
-
-from api.routes import session  # noqa: E402
-from api.routes import user  # noqa: E402
-
-if TYPE_CHECKING:
-    from api.routes import auth1 as auth  # noqa: E402
-else:
-    if env_info.AUTH_VERSION == 1:
-        from api.routes import auth1 as auth  # noqa: E402
-    elif env_info.AUTH_VERSION == 2:
-        from api.routes import auth2 as auth  # noqa: E402
-    else:
-        raise ImportError("Unsupported AUTH_VERSION in env_info")
+from api.routes import privacy_terms  # noqa: E402
+from api.routes.descope import route_protection  # noqa: E402
 
 
 def custom_openapi():
@@ -67,12 +54,19 @@ async def lifespan(app: FastAPI):
     # Clean up resources if needed
 
 
-app = FastAPI(title="Codex Templates", lifespan=lifespan)
+app = FastAPI(
+    title="Codex Templates",
+    lifespan=lifespan,
+    openapi_url="/openapi.json",  # where schema is served
+    docs_url="/docs",  # Swagger UI path
+    redoc_url="/redoc",
+)
+
+
 app.include_router(templates.router)
 app.include_router(executor_modes.router)
-app.include_router(auth.router)
-app.include_router(session.router)
-app.include_router(user.router)
+app.include_router(privacy_terms.router)
+app.include_router(route_protection.router)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
