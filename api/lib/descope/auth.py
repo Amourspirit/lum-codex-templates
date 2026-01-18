@@ -75,3 +75,6 @@ class TokenVerifier:
             raise UnauthorizedException(
                 f"Missing required scopes: {', '.join(missing)}"
             )
+
+
+AUTH = TokenVerifier()
