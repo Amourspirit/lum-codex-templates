@@ -117,7 +117,7 @@ def _require_login_or_redirect(
         return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
 
     base_url = str(request.base_url).rstrip("/")
-    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs"
+    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/callback"
     encoded_redirect = urllib.parse.quote(redirect_url, safe="")
 
     # No Authorization header -> redirect to Descope login flow
