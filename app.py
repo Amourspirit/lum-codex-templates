@@ -1,15 +1,19 @@
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Security
-from fastapi.openapi.utils import get_openapi
-from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from starlette import status
+from api.lib.descope.exception_handlers import UnauthenticatedException
 from api.routes.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from src.config.pkg_config import PkgConfig
+
 
 # if not os.getenv("RENDER_SERVICE_NAME"):
 # only if not running on Render.com
@@ -22,7 +26,7 @@ from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
 from api.routes import privacy_terms  # noqa: E402
 from api.routes.descope import route_protection  # noqa: E402
-from api.lib.descope.auth import AUTH  # noqa: E402
+from api.lib.descope.auth import TokenVerifier, AUTH  # noqa: E402
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -34,6 +38,50 @@ else:
     _OPEN_URL = "/openapi.json"  # where schema is served
     _DOCS_URL = "/docs"  # Swagger UI path
     _REDOC_URL = "/redoc"  # ReDoc path
+
+
+bearer_optional = HTTPBearer(auto_error=False)
+
+
+def _get_host_port(request: Request) -> tuple[str, int]:
+    server = request.scope.get("server")
+    if not server:
+        raise ValueError("Server information not found in request scope")
+    host, port = server
+    return host, port
+
+
+def _get_docs_url(request: Request) -> str:
+    base_url = str(request.base_url).rstrip("/")
+    return f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs"
+
+
+def _get_descope_url(request: Request) -> str:
+    docs_url = _get_docs_url(request)
+    url = (
+        f"{env_info.DESCOPE_API_BASE_URL}/{_FAST_API_CUSTOM_OPEN_API_PREFIX}{env_info.DESCOPE_PROJECT_ID}"
+        f"?redirect_uri={docs_url}"
+    )
+    return url
+
+
+def _require_login_or_redirect(
+    request: Request,
+    creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
+):
+    descope_url = _get_descope_url(request)
+    # No Authorization header -> redirect to Descope login flow
+    if creds is None:
+        return RedirectResponse(descope_url, status_code=status.HTTP_302_FOUND)
+
+    # Validate token with your existing Descope validator (AUTH)
+    try:
+        # If your AUTH is a callable / dependency, adjust accordingly.
+        # The idea: validate token and return payload/claims.
+        payload = TokenVerifier()
+        return payload
+    except UnauthenticatedException:
+        return RedirectResponse(descope_url, status_code=status.HTTP_302_FOUND)
 
 
 def custom_openapi():
@@ -110,7 +158,9 @@ async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AU
 
 
 @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
-async def docs_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+async def docs_ui(user=Depends(_require_login_or_redirect)):
+    if isinstance(user, RedirectResponse):
+        return user
     return get_swagger_ui_html(
         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
     )
