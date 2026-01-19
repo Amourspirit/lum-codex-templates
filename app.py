@@ -27,6 +27,7 @@ from api.routes import executor_modes  # noqa: E402
 from api.routes import privacy_terms  # noqa: E402
 from api.routes.descope import route_protection  # noqa: E402
 from api.lib.descope.auth import TokenVerifier, AUTH  # noqa: E402
+from api.lib.descope.client import DESCOPE_CLIENT  # noqa: E402
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -59,8 +60,8 @@ def _get_docs_url(request: Request) -> str:
 def _get_descope_url(request: Request) -> str:
     docs_url = _get_docs_url(request)
     url = (
-        f"{env_info.DESCOPE_API_BASE_URL}/{_FAST_API_CUSTOM_OPEN_API_PREFIX}{env_info.DESCOPE_PROJECT_ID}"
-        f"?redirect_uri={docs_url}"
+        f"{env_info.DESCOPE_LOGIN_BASE_URL}/{_FAST_API_CUSTOM_OPEN_API_PREFIX}{env_info.DESCOPE_PROJECT_ID}"
+        f"?redirect_url={docs_url}"
     )
     return url
 
