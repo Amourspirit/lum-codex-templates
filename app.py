@@ -28,6 +28,7 @@ from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
 from api.routes import privacy_terms  # noqa: E402
 from api.routes.descope import route_protection  # noqa: E402
+from api.routes.descope import login
 from api.lib.descope.auth import TokenVerifier, AUTH  # noqa: E402
 from api.lib.descope.client import DESCOPE_CLIENT  # noqa: E402
 
@@ -68,7 +69,7 @@ def _get_descope_url(request: Request) -> str:
     return url
 
 
-def _require_login_or_redirect1(
+def _require_login_or_redirect(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
 ):
@@ -103,7 +104,7 @@ def _require_login_or_redirect1(
         return get_redirect_response(docs_url, state)
 
 
-def _require_login_or_redirect(
+def _require_login_or_redirect2(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
 ):
@@ -179,6 +180,7 @@ app.include_router(templates.router)
 app.include_router(executor_modes.router)
 app.include_router(privacy_terms.router)
 app.include_router(route_protection.router)
+app.include_router(login.router)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
@@ -221,58 +223,3 @@ async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
     return get_redoc_html(
         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
     )
-
-
-@app.get("/callback")
-def callback(session_token: str = Query(None)):
-    """
-    Handles the return from Descope.
-    Note: Direct Flow returns 'session_token', NOT 'code'.
-    """
-    if not session_token:
-        # Debugging: If you still see an error, check if Descope sent a 'code' instead
-        raise HTTPException(
-            status_code=400, detail="Login failed: No session token received."
-        )
-
-    try:
-        # 1. Validate the token
-        jwt_response = DESCOPE_CLIENT.validate_session(session_token=session_token)
-
-        # 2. Set Cookie & Redirect
-        print("Redirecting to /docs")
-        response = RedirectResponse(url="/docs")
-        response.set_cookie(
-            key="session_token",
-            value=session_token,
-            max_age=3600,
-            httponly=True,
-            samesite="lax",
-            secure=True,
-        )
-        return response
-
-    except AuthException as e:
-        raise HTTPException(status_code=401, detail=f"Invalid Token: {e}")
-
-
-@app.get("/login")
-def login(request: Request):
-    """
-    Directly redirects to the Descope Hosted Flow.
-    We do NOT use the OIDC /authorize endpoint here.
-    """
-    # We construct the URL for the hosted flow directly.
-    # We MUST URL-encode the redirect_url so it passes correctly.
-    base_url = str(request.base_url).rstrip("/")
-    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/callback"
-    encoded_redirect = urllib.parse.quote(redirect_url, safe="")
-
-    auth_url = (
-        f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}"
-        f"?flow=sign-codex_templates-redirect"
-        f"&redirectUrl={encoded_redirect}"
-    )
-    print(f"Redirecting to Descope URL: {auth_url}")
-
-    return RedirectResponse(url=auth_url)

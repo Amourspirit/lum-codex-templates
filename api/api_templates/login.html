@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://unpkg.com/@descope/web-component@latest/dist/index.js"></script>
+</head>
+<body style="background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        
+        <descope-wc 
+            project-id="{{ project_id }}" 
+            flow-id="{{ flow_id }}"
+            theme="light"
+        ></descope-wc>
+
+    </div>
+
+    <script>
+        // 4. Handle Success and Redirect
+        const descopeWc = document.querySelector('descope-wc');
+        
+        const onSuccess = (e) => {
+            // Descope returns the session token here
+            const sessionToken = e.detail.sessionJwt;
+            
+            // Redirect to your FastAPI callback with the token
+            // We do this manually to ensure we control the redirect
+            window.location.href = "{{ redirect_url }}?session_token=" + sessionToken;
+        };
+
+        const onError = (err) => console.log("Login Error:", err);
+
+        descopeWc.addEventListener('success', onSuccess);
+        descopeWc.addEventListener('error', onError);
+    </script>
+</body>
+</html>

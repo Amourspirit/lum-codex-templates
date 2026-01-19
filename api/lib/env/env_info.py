@@ -39,6 +39,7 @@ if AUTH_VERSION == 2 and not DESCOPE_INBOUND_APP_CLIENT_SECRET:
 
 DESCOPE_API_BASE_URL = cast(str, os.getenv("DESCOPE_API_BASE_URL", ""))
 DESCOPE_LOGIN_BASE_URL = cast(str, os.getenv("DESCOPE_LOGIN_BASE_URL", ""))
+DESCOPE_FLOW_ID = cast(str, os.getenv("DESCOPE_FLOW_ID", ""))
 
 API_CUSTOM_GPT_CALLBACK_URL = cast(str, os.getenv("API_CUSTOM_GPT_CALLBACK_URL", ""))
 
