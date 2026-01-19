@@ -22,7 +22,8 @@ async def login_page(request: Request):
             "request": request,
             "project_id": env_info.DESCOPE_PROJECT_ID,
             "flow_id": env_info.DESCOPE_FLOW_ID,
-            "redirect_url": f"{base_url}/callback",  # Success will redirect here
+            "login_url": f"{base_url}/login",
+            "callback_url": f"{base_url}/callback",  # Success will redirect here
         },
     )
 

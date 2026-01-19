@@ -13,25 +13,27 @@
         <descope-wc 
             project-id="{{ project_id }}" 
             flow-id="{{ flow_id }}"
+            redirect-url="{{ login_url }}"
             theme="light"
         ></descope-wc>
 
     </div>
 
     <script>
-        // 4. Handle Success and Redirect
         const descopeWc = document.querySelector('descope-wc');
         
         const onSuccess = (e) => {
-            // Descope returns the session token here
+            console.log("Login Success! Redirecting...", e.detail);
             const sessionToken = e.detail.sessionJwt;
             
-            // Redirect to your FastAPI callback with the token
-            // We do this manually to ensure we control the redirect
-            window.location.href = "{{ redirect_url }}?session_token=" + sessionToken;
+            // Redirect to the FINAL destination (your Python callback)
+            window.location.href = "{{ callback_url }}?session_token=" + sessionToken;
         };
 
-        const onError = (err) => console.log("Login Error:", err);
+        const onError = (err) => {
+            console.error("Login Error:", err);
+            alert("Login failed. Check console for details.");
+        }
 
         descopeWc.addEventListener('success', onSuccess);
         descopeWc.addEventListener('error', onError);
