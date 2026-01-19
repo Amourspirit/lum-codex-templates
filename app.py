@@ -204,22 +204,59 @@ async def env_check(env_var: str, request: Request):
     return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", include_in_schema=False)
-async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-    return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
+# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", include_in_schema=False)
+# async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+#     return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
-async def docs_ui(user=Depends(_require_login_or_redirect)):
-    if isinstance(user, RedirectResponse):
-        return user
+# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
+# async def docs_ui(user=Depends(_require_login_or_redirect)):
+#     if isinstance(user, RedirectResponse):
+#         return user
+#     return get_swagger_ui_html(
+#         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
+#     )
+
+
+# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc", include_in_schema=False)
+# async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+#     return get_redoc_html(
+#         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
+#     )
+
+
+# Protected /docs route
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui(user=Depends(login.get_current_user)):
+    """Serve Swagger UI only to authenticated users."""
     return get_swagger_ui_html(
-        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
+        openapi_url="/openapi.json",
+        title=app.title + " - API Docs",
     )
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc", include_in_schema=False)
-async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-    return get_redoc_html(
-        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
+# Protected OpenAPI schema endpoint
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi_schema(user=Depends(login.get_current_user)):
+    """Serve OpenAPI schema only to authenticated users."""
+    from fastapi.openapi.utils import get_openapi
+
+    return get_openapi(
+        title=app.title,
+        version=app.version,
+        routes=app.routes,
     )
+
+
+# Example protected route
+@app.get("/api/protected")
+async def protected_route(user=Depends(login.get_current_user)):
+    """Example protected endpoint."""
+    return {"message": "You are authenticated!", "user": user}
+
+
+# Public route
+@app.get("/")
+async def root():
+    """Public root endpoint."""
+    return {"message": "Welcome! Please /login to access the API documentation."}
