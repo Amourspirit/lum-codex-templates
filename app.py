@@ -85,10 +85,11 @@ def _require_login_or_redirect(
 
         return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
 
-    descope_url = _get_descope_url(request)
+    # descope_url = _get_descope_url(request)
+    docs_url = _get_docs_url(request)
     # No Authorization header -> redirect to Descope login flow
     if creds is None:
-        return get_redirect_response(descope_url)
+        return get_redirect_response(docs_url)
 
     # Validate token with your existing Descope validator (AUTH)
     try:
@@ -97,7 +98,7 @@ def _require_login_or_redirect(
         payload = TokenVerifier()
         return payload
     except UnauthenticatedException:
-        return get_redirect_response(descope_url)
+        return get_redirect_response(docs_url)
 
 
 def custom_openapi():
