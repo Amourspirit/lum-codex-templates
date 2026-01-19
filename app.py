@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+import secrets
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
@@ -72,24 +73,26 @@ def _require_login_or_redirect(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
 ):
-    def get_redirect_response(url: str) -> RedirectResponse:
+    def get_redirect_response(url: str, state) -> RedirectResponse:
         params = {
             "response_type": "code",
             "client_id": env_info.DESCOPE_PROJECT_ID,
             "redirect_uri": url,
             "scope": "openid",  # Required for OIDC
             "flow": "sign-codex_templates-redirect",  # The flow ID to run
+            "state": state,
         }
         query_string = urllib.parse.urlencode(params)
         auth_url = f"https://api.descope.com/oauth2/v1/authorize?{query_string}"
 
         return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
 
+    state = secrets.token_urlsafe(16)
     # descope_url = _get_descope_url(request)
     docs_url = _get_docs_url(request)
     # No Authorization header -> redirect to Descope login flow
     if creds is None:
-        return get_redirect_response(docs_url)
+        return get_redirect_response(docs_url, state)
 
     # Validate token with your existing Descope validator (AUTH)
     try:
@@ -98,7 +101,7 @@ def _require_login_or_redirect(
         payload = TokenVerifier()
         return payload
     except UnauthenticatedException:
-        return get_redirect_response(docs_url)
+        return get_redirect_response(docs_url, state)
 
 
 def custom_openapi():
