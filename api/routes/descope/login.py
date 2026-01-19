@@ -1,5 +1,4 @@
-import os
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates  # Import this
 from ...lib.env import env_info
@@ -35,6 +34,7 @@ def callback(session_token: str | None = None, code: str | None = None):
     # when the user finishes successfully.
 
     # ... your existing cookie setting logic ...
+    print("Redirecting to /docs")
     response = RedirectResponse(url="/docs")
     if session_token:
         response.set_cookie(
