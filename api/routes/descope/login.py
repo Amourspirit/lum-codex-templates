@@ -1,3 +1,4 @@
+import secrets
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates  # Import this
@@ -16,6 +17,7 @@ async def login_page(request: Request):
     This keeps the user on YOUR domain, preventing cookie/state errors.
     """
     base_url = str(request.base_url).rstrip("/")
+    state = secrets.token_urlsafe(16)
     return templates.TemplateResponse(
         "login.html",
         {
@@ -24,6 +26,7 @@ async def login_page(request: Request):
             "flow_id": env_info.DESCOPE_FLOW_ID,
             "login_url": f"{base_url}/login",
             "callback_url": f"{base_url}/callback",  # Success will redirect here
+            "state": state,
         },
     )
 
