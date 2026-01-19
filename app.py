@@ -240,6 +240,7 @@ def callback(session_token: str = Query(None)):
         jwt_response = DESCOPE_CLIENT.validate_session(session_token=session_token)
 
         # 2. Set Cookie & Redirect
+        print("Redirecting to /docs")
         response = RedirectResponse(url="/docs")
         response.set_cookie(
             key="session_token",
@@ -253,3 +254,25 @@ def callback(session_token: str = Query(None)):
 
     except AuthException as e:
         raise HTTPException(status_code=401, detail=f"Invalid Token: {e}")
+
+
+@app.get("/login")
+def login(request: Request):
+    """
+    Directly redirects to the Descope Hosted Flow.
+    We do NOT use the OIDC /authorize endpoint here.
+    """
+    # We construct the URL for the hosted flow directly.
+    # We MUST URL-encode the redirect_url so it passes correctly.
+    base_url = str(request.base_url).rstrip("/")
+    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/callback"
+    encoded_redirect = urllib.parse.quote(redirect_url, safe="")
+
+    auth_url = (
+        f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}"
+        f"?flow=sign-codex_templates-redirect"
+        f"&redirectUrl={encoded_redirect}"
+    )
+    print(f"Redirecting to Descope URL: {auth_url}")
+
+    return RedirectResponse(url=auth_url)
