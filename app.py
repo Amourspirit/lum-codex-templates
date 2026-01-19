@@ -113,7 +113,7 @@ def _require_login_or_redirect(
             f"?flow=sign-codex_templates-redirect"
             f"&redirectUrl={url}"
         )
-
+        print(f"Redirecting to Descope URL: {auth_url}")
         return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
 
     base_url = str(request.base_url).rstrip("/")
