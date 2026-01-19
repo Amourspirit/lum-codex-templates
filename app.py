@@ -2,7 +2,7 @@ import os
 import urllib.parse
 import secrets
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI, Request, Security
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
@@ -10,13 +10,12 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
-from api.lib import env
 from api.lib.descope.exception_handlers import UnauthenticatedException
 from api.routes.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from src.config.pkg_config import PkgConfig
-
+from descope.exceptions import AuthException
 
 # if not os.getenv("RENDER_SERVICE_NAME"):
 # only if not running on Render.com
@@ -69,7 +68,7 @@ def _get_descope_url(request: Request) -> str:
     return url
 
 
-def _require_login_or_redirect(
+def _require_login_or_redirect1(
     request: Request,
     creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
 ):
@@ -102,6 +101,37 @@ def _require_login_or_redirect(
         return payload
     except UnauthenticatedException:
         return get_redirect_response(docs_url, state)
+
+
+def _require_login_or_redirect(
+    request: Request,
+    creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
+):
+    def get_redirect_response(url: str) -> RedirectResponse:
+        auth_url = (
+            f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}"
+            f"?flow=sign-codex_templates-redirect"
+            f"&redirectUrl={url}"
+        )
+
+        return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
+
+    base_url = str(request.base_url).rstrip("/")
+    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs"
+    encoded_redirect = urllib.parse.quote(redirect_url, safe="")
+
+    # No Authorization header -> redirect to Descope login flow
+    if creds is None:
+        return get_redirect_response(encoded_redirect)
+
+    # Validate token with your existing Descope validator (AUTH)
+    try:
+        # If your AUTH is a callable / dependency, adjust accordingly.
+        # The idea: validate token and return payload/claims.
+        payload = TokenVerifier()
+        return payload
+    except UnauthenticatedException:
+        return get_redirect_response(encoded_redirect)
 
 
 def custom_openapi():
@@ -191,3 +221,35 @@ async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
     return get_redoc_html(
         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
     )
+
+
+@app.get("/callback")
+def callback(session_token: str = Query(None)):
+    """
+    Handles the return from Descope.
+    Note: Direct Flow returns 'session_token', NOT 'code'.
+    """
+    if not session_token:
+        # Debugging: If you still see an error, check if Descope sent a 'code' instead
+        raise HTTPException(
+            status_code=400, detail="Login failed: No session token received."
+        )
+
+    try:
+        # 1. Validate the token
+        jwt_response = DESCOPE_CLIENT.validate_session(session_token=session_token)
+
+        # 2. Set Cookie & Redirect
+        response = RedirectResponse(url="/docs")
+        response.set_cookie(
+            key="session_token",
+            value=session_token,
+            max_age=3600,
+            httponly=True,
+            samesite="lax",
+            secure=True,
+        )
+        return response
+
+    except AuthException as e:
+        raise HTTPException(status_code=401, detail=f"Invalid Token: {e}")
