@@ -1,6 +1,6 @@
 import urllib.parse
-from fastapi import APIRouter, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import JSONResponse, RedirectResponse
 import urllib
 from ...lib.descope.client import DESCOPE_CLIENT
 from ...lib.env import env_info
@@ -15,100 +15,179 @@ router = APIRouter(tags=["Descope Login"])
 
 
 # Session validation dependency
-async def get_current_user(request: Request):
-    """Validate the session token from cookies or Authorization header."""
-    session_token = request.cookies.get("session_token")
-
-    if not session_token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            session_token = auth_header[7:]
-
-    if not session_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    try:
-        jwt_response = DESCOPE_CLIENT.validate_session(session_token)
-        return jwt_response
-    except AuthException as e:
-        raise HTTPException(status_code=401, detail=f"Invalid session: {str(e)}")
 
 
 # Login route - initiates Descope flow
 @router.get("/login")
 async def login(request: Request):
     """Redirect to Descope authentication flow."""
-    # Get the base URL for the redirect
-    base_url = str(request.base_url).rstrip("/")
-    redirect_uri = f"{base_url}/auth/callback"
-    encoded_redirect = urllib.parse.quote(redirect_uri, safe="")
-
-    # Generate the Descope flow URL
-    flow_url = (
-        f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}"
-        f"?{env_info.DESCOPE_FLOW_ID}"
-        f"&redirectUrl={encoded_redirect}"
-    )
-
-    # flow_url = f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}?flow={env_info.DESCOPE_FLOW_ID}&redirect_uri={redirect_uri}"
-
-    return RedirectResponse(url=flow_url)
-
-
-# Callback route - handles the auth response
-@router.get("/auth/callback")
-async def auth_callback(request: Request, response: Response):
-    """Handle the callback from Descope after authentication."""
-    code = request.query_params.get("code")
-
-    if not code:
-        raise HTTPException(status_code=400, detail="No authorization code provided")
-
     try:
-        # Exchange the code for session tokens
-        jwt_response = DESCOPE_CLIENT.exchange_access_key(code)
+        # Get the base URL for the redirect
+        base_url = str(request.base_url).rstrip("/")
+        redirect_uri = f"{base_url}/auth/callback"
+        encoded_redirect = urllib.parse.quote(redirect_uri, safe="")
+        redirect_url = str(request.url_for("callback"))
 
-        # Set session token in HTTP-only cookie
-        response = RedirectResponse(url="/docs", status_code=302)
-        response.set_cookie(
-            key="session_token",
-            value=jwt_response["sessionJwt"],
-            httponly=True,
-            secure=True,  # Set to False for local development without HTTPS
-            samesite="lax",
-            max_age=3600,  # 1 hour
+        # Generate the Descope flow URL
+        flow_url = (
+            f"https://api.descope.com/flow/{env_info.DESCOPE_FLOW_ID}"
+            f"&returnUrl={encoded_redirect}"
         )
 
-        # Optionally set refresh token
-        if jwt_response.get("refreshJwt"):
-            response.set_cookie(
-                key="refresh_token",
-                value=jwt_response["refreshJwt"],
-                httponly=True,
-                secure=True,
-                samesite="lax",
-                max_age=86400 * 30,  # 30 days
-            )
+        return JSONResponse(
+            content={"redirect_url": flow_url, "flow_id": env_info.DESCOPE_FLOW_ID}
+        )
 
-        return response
-
-    except AuthException as e:
-        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Authentication flow start failed: {str(e)}"
+        )
 
 
-# Logout route
-@router.get("/logout")
+@router.get("/callback")
+async def callback(request: Request):
+    """
+    Handle the callback from Descope after authentication
+    """
+    try:
+        # Extract the code or tokens from the query parameters
+        code = request.query_params.get("code")
+        state = request.query_params.get("state")
+
+        if not code:
+            raise HTTPException(status_code=400, detail="Missing authorization code")
+
+        # Exchange the authorization code for tokens
+        # Note: The exact method depends on the authentication method used
+        # For OAuth flows, you might use auth.oauth_exchange_token(code)
+        # For other flows, the method might be different
+
+        # Since this is a flow-based authentication, we need to validate the session
+        # The callback may contain session information that needs to be processed
+        auth_info = DESCOPE_CLIENT.validate_session(code)
+
+        return JSONResponse(
+            content={
+                "success": True,
+                "session_token": auth_info.get("sessionJwt"),
+                "user": auth_info.get("user", {}),
+                "message": "Authentication successful",
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Callback processing failed: {str(e)}"
+        )
+
+
+@router.post("/verify-session")
+async def verify_session_endpoint(request: Request):
+    """
+    Verify a session token
+    """
+    try:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
+
+        token = auth_header[7:]
+
+        # Verify the session token
+        verified_token = DESCOPE_CLIENT.validate_session(token)
+
+        return JSONResponse(
+            content={
+                "valid": True,
+                "user_id": verified_token.get("userId"),
+                "tenants": verified_token.get("tenants", {}),
+                "message": "Session verified successfully",
+            }
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=401, detail=f"Session verification failed: {str(e)}"
+        )
+
+
+@router.post("/logout")
 async def logout(request: Request):
-    """Log out the user and clear session cookies."""
-    session_token = request.cookies.get("session_token")
+    """
+    Logout endpoint to invalidate the session
+    """
+    try:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Not authenticated")
 
-    if session_token:
-        try:
-            DESCOPE_CLIENT.logout(session_token)
-        except AuthException:
-            pass  # Token may already be invalid
+        token = auth_header[7:]
 
-    response = RedirectResponse(url="/login", status_code=302)
-    response.delete_cookie("session_token")
-    response.delete_cookie("refresh_token")
-    return response
+        # Logout the user (invalidate the session)
+        DESCOPE_CLIENT.logout(token)
+
+        return JSONResponse(content={"message": "Successfully logged out"})
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+
+
+# Alternative implementation for flow-based auth using embedded widgets
+@router.get("/embedded-login")
+async def embedded_login(request: Request):
+    """
+    Alternative approach for embedded flow-based authentication
+    """
+    try:
+        # For embedded flows, you would typically return a session token
+        # that can be used with the Descope Web Components
+        # tenant = os.getenv("DESCOPE_TENANT", "")  # Optional tenant
+
+        # Start the flow and return necessary data for the frontend
+        flow_data = {
+            "project_id": env_info.DESCOPE_PROJECT_ID,
+            "flow_id": env_info.DESCOPE_FLOW_ID,
+            "base_url": "https://api.descope.com",
+            # "tenant": tenant
+        }
+
+        return JSONResponse(content=flow_data)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Embedded login setup failed: {str(e)}"
+        )
+
+
+def get_current_user(request: Request):
+    """
+    Helper dependency to get current authenticated user
+    """
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token = auth_header[7:]
+    try:
+        return DESCOPE_CLIENT.validate_session(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
+@router.get("/protected-route")
+async def protected_route(current_user: dict = Depends(get_current_user)):
+    """
+    Example of a protected route that requires authentication
+    """
+    return {
+        "message": "This is a protected route",
+        "user": current_user.get("user", {}),
+    }
+
+
+@router.get("/health")
+async def health_check():
+    """
+    Health check endpoint
+    """
+    return {"status": "healthy", "service": "FastAPI with Descope Auth"}
