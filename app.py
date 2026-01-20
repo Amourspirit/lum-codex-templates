@@ -77,7 +77,7 @@ def _require_login_or_redirect(
     def get_redirect_response(url: str, state) -> RedirectResponse:
         params = {
             "response_type": "code",
-            "client_id": env_info.DESCOPE_PROJECT_ID,
+            "client_id": env_info.DESCOPE_INBOUND_APP_CLIENT_ID,
             "redirect_uri": url,
             "scope": "openid",  # Required for OIDC
             "flow": "sign-codex_templates-redirect",  # The flow ID to run
