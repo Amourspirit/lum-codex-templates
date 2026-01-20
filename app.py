@@ -28,7 +28,8 @@ from api.routes import templates  # noqa: E402
 from api.routes import executor_modes  # noqa: E402
 from api.routes import privacy_terms  # noqa: E402
 from api.routes.descope import route_protection  # noqa: E402
-from api.routes.descope import login
+
+# from api.routes.descope import login
 from api.lib.descope.auth import TokenVerifier, AUTH  # noqa: E402
 from api.lib.descope.client import DESCOPE_CLIENT  # noqa: E402
 
@@ -83,9 +84,9 @@ def _require_login_or_redirect(
             "state": state,
         }
         query_string = urllib.parse.urlencode(params)
-        auth_url = f"https://api.descope.com/oauth2/v1/authorize?{query_string}"
+        auth_url = f"https://api.descope.com/oauth2/v1/apps/authorize?{query_string}"
 
-        return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url=auth_url)
 
     state = secrets.token_urlsafe(16)
     # descope_url = _get_descope_url(request)
@@ -180,7 +181,7 @@ app.include_router(templates.router)
 app.include_router(executor_modes.router)
 app.include_router(privacy_terms.router)
 app.include_router(route_protection.router)
-app.include_router(login.router)
+# app.include_router(login.router)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
@@ -204,55 +205,56 @@ async def env_check(env_var: str, request: Request):
     return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
 
 
-# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", include_in_schema=False)
-# async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-#     return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
+@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", include_in_schema=False)
+async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
 
 
-# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
-# async def docs_ui(user=Depends(_require_login_or_redirect)):
-#     if isinstance(user, RedirectResponse):
-#         return user
-#     return get_swagger_ui_html(
-#         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
-#     )
+@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
+async def docs_ui(user=Depends(_require_login_or_redirect)):
+    if isinstance(user, RedirectResponse):
+        return user
+    return get_swagger_ui_html(
+        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
+    )
 
 
-# @app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc", include_in_schema=False)
-# async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-#     return get_redoc_html(
-#         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
-#     )
+@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc", include_in_schema=False)
+async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    return get_redoc_html(
+        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
+    )
 
 
 # Protected /docs route
-@app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui(user=Depends(login.get_current_user)):
-    """Serve Swagger UI only to authenticated users."""
-    return get_swagger_ui_html(
-        openapi_url="/openapi.json",
-        title=app.title + " - API Docs",
-    )
+
+# @app.get("/docs", include_in_schema=False)
+# async def custom_swagger_ui(user=Depends(login.get_current_user)):
+#     """Serve Swagger UI only to authenticated users."""
+#     return get_swagger_ui_html(
+#         openapi_url="/openapi.json",
+#         title=app.title + " - API Docs",
+#     )
 
 
 # Protected OpenAPI schema endpoint
-@app.get("/openapi.json", include_in_schema=False)
-async def openapi_schema(user=Depends(login.get_current_user)):
-    """Serve OpenAPI schema only to authenticated users."""
-    from fastapi.openapi.utils import get_openapi
+# @app.get("/openapi.json", include_in_schema=False)
+# async def openapi_schema(user=Depends(login.get_current_user)):
+#     """Serve OpenAPI schema only to authenticated users."""
+#     from fastapi.openapi.utils import get_openapi
 
-    return get_openapi(
-        title=app.title,
-        version=app.version,
-        routes=app.routes,
-    )
+#     return get_openapi(
+#         title=app.title,
+#         version=app.version,
+#         routes=app.routes,
+#     )
 
 
 # Example protected route
-@app.get("/api/protected")
-async def protected_route(user=Depends(login.get_current_user)):
-    """Example protected endpoint."""
-    return {"message": "You are authenticated!", "user": user}
+# @app.get("/api/protected")
+# async def protected_route(user=Depends(login.get_current_user)):
+#     """Example protected endpoint."""
+#     return {"message": "You are authenticated!", "user": user}
 
 
 # Public route
