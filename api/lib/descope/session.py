@@ -9,7 +9,10 @@ def get_descope_session(
     credentials: HTTPAuthorizationCredentials = Security(AUTH),
 ) -> DescopeSession:
     try:
-        print("get_descope_session() Validating session with token:")
+        print(
+            "get_descope_session() Validating session with token: ",
+            credentials.credentials,
+        )
         session = DESCOPE_CLIENT.validate_session(session_token=credentials.credentials)
         print("get_descope_session() Session validated successfully.")
         return DescopeSession(session=session)
