@@ -2,7 +2,15 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    Security,
+)
 from fastapi.responses import JSONResponse
 
 # from fastapi_cache.decorator import cache
@@ -10,7 +18,8 @@ from pydantic import ValidationError
 
 
 from ..responses.markdown_response import MarkdownResponse
-from ..routes.limiter import limiter
+
+# from ..routes.limiter import limiter
 from ..models.templates.artifact_submission import ArtifactSubmission
 from ..models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
@@ -34,6 +43,7 @@ from ..lib.content_processors.pre_processors.pre_process_registry import (
     PreProcessRegistry,
 )
 from src.template.front_mater_meta import FrontMatterMeta
+from api.lib.descope.auth import TokenVerifier, AUTH
 
 
 router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
@@ -104,6 +114,7 @@ def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
 @router.get(
     "/{template_type}/{version}",
     response_class=MarkdownResponse,
+    operation_id="get_template",
 )
 async def get_template(
     template_type: str,
@@ -168,6 +179,7 @@ async def get_template(
 @router.get(
     "/{template_type}/{version}/instructions",
     response_class=MarkdownResponse,
+    operation_id="get_template_instructions",
 )
 async def get_template_instructions(
     template_type: str,
@@ -226,6 +238,7 @@ async def get_template_instructions(
 @router.get(
     "/{template_type}/{version}/manifest",
     response_model=ManifestResponse,
+    operation_id="get_template_manifest",
 )
 async def get_template_manifest(
     template_type: str,
@@ -254,8 +267,8 @@ async def get_template_manifest(
 @router.get(
     "/{template_type}/{version}/registry",
     response_class=JSONResponse,
+    operation_id="get_template_registry",
 )
-@limiter.limit("15/minute")
 async def get_template_registry(
     template_type: str,
     version: str,
@@ -291,8 +304,8 @@ async def get_template_registry(
 @router.get(
     "/{template_type}/{version}/status",
     response_model=TemplateStatusResponse,
+    operation_id="get_template_status",
 )
-@limiter.limit("15/minute")
 async def get_template_status(
     template_type: str,
     version: str,
@@ -319,7 +332,9 @@ async def get_template_status(
     return json_content
 
 
-@router.post("/verify", response_model=VerifyArtifactResponse)
+@router.post(
+    "/verify", response_model=VerifyArtifactResponse, operation_id="verify_artifact"
+)
 def verify_artifact(
     submission: ArtifactSubmission,
     request: Request,
@@ -437,8 +452,11 @@ def verify_artifact(
     return result
 
 
-@router.post("/finalize", response_model=FinalizeArtifactResponse)
-@limiter.limit("15/minute")
+@router.post(
+    "/finalize",
+    response_model=FinalizeArtifactResponse,
+    operation_id="finalize_artifact",
+)
 def finalize_artifact(
     submission: ArtifactSubmission,
     request: Request,
@@ -493,8 +511,9 @@ def finalize_artifact(
     return finalize_result
 
 
-@router.post("/upgrade", response_model=UpgradeArtifactResponse)
-@limiter.limit("15/minute")
+@router.post(
+    "/upgrade", response_model=UpgradeArtifactResponse, operation_id="upgrade_artifact"
+)
 def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
     request: Request,

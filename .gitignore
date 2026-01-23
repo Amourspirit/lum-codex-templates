@@ -16,3 +16,6 @@ reports/
 .mkpkg_last
 .python-version
 .env
+.env.prod
+.env.dev
+.env.test

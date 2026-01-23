@@ -2,9 +2,37 @@ import os
 import base64
 import json
 from typing import Any, TypeVar, cast
+from src.config.pkg_config import PkgConfig
 from ...models.auth.user import User
 
+
+def _load_env() -> str:
+    config = PkgConfig()
+    env_mode = os.getenv("API_ENV_MODE", "")
+    if env_mode == "dev":
+        env_file = config.api_info.env.dev
+    elif env_mode == "prod":
+        env_file = config.api_info.env.prod
+    elif env_mode == "test":
+        env_file = config.api_info.env.test
+    else:
+        env_file = ".env"
+
+    from dotenv import load_dotenv
+
+    if env_file:
+        load_dotenv(
+            dotenv_path=env_file
+        )  # reads variables from specified .env file and sets them in os.environ
+    else:
+        load_dotenv()  # reads variables from a .env file and sets them in os.environ
+    return env_file
+
+
 T = TypeVar("T")
+
+ENV_FILE = _load_env()
+"""Path to the environment file being used. See also pyproject.toml `[tool.project.config.api.env]` section."""
 
 # SECRET_KEY = cast(str, os.getenv("API_SECRET_KEY"))
 # if not SECRET_KEY:
@@ -16,6 +44,8 @@ T = TypeVar("T")
 AUTH_VERSION = int(os.getenv("API_AUTH_VERSION", "1"))
 API_ENV_MODE = cast(str, os.getenv("API_ENV_MODE", "prod"))  # dev or prod
 DESCOPE_PROJECT_ID = cast(str, os.getenv("DESCOPE_PROJECT_ID", ""))
+"""Descope Project ID for authentication"""
+
 if AUTH_VERSION == 2 and not DESCOPE_PROJECT_ID:
     raise ValueError(
         "DESCOPE_PROJECT_ID environment variable is not set for AUTH_VERSION 2"
@@ -24,6 +54,8 @@ if AUTH_VERSION == 2 and not DESCOPE_PROJECT_ID:
 DESCOPE_INBOUND_APP_CLIENT_ID = cast(
     str, os.getenv("DESCOPE_INBOUND_APP_CLIENT_ID", "")
 )
+"""Descope Inbound App Client ID for authentication"""
+
 if AUTH_VERSION == 2 and not DESCOPE_INBOUND_APP_CLIENT_ID:
     raise ValueError(
         "DESCOPE_INBOUND_APP_CLIENT_ID environment variable is not set for AUTH_VERSION 2"
@@ -32,16 +64,27 @@ if AUTH_VERSION == 2 and not DESCOPE_INBOUND_APP_CLIENT_ID:
 DESCOPE_INBOUND_APP_CLIENT_SECRET = cast(
     str, os.getenv("DESCOPE_INBOUND_APP_CLIENT_SECRET", "")
 )
+"""Descope Inbound App Client Secret for authentication"""
 if AUTH_VERSION == 2 and not DESCOPE_INBOUND_APP_CLIENT_SECRET:
     raise ValueError(
         "DESCOPE_INBOUND_APP_CLIENT_SECRET environment variable is not set for AUTH_VERSION 2"
     )
 
-DESCOPE_API_BASE_URL = cast(str, os.getenv("DESCOPE_API_BASE_URL", ""))
-DESCOPE_LOGIN_BASE_URL = cast(str, os.getenv("DESCOPE_LOGIN_BASE_URL", ""))
+DESCOPE_API_BASE_URL = cast(
+    str, os.getenv("DESCOPE_API_BASE_URL", "https://api.descope.com")
+)
+"""Base URL for Descope API such as `https://api.descope.com`"""
+
+DESCOPE_LOGIN_BASE_URL = cast(
+    str, os.getenv("DESCOPE_LOGIN_BASE_URL", "https://api.descope.com/login")
+)
+"""Base URL for Descope Login such as `https://api.descope.com/login`"""
+
 DESCOPE_FLOW_ID = cast(str, os.getenv("DESCOPE_FLOW_ID", ""))
+"""Descope Flow ID for authentication flows"""
 
 API_CUSTOM_GPT_CALLBACK_URL = cast(str, os.getenv("API_CUSTOM_GPT_CALLBACK_URL", ""))
+"""Callback URL for Authorization"""
 
 _API_ENV_DATA = os.getenv("API_ENV_DATA")
 if not _API_ENV_DATA:

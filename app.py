@@ -2,36 +2,30 @@ import os
 import urllib.parse
 import secrets
 from contextlib import asynccontextmanager
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, Security
+from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import HttpUrl
 from starlette import status
-from api.lib.descope.exception_handlers import UnauthenticatedException
-from api.routes.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from api.lib.env import env_info  # Must be early import to load env vars
+from api.lib.descope.auth import TokenVerifier, AUTH
+from api.lib.descope.auth_config import get_settings
+from api.lib.descope.client import DESCOPE_CLIENT
+from api.lib.exceptions import UnauthenticatedException
+from api.routes import executor_modes
+from api.routes import privacy_terms
+from api.routes import templates
+from api.routes.descope import route_protection
+from fastapi_mcp import AuthConfig
+from fastapi_mcp import FastApiMCP
 from src.config.pkg_config import PkgConfig
-from descope.exceptions import AuthException
-
-# if not os.getenv("RENDER_SERVICE_NAME"):
-# only if not running on Render.com
-from dotenv import load_dotenv
-
-load_dotenv()  # reads variables from a .env file and sets them in os.environ
-
-from api.lib.env import env_info  # noqa: E402
-from api.routes import templates  # noqa: E402
-from api.routes import executor_modes  # noqa: E402
-from api.routes import privacy_terms  # noqa: E402
-from api.routes.descope import route_protection  # noqa: E402
-
-# from api.routes.descope import login
-from api.lib.descope.auth import TokenVerifier, AUTH  # noqa: E402
-from api.lib.descope.client import DESCOPE_CLIENT  # noqa: E402
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -159,6 +153,10 @@ def custom_openapi():
     return app.openapi_schema
 
 
+# auth = TokenVerifier()
+config = get_settings()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Load startup resources
@@ -182,36 +180,83 @@ app.include_router(executor_modes.router)
 app.include_router(privacy_terms.router)
 app.include_router(route_protection.router)
 # app.include_router(login.router)
-app.state.limiter = limiter
+# app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 
 app.openapi = custom_openapi  # override OpenAPI generator
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
-@app.get("/ping")
-@limiter.limit("15/minute")
+
+@app.get("/ping", operation_id="ping")
 async def ping(request: Request):
+    """Handle ping health checks and return a JSON payload acknowledging the request."""
+
     return {"msg": "pong"}
 
 
-@app.get("/env_check/{env_var}")
-@limiter.limit("15/minute")
-async def env_check(env_var: str, request: Request):
+@app.get("/env_check/{env_var}", operation_id="env_check")
+async def env_check(env_var: str, auth_result: str = Security(AUTH)):
+    """Check whether a specified environment variable is set and report its status.
+    Args:
+        env_var: The name of the environment variable to inspect.
+        request: The incoming HTTP request associated with the check.
+    Returns:
+        A dictionary containing the environment variable name, whether it is set,
+        and, if applicable, the type of the stored value.
+    """
+
     value = os.getenv(env_var, None)
     if value is None:
         return {"env_var": env_var, "value": "Not Set"}
     return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", include_in_schema=False)
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json",
+    include_in_schema=False,
+    operation_id="openapi_schema",
+)
 async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    """Generate the OpenAPI schema for the application.
+    Parameters
+    ----------
+    credentials : HTTPAuthorizationCredentials, optional
+        Authorization credentials provided by the configured security dependency.
+    Returns
+    -------
+    dict
+        The OpenAPI specification describing the registered API routes.
+    """
+
     return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs", include_in_schema=False)
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs",
+    include_in_schema=False,
+    operation_id="docs_ui",
+)
 async def docs_ui(user=Depends(_require_login_or_redirect)):
+    """Render the Swagger UI for authenticated users or return a redirect response when authentication is required.
+    Parameters
+    ----------
+    user : Any
+        Result from the `_require_login_or_redirect` dependency, which may be a user object or a `RedirectResponse`.
+    Returns
+    -------
+    HTMLResponse | RedirectResponse
+        Swagger UI HTML response when authenticated, otherwise the redirect response.
+    """
+
     if isinstance(user, RedirectResponse):
         return user
     return get_swagger_ui_html(
@@ -219,8 +264,24 @@ async def docs_ui(user=Depends(_require_login_or_redirect)):
     )
 
 
-@app.get(f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc", include_in_schema=False)
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc",
+    include_in_schema=False,
+    operation_id="redoc_ui",
+)
 async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    """
+    Return the ReDoc HTML page for the OpenAPI schema, respecting custom prefix settings.
+    Parameters
+    ----------
+    credentials : fastapi.security.HTTPAuthorizationCredentials
+        Authorization credentials extracted via the configured security dependency.
+    Returns
+    -------
+    str
+        HTML markup generated by `fastapi.openapi.docs.get_redoc_html` for the configured OpenAPI endpoint.
+    """
+
     return get_redoc_html(
         openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
     )
@@ -258,7 +319,52 @@ async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
 
 
 # Public route
-@app.get("/")
+@app.get("/", operation_id="root")
 async def root():
     """Public root endpoint."""
     return {"message": "Welcome! Please /login to access the API documentation."}
+
+
+mcp = FastApiMCP(
+    app,
+    name="Codex Templates MCP Server",
+    description="MCP Server for Applying, and updating Codex Templates.",
+    auth_config=AuthConfig(
+        custom_oauth_metadata={
+            "issuer": HttpUrl(config.issuer),
+            "jwks_uri": HttpUrl(config.jwks_url),
+            "authorization_endpoint": HttpUrl(config.authorization_endpoint),
+            "response_types_supported": config.response_types_supported,
+            "subject_types_supported": config.subject_types_supported,
+            "id_token_signing_alg_values_supported": config.id_token_signing_alg_values_supported,
+            "code_challenge_methods_supported": config.code_challenge_methods_supported,
+            "token_endpoint": HttpUrl(config.token_endpoint),
+            "userinfo_endpoint": HttpUrl(config.userinfo_endpoint),
+            "scopes_supported": ["openid"],
+            "claims_supported": [
+                "iss",
+                "aud",
+                "iat",
+                "exp",
+                "sub",
+                "name",
+                "email",
+                "email_verified",
+                "phone_number",
+                "phone_number_verified",
+                "picture",
+                "family_name",
+                "given_name",
+            ],
+            "revocation_endpoint": HttpUrl(config.revocation_endpoint),
+            "registration_endpoint": HttpUrl(config.registration_endpoint),
+            "grant_types_supported": ["authorization_code", "refresh_token"],
+            "token_endpoint_auth_methods_supported": ["client_secret_post"],
+            "end_session_endpoint": HttpUrl(config.end_session_endpoint),
+        },
+        dependencies=[Depends(AUTH)],
+    ),
+)
+
+mcp.setup_server()
+mcp.mount()

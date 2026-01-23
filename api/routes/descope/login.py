@@ -1,10 +1,9 @@
 import urllib.parse
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 import urllib
 from ...lib.descope.client import DESCOPE_CLIENT
 from ...lib.env import env_info
-from descope.exceptions import AuthException
 
 
 # Initialize Descope client
@@ -18,7 +17,7 @@ router = APIRouter(tags=["Descope Login"])
 
 
 # Login route - initiates Descope flow
-@router.get("/login")
+@router.get("/login", operation_id="descope_login")
 async def login(request: Request):
     """Redirect to Descope authentication flow."""
     try:
@@ -44,7 +43,7 @@ async def login(request: Request):
         )
 
 
-@router.get("/callback")
+@router.get("/callback", operation_id="descope_callback")
 async def callback(request: Request):
     """
     Handle the callback from Descope after authentication
@@ -81,7 +80,7 @@ async def callback(request: Request):
         )
 
 
-@router.post("/verify-session")
+@router.post("/verify-session", operation_id="descope_verify_session")
 async def verify_session_endpoint(request: Request):
     """
     Verify a session token
@@ -111,7 +110,7 @@ async def verify_session_endpoint(request: Request):
         )
 
 
-@router.post("/logout")
+@router.post("/logout", operation_id="descope_logout")
 async def logout(request: Request):
     """
     Logout endpoint to invalidate the session
@@ -133,7 +132,7 @@ async def logout(request: Request):
 
 
 # Alternative implementation for flow-based auth using embedded widgets
-@router.get("/embedded-login")
+@router.get("/embedded-login", operation_id="descope_embedded_login")
 async def embedded_login(request: Request):
     """
     Alternative approach for embedded flow-based authentication
@@ -174,7 +173,7 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
-@router.get("/protected-route")
+@router.get("/protected-route", operation_id="descope_protected_route")
 async def protected_route(current_user: dict = Depends(get_current_user)):
     """
     Example of a protected route that requires authentication

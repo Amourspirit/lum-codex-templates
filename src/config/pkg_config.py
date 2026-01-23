@@ -2,15 +2,17 @@ import os
 from typing import cast
 from pathlib import Path
 import toml
-from ..meta.singleton import SingletonMeta
-from .template_config import TemplateConfig
-from .templates_config_info import TemplatesConfigInfo
+
+from .api_env import ApiEnv
+from .api_info import ApiInfo
+from .api_info_templates import ApiInfoTemplates
 from .codex_binding_contract import CodexBindingContract
 from .template_cbib_info import TemplateCbibInfo
 from .template_ceib_info import TemplateCeibInfo
-from .api_info_templates import ApiInfoTemplates
-from .api_info import ApiInfo
+from .template_config import TemplateConfig
+from .templates_config_info import TemplatesConfigInfo
 from .config_cache import ConfigCache
+from ..meta.singleton import SingletonMeta
 
 
 class PkgConfig(metaclass=SingletonMeta):
@@ -219,6 +221,19 @@ class PkgConfig(metaclass=SingletonMeta):
             dir_name=api_config_templates.get("dir_name", "")
         )
 
+        api_config_env = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("api", {})
+            .get("env", {})
+        )
+        api_info_env = ApiEnv(
+            dev=api_config_env.get("env_file_dev", ""),
+            prod=api_config_env.get("env_file_prod", ""),
+            test=api_config_env.get("env_file_test", ""),
+        )
+
         api_info_data = (
             self._cfg.get("tool", {})
             .get("project", {})
@@ -232,6 +247,7 @@ class PkgConfig(metaclass=SingletonMeta):
             title=api_info_data.get("title", ""),
             description=api_info_data.get("description", ""),
             version=api_info_data.get("version", ""),
+            env=api_info_env,
         )
 
         # Config Cache

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from ..util.validation import check
 from .api_info_templates import ApiInfoTemplates
+from .api_env import ApiEnv
 
 
 @dataclass
@@ -11,6 +12,7 @@ class ApiInfo:
     title: str
     description: str
     version: str
+    env: ApiEnv
 
     def __post_init__(self) -> None:
         check(self.base_dir != "", f"{self}", "base_dir cannot be empty.")

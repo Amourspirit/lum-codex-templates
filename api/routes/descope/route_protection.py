@@ -22,13 +22,13 @@ _DESCOPE_TOKEN_URL = "https://api.descope.com/oauth2/v1/apps/token"
 _DESCOPE_AUTHORIZE_URL = "https://api.descope.com/oauth2/v1/apps/authorize"
 
 
-@router.get("/api/private")
+@router.get("/api/private", operation_id="descope_private")
 def private(auth_result: str = Security(auth)):
     # This API is now protected by our TokenVerifier object `auth`
     return auth_result
 
 
-@router.get("/api/private-scoped/read")
+@router.get("/api/private-scoped/read", operation_id="descope_private_scoped_read")
 def private_scoped(auth_result: str = Security(auth, scopes=["read:messages"])):
     """
     This is a protected route with scope-based access control.
@@ -40,7 +40,7 @@ def private_scoped(auth_result: str = Security(auth, scopes=["read:messages"])):
     return auth_result
 
 
-@router.get("/authorize")
+@router.get("/authorize", operation_id="descope_authorize")
 async def authorize(
     request: Request,
     response_type: Optional[str] = None,
@@ -102,7 +102,7 @@ async def authorize(
         raise HTTPException(status_code=500)
 
 
-@router.post("/token")
+@router.post("/token", operation_id="descope_token")
 async def token(request: Request):
     """
     OAuth 2.0 Token Endpoint - Proxies to Descope
@@ -179,7 +179,7 @@ async def token(request: Request):
         raise HTTPException(status_code=500)
 
 
-@router.get("/api/oauth/callback")
+@router.get("/api/oauth/callback", operation_id="descope_oauth_callback")
 async def oauth_callback(
     code: Optional[str] = None,
     state: Optional[str] = None,

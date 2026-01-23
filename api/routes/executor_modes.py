@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ..lib.util.result import Result
 from ..lib.descope.session import get_descope_session
-from ..routes.limiter import limiter
+
+# from ..routes.limiter import limiter
 from ..models.executor_modes.v1_0.cbib_response import CbibResponse
 from ..models.descope.descope_session import DescopeSession
 
@@ -30,8 +31,8 @@ def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exce
 @router.get(
     "/{version}/cbib",
     response_model=CbibResponse,
+    operation_id="get_template_cbib",
 )
-@limiter.limit("15/minute")
 async def get_template_cbib(
     version: str,
     request: Request,
@@ -51,8 +52,8 @@ async def get_template_cbib(
 @router.get(
     "/CANONICAL-EXECUTOR-MODE-V{version}",
     response_model=CbibResponse,
+    operation_id="get_canonical_executor_mode",
 )
-@limiter.limit("15/minute")
 async def executor_modes(
     version: str,
     request: Request,

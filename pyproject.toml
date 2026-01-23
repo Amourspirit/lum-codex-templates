@@ -9,6 +9,7 @@ dependencies = [
     "descope>=1.9.1",
     "fastapi>=0.128.0",
     "fastapi-cache2>=0.2.2",
+    "fastapi-mcp>=0.4.0",
     "httpx>=0.28.1",
     "jinja2>=3.1.6",
     "passlib>=1.7.4",
@@ -446,3 +447,8 @@ dir_name="templates"
 
 [tool.project.config.api.auth]
 api_key_env_var="API_KEY"
+
+[tool.project.config.api.env]
+env_file_dev=".env.dev"
+env_file_prod=".env"
+env_file_test=".env.test"
