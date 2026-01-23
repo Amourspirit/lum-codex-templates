@@ -58,6 +58,19 @@ class DescopeSession(BaseModel):
         return set(self.session.get("roles", []))
 
     @cached_property
+    def scopes(self) -> set[str]:
+        """
+        Scopes associated with the session.
+        Returns:
+            set[str]: A list of scopes.
+        """
+        # scopes is space delimited string
+        scopes_str = self.session.get("scopes", "")
+        if not scopes_str:
+            return set()
+        return set(scopes_str.split(" "))
+
+    @cached_property
     def logical_session_id(self) -> str:
         """
         Generate a logical session ID based on user ID and issued-at time.

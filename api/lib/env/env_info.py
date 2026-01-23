@@ -1,35 +1,37 @@
 import os
 import base64
 import json
-from typing import Any, TypeVar, cast
+from functools import lru_cache
+from typing import Any, TypeVar, cast, TypedDict
 from src.config.pkg_config import PkgConfig
 from ...models.auth.user import User
+from ..security.security_scope import SecurityScope
 
 
 def _load_env() -> str:
     config = PkgConfig()
-    env_mode = os.getenv("API_ENV_MODE", "")
-    if env_mode == "dev":
-        env_file = config.api_info.env.dev
-    elif env_mode == "prod":
-        env_file = config.api_info.env.prod
-    elif env_mode == "test":
-        env_file = config.api_info.env.test
-    else:
-        env_file = ".env"
+    env_mode = os.getenv("API_ENV_MODE", "prod")
+    env_files = {
+        "dev": config.api_info.env.dev,
+        "prod": config.api_info.env.prod,
+        "test": config.api_info.env.test,
+    }
+    env_file = env_files.get(env_mode, ".env")  # Fallback to '.env'
 
     from dotenv import load_dotenv
 
-    if env_file:
-        load_dotenv(
-            dotenv_path=env_file
-        )  # reads variables from specified .env file and sets them in os.environ
-    else:
-        load_dotenv()  # reads variables from a .env file and sets them in os.environ
+    # Load the specific file or default
+    load_dotenv(dotenv_path=env_file)
     return env_file
 
 
 T = TypeVar("T")
+
+
+class ScopesDictItem(TypedDict):
+    scope: str
+    description: str
+
 
 ENV_FILE = _load_env()
 """Path to the environment file being used. See also pyproject.toml `[tool.project.config.api.env]` section."""
@@ -136,3 +138,20 @@ def get_users() -> dict[str, User]:
 
 def get_api_servers() -> list[dict[str, str]]:
     return get_api_value("servers", [])
+
+
+@lru_cache(maxsize=32)
+def get_api_scopes(scope_type: str = "general") -> SecurityScope:
+    scopes = get_api_value("scopes", {})
+    if scope_type not in scopes:
+        return SecurityScope(name=scope_type)
+    st = cast(dict, scopes.get(scope_type, {}))
+    scope_reads = cast(list[ScopesDictItem], st.get("read", []))
+    scope_writes = cast(list[ScopesDictItem], st.get("write", []))
+    reads = [s["scope"] for s in scope_reads]
+    writes = [s["scope"] for s in scope_writes]
+    return SecurityScope(
+        name=scope_type,
+        read_scopes=set(reads),
+        write_scopes=set(writes),
+    )

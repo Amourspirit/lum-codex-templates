@@ -2,20 +2,11 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Query,
-    Request,
-    Response,
-    Security,
-)
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 
 # from fastapi_cache.decorator import cache
 from pydantic import ValidationError
-
 
 from ..responses.markdown_response import MarkdownResponse
 
@@ -36,6 +27,7 @@ from ..lib.util.result import Result
 from ..lib.verify.verify_meta_fields import VerifyMetaFields
 from ..lib.user.user_info import get_user_monad_name
 from ..lib.descope.session import get_descope_session
+from ..lib.env import env_info
 from ..lib.content_processors.pre_processors.pre_process_template import (
     PreProcessTemplate,
 )
@@ -43,8 +35,9 @@ from ..lib.content_processors.pre_processors.pre_process_registry import (
     PreProcessRegistry,
 )
 from src.template.front_mater_meta import FrontMatterMeta
-from api.lib.descope.auth import TokenVerifier, AUTH
 
+
+_TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
 router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
 _API_RELATIVE_URL = "/api/v1"
@@ -127,7 +120,18 @@ async def get_template(
     ),
     session: DescopeSession = Depends(get_descope_session),
 ):
-    # print("Fetching template:", template_type, version)
+    # raise an error if the session.scopes do not match at least 1 of the template scopes
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template.",
+        )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -157,20 +161,19 @@ async def get_template(
     if session and artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
-    if session:
-        try:
-            monad_name = get_user_monad_name(session)
-            if monad_name:
-                pre_processor = PreProcessTemplate(
-                    template_content=text, monad_name=monad_name
-                )
-                processed_text = pre_processor.pre_process_template()
-                print(f"Processed template with monad: {monad_name}")
-                return processed_text
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Error during template pre-processing: {e}"
+    try:
+        monad_name = get_user_monad_name(session)
+        if monad_name:
+            pre_processor = PreProcessTemplate(
+                template_content=text, monad_name=monad_name
             )
+            processed_text = pre_processor.pre_process_template()
+            print(f"Processed template with monad: {monad_name}")
+            return processed_text
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error during template pre-processing: {e}"
+        )
 
     return text
 
@@ -192,13 +195,29 @@ async def get_template_instructions(
     ),
     session: DescopeSession = Depends(get_descope_session),
 ):
+    # raise an error if the session.scopes do not match at least 1 of the template scopes
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template instructions.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template instructions.",
+        )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
-        raise HTTPException(status_code=400, detail=str(v_result.error))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
+        )
     ver = v_result.data
     path = Path(f"api/templates/{template_type}/{ver}/instructions.md")
     if not path.exists():
-        raise HTTPException(status_code=404, detail="Instructions file not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Instructions file not found."
+        )
     fm = FrontMatterMeta(file_path=path)
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
@@ -224,7 +243,7 @@ async def get_template_instructions(
             f"{app_root_url}/templates/{template_type}/{ver}"
         )
 
-    if session and artifact_name:
+    if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
     text = fm.get_template_text()
@@ -251,6 +270,17 @@ async def get_template_manifest(
     ),
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template manifest.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template manifest.",
+        )
     try:
         results_dict = _get_template_manifest(template_type, version, request)
         manifest = ManifestResponse(**results_dict)
@@ -280,24 +310,34 @@ async def get_template_registry(
     ),
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template registry.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template registry.",
+        )
     reg = _get_template_registry(template_type, version)
 
-    if session:
-        try:
-            if artifact_name:
-                response.headers["X-Artifact-Name"] = artifact_name
+    try:
+        if artifact_name:
+            response.headers["X-Artifact-Name"] = artifact_name
 
-            monad_name = get_user_monad_name(session)
-            if monad_name:
-                pre_processor = PreProcessRegistry(registry=reg, monad_name=monad_name)
-                processed_reg = pre_processor.pre_process_registry()
-                print(f"Processed registry with monad: {monad_name}")
-                return processed_reg
-            print("No monad name found in session for registry pre-processing.")
-        except Exception as e:
-            raise HTTPException(
-                status_code=500, detail=f"Error during registry pre-processing: {e}"
-            )
+        monad_name = get_user_monad_name(session)
+        if monad_name:
+            pre_processor = PreProcessRegistry(registry=reg, monad_name=monad_name)
+            processed_reg = pre_processor.pre_process_registry()
+            print(f"Processed registry with monad: {monad_name}")
+            return processed_reg
+        print("No monad name found in session for registry pre-processing.")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error during registry pre-processing: {e}"
+        )
     return reg
 
 
@@ -312,12 +352,23 @@ async def get_template_status(
     request: Request,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template status.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template status.",
+        )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
     dt_now = datetime.now().astimezone()
-    status = {
+    status_dict = {
         "status": "available",
         "template_type": template_type,
         "template_version": ver,
@@ -328,8 +379,7 @@ async def get_template_status(
         "last_verified": dt_now,
     }
 
-    json_content = json.loads(json.dumps(status))
-    return json_content
+    return TemplateStatusResponse(**status_dict)
 
 
 @router.post(
@@ -341,6 +391,17 @@ def verify_artifact(
     response: Response,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to verify artifact.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to verify artifact.",
+        )
     content = submission.template_content.strip()
     if not content:
         raise HTTPException(
@@ -462,6 +523,17 @@ def finalize_artifact(
     request: Request,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.write_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to finalize artifact.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to finalize artifact.",
+        )
     # cleanup and add any final fields before storage
     content = submission.template_content.strip()
     if not content:
@@ -519,6 +591,17 @@ def upgrade_to_template(
     request: Request,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.write_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to upgrade artifact.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to upgrade artifact.",
+        )
     contents = submission.markdown_content.strip()
     v_result = _validate_version_str(submission.new_version)
     if not Result.is_success(v_result):

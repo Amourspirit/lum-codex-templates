@@ -9,5 +9,12 @@
     },
     "ruff.enable": true,
     "editor.formatOnSave": true,
-    "editor.formatOnPaste": false
+    "editor.formatOnPaste": false,
+    "chat.mcp.serverSampling": {
+        "Templates/.vscode/mcp.json: codex-mcp-server-1086d444": {
+            "allowedModels": [
+                "copilot/gpt-5-mini"
+            ]
+        }
+    }
 }
