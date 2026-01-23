@@ -121,6 +121,7 @@ async def get_template(
     session: DescopeSession = Depends(get_descope_session),
 ):
     # raise an error if the session.scopes do not match at least 1 of the template scopes
+    print("Getting template:", template_type, version)
     if session:
         if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
             raise HTTPException(
@@ -128,17 +129,22 @@ async def get_template(
                 detail="Insufficient scope to access template.",
             )
     else:
+        print("No session found.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required to access template.",
         )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
-        raise HTTPException(status_code=400, detail=str(v_result.error))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
+        )
     ver = v_result.data
     path = Path(f"api/templates/{template_type}/{ver}/template.md")
     if not path.exists():
-        raise HTTPException(status_code=404, detail="Template file not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Template file not found."
+        )
     fm = FrontMatterMeta(file_path=path)
 
     # host = request.headers.get("x-forwarded-host") or request.headers.get("host")
@@ -365,7 +371,9 @@ async def get_template_status(
         )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
-        raise HTTPException(status_code=400, detail=str(v_result.error))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
+        )
     ver = v_result.data
     dt_now = datetime.now().astimezone()
     status_dict = {
@@ -470,19 +478,19 @@ def verify_artifact(
     errors: list[str] = []
     if "missing_fields" in data and data["missing_fields"]:
         errors.append("missing fields")
-        default_result["status"] = 422
+        default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["missing_fields"] = data["missing_fields"]
     if "extra_fields" in data and data["extra_fields"]:
         default_result["extra_fields"] = data["extra_fields"]
     if "incorrect_type_fields" in data and data["incorrect_type_fields"]:
         errors.append("incorrect type fields")
-        default_result["status"] = 422
+        default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["incorrect_type_fields"] = data["incorrect_type_fields"]
     if "rule_errors" in data and data["rule_errors"]:
         errors.append("rule errors")
-        default_result["status"] = 422
+        default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["rule_errors"] = data["rule_errors"]
 
@@ -493,7 +501,7 @@ def verify_artifact(
             status_code=500,
             detail=f"Validation error in VerifyArtifactResponse: {e}",
         )
-    if result.status != 200:
+    if result.status != status.HTTP_200_OK:
         details = {"message": "Template verification failed.", "errors": errors}
         model_details = result.model_dump(
             exclude={
@@ -543,13 +551,13 @@ def finalize_artifact(
     fm = FrontMatterMeta.from_content(content)
     if not fm.template_type:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Field template_type is not specified in frontmatter.",
         )
 
     if not fm.template_version:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Field template_version is not specified in frontmatter.",
         )
 
@@ -560,7 +568,7 @@ def finalize_artifact(
         registry_path = Path.cwd() / registry_path
     if not registry_path.exists():
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No registry found for the specified template_type of {fm.template_type} and template_version {fm.template_version} not found.",
         )
     registry: dict[str, Any] = json.loads(registry_path.read_text())
@@ -570,14 +578,14 @@ def finalize_artifact(
 
     default_result = {
         "template_content": result.get_template_text(),
-        "status": 200,
+        "status": status.HTTP_200_OK,
     }
 
     try:
         finalize_result = FinalizeArtifactResponse(**default_result)
     except ValidationError as e:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation error in FinalizeArtifactResponse: {e}",
         )
     return finalize_result
@@ -610,17 +618,19 @@ def upgrade_to_template(
 
     if not contents:
         raise HTTPException(
-            status_code=400, detail="Template contents cannot be empty."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Template contents cannot be empty.",
         )
     try:
         upgrade_fm = FrontMatterMeta.from_content(contents)
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail=f"Error parsing template contents: {e}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error parsing template contents: {e}",
         )
     if not upgrade_fm.template_type:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Field template_type is not specified in frontmatter.",
         )
 
@@ -653,7 +663,7 @@ def upgrade_to_template(
     manifest = _get_template_manifest(upgrade_fm.template_type, new_version, request)
     dt_now = datetime.now().astimezone()
     result = {
-        "status": 200,
+        "status": status.HTTP_200_OK,
         "template_type": upgrade_fm.template_type,
         "template_id": upgrade_fm.template_id,
         "template_version": new_version,
@@ -673,7 +683,7 @@ def upgrade_to_template(
         upgrade_result = UpgradeArtifactResponse(**result)
     except ValidationError as e:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation error in UpgradeArtifactResponse: {e}",
         )
 

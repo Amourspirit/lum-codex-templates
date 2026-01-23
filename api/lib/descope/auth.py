@@ -21,6 +21,7 @@ class TokenVerifier:
         ),
     ):
         if token is None:
+            print("TokenVerifier: No token provided.")
             raise UnauthenticatedException
 
         token_c = token.credentials
