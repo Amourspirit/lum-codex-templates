@@ -65,7 +65,7 @@ class DescopeSession(BaseModel):
             set[str]: A list of scopes.
         """
         # scopes is space delimited string
-        scopes_str = self.session.get("scopes", "")
+        scopes_str = self.session.get("scope", "")
         if not scopes_str:
             return set()
         return set(scopes_str.split(" "))
