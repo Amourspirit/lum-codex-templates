@@ -22,6 +22,9 @@ _DESCOPE_TOKEN_URL = "https://api.descope.com/oauth2/v1/apps/token"
 _DESCOPE_AUTHORIZE_URL = "https://api.descope.com/oauth2/v1/apps/authorize"
 
 
+_SCOPE = env_info.get_api_scopes()
+
+
 @router.get("/api/private", operation_id="descope_private")
 def private(auth_result: str = Security(auth)):
     # This API is now protected by our TokenVerifier object `auth`
@@ -29,7 +32,7 @@ def private(auth_result: str = Security(auth)):
 
 
 @router.get("/api/private-scoped/read", operation_id="descope_private_scoped_read")
-def private_scoped(auth_result: str = Security(auth, scopes=["read:messages"])):
+def private_scoped(auth_result: str = Security(auth, scopes=list(_SCOPE.read_scopes))):
     """
     This is a protected route with scope-based access control.
 

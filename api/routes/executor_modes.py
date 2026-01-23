@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-
+from ..lib.env import env_info
 from ..lib.util.result import Result
 from ..lib.descope.session import get_descope_session
 
@@ -10,6 +10,7 @@ from ..lib.descope.session import get_descope_session
 from ..models.executor_modes.v1_0.cbib_response import CbibResponse
 from ..models.descope.descope_session import DescopeSession
 
+_SCOPE = env_info.get_api_scopes()
 
 router = APIRouter(prefix="/api/v1/executor_modes", tags=["Executor Modes"])
 
@@ -38,6 +39,18 @@ async def get_template_cbib(
     request: Request,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access executor modes.",
+            )
+    else:
+        print("No session found.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access executor modes.",
+        )
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
@@ -59,6 +72,18 @@ async def executor_modes(
     request: Request,
     session: DescopeSession = Depends(get_descope_session),
 ):
+    if session:
+        if not session.scopes.intersection(_SCOPE.read_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access executor modes.",
+            )
+    else:
+        print("No session found.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access executor modes.",
+        )
     # check if version is only a number
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):

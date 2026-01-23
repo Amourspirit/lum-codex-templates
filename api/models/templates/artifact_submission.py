@@ -17,11 +17,3 @@ class ArtifactSubmission(BaseModel):
             description="Markdown contents containing Front-matter and body associated with the artifact to be upgraded.",
         ),
     ]
-    session_id: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Session ID",
-            description="Session ID associated with the current session.",
-        ),
-    ] = None

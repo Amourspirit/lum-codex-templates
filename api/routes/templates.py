@@ -124,10 +124,10 @@ async def get_template(
     print("Getting template:", template_type, version)
     if session:
         if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
-            print("Session Scopes:")
-            print(session.scopes)
-            print("Template Read Scopes:")
-            print(_TEMPLATE_SCOPE.read_scopes)
+            # print("Session Scopes:")
+            # print(session.scopes)
+            # print("Template Read Scopes:")
+            # print(_TEMPLATE_SCOPE.read_scopes)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient scope to access template.",
