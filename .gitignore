@@ -19,3 +19,6 @@ reports/
 .env.prod
 .env.dev
 .env.test
+
+# IDE specific
+.vscode/mcp.json

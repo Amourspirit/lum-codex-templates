@@ -364,6 +364,21 @@ mcp = FastApiMCP(
         },
         dependencies=[Depends(AUTH)],
     ),
+    include_operations=[
+        "ping",
+        "env_check",
+        "read_privacy_policy",
+        "get_template_cbib",
+        "get_canonical_executor_mode",
+        "get_template",
+        "get_template_instructions",
+        "get_template_manifest",
+        "get_template_registry",
+        "get_template_status",
+        "verify_artifact",
+        "finalize_artifact",
+        "upgrade_artifact",
+    ],
 )
 
 mcp.setup_server()
