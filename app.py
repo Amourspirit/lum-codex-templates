@@ -365,8 +365,6 @@ mcp = FastApiMCP(
         dependencies=[Depends(AUTH)],
     ),
     include_operations=[
-        "ping",
-        "env_check",
         "read_privacy_policy",
         "get_template_cbib",
         "get_canonical_executor_mode",

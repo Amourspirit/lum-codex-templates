@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     DESCOPE_INBOUND_APP_CLIENT_SECRET: str
     DESCOPE_LOGIN_BASE_URL: str
     API_ENV_MODE: str
+    MCP_SERVER_URL: str
 
     def model_post_init(self, _context):
         check(self.DESCOPE_PROJECT_ID != "", "descope_project_id must be set")
