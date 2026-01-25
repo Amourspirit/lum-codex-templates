@@ -1,6 +1,6 @@
 [project]
 name = "templates"
-version = "10.1.0"
+version = "10.2.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13.0"
@@ -436,7 +436,7 @@ ttl_session_cache_seconds=14400
 retries=3
 title="Codex Templates API"
 description="API for retrieving and applying Codex templates."
-version="0.3.0"
+version="0.4.0"
 
 [tool.project.config.api.headers]
 Content-Type="application/json"

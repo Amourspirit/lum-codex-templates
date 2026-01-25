@@ -2,6 +2,7 @@ import os
 import urllib.parse
 import secrets
 from contextlib import asynccontextmanager
+import httpx
 from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
@@ -329,6 +330,9 @@ mcp = FastApiMCP(
     app,
     name="Codex Templates MCP Server",
     description="MCP Server for Applying, and updating Codex Templates.",
+    describe_full_response_schema=True,
+    describe_all_responses=True,
+    http_client=httpx.AsyncClient(timeout=30),
     auth_config=AuthConfig(
         custom_oauth_metadata={
             "issuer": HttpUrl(config.issuer),
