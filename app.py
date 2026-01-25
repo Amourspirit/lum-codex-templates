@@ -332,7 +332,7 @@ mcp = FastApiMCP(
     description="MCP Server for Applying, and updating Codex Templates.",
     describe_full_response_schema=True,
     describe_all_responses=True,
-    http_client=httpx.AsyncClient(base_url=auth_settings.BASE_URL, timeout=30),
+    http_client=httpx.AsyncClient(base_url=auth_settings.MCP_SERVER_URL, timeout=30),
     auth_config=AuthConfig(
         custom_oauth_metadata={
             "issuer": HttpUrl(config.issuer),
