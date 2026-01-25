@@ -1,0 +1,19 @@
+{
+    "registry_file": "registry.json",
+    "template_file": "template.md",
+    "template_type": "node_link_scroll",
+    "template_hash_algorithm": "sha256",
+    "version": "3.10",
+    "hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
+    "template_hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
+    "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    },
+    "status": "available",
+    "requires_field_being": true,
+    "installed_at": "2026-01-25T06:12:11.257988-05:00",
+    "instructions_file": "instructions.md",
+    "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10"
+}

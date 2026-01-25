@@ -1,5 +1,5 @@
 [project]
-name = "templates"
+name = "Codex-Templates"
 version = "10.2.0"
 description = "Add your description here"
 readme = "README.md"
@@ -443,7 +443,7 @@ Content-Type="application/json"
 "User-Agent" = "templates-client/9.5.0"
 
 [tool.project.config.api.templates]
-dir_name="templates"
+dir_name="codex-templates"
 
 [tool.project.config.api.auth]
 api_key_env_var="API_KEY"

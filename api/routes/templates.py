@@ -35,12 +35,15 @@ from ..lib.content_processors.pre_processors.pre_process_registry import (
     PreProcessRegistry,
 )
 from src.template.front_mater_meta import FrontMatterMeta
+from src.config.pkg_config import PkgConfig
 
 
 _TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
 router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
 _API_RELATIVE_URL = "/api/v1"
+
+_TEMPLATE_DIR = PkgConfig().api_info.info_templates.dir_name
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
@@ -63,7 +66,7 @@ def _get_template_manifest(template_type: str, version: str, request: Request):
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
 
-    path = Path.cwd() / f"api/templates/{template_type}/{ver}/manifest.json"
+    path = Path.cwd() / f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest.json"
 
     if not path.exists():
         raise HTTPException(status_code=404, detail="Manifest file not found.")
@@ -73,16 +76,16 @@ def _get_template_manifest(template_type: str, version: str, request: Request):
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
     json_content["template_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{ver}"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
     )
     json_content["instructions_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{ver}/instructions"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
     )
     json_content["registry_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{ver}/registry"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
     )
     json_content["manifest_api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{ver}/manifest"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest"
     )
     json_content["executor_mode_api_path"] = (
         f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
@@ -95,7 +98,7 @@ def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
-    path = Path() / f"api/templates/{template_type}/{ver}/registry.json"
+    path = Path() / f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/registry.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="Registry file not found.")
     json_content = cast(dict[str, Any], json.loads(path.read_text()))
@@ -168,7 +171,7 @@ async def get_template(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    path = Path(f"api/templates/{template_type}/{ver}/template.md")
+    path = Path(f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/template.md")
     if not path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Template file not found."
@@ -180,7 +183,7 @@ async def get_template(
     app_root_url = base_url + _API_RELATIVE_URL
 
     if fm.has_field("template_registry"):
-        api_path = f"{app_root_url}/templates/{template_type}/{ver}/registry"
+        api_path = f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
         fm.frontmatter["template_registry"]["api_path"] = api_path
         fm.recompute_sha256()
 
@@ -188,7 +191,7 @@ async def get_template(
         fm.set_field("instruction_info", {})
     fm.frontmatter["instruction_info"]["id"] = "instructions"
     fm.frontmatter["instruction_info"]["api_path"] = (
-        f"{app_root_url}/templates/{template_type}/{ver}/instructions"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
     )
     text = fm.get_template_text()
 
@@ -278,7 +281,7 @@ async def get_template_instructions(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    path = Path(f"api/templates/{template_type}/{ver}/instructions.md")
+    path = Path(f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions.md")
     if not path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Instructions file not found."
@@ -301,11 +304,11 @@ async def get_template_instructions(
 
     if fm.has_field("template_registry"):
         fm.frontmatter["template_registry"]["api_path"] = (
-            f"{app_root_url}/templates/{template_type}/{ver}/registry"
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
         )
     if fm.has_field("template_info"):
         fm.frontmatter["template_info"]["api_path"] = (
-            f"{app_root_url}/templates/{template_type}/{ver}"
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
         )
 
     if artifact_name:
@@ -604,7 +607,7 @@ def verify_artifact(
         )
 
     registry_path = Path(
-        f"api/templates/{fm.template_type}/v{fm.template_version}/registry.json"
+        f"api/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}/registry.json"
     )
     if not registry_path.is_absolute():
         registry_path = Path.cwd() / registry_path
@@ -626,7 +629,7 @@ def verify_artifact(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
     template_api_path = (
-        f"{app_root_url}/templates/{fm.template_type}/v{fm.template_version}"
+        f"{app_root_url}/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}"
     )
     dt_now = datetime.now().astimezone()
     default_result = {
@@ -765,7 +768,7 @@ def finalize_artifact(
         )
 
     registry_path = Path(
-        f"api/templates/{fm.template_type}/v{fm.template_version}/registry.json"
+        f"api/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}/registry.json"
     )
     if not registry_path.is_absolute():
         registry_path = Path.cwd() / registry_path
@@ -869,7 +872,7 @@ def upgrade_to_template(
 
     try:
         path = Path(
-            f"api/templates/{upgrade_fm.template_type}/{new_version}/template.md"
+            f"api/{_TEMPLATE_DIR}/{upgrade_fm.template_type}/{new_version}/template.md"
         )
         if not path.exists():
             raise HTTPException(status_code=404, detail="Template file not found.")
