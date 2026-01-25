@@ -18,7 +18,6 @@ from slowapi.errors import RateLimitExceeded
 from api.lib.env import env_info  # Must be early import to load env vars
 from api.lib.descope.auth import TokenVerifier, AUTH
 from api.lib.descope.auth_config import get_settings
-from api.lib.descope.client import DESCOPE_CLIENT
 from api.lib.exceptions import UnauthenticatedException
 from api.routes import executor_modes
 from api.routes import privacy_terms
@@ -27,6 +26,7 @@ from api.routes.descope import route_protection
 from fastapi_mcp import AuthConfig
 from fastapi_mcp import FastApiMCP
 from src.config.pkg_config import PkgConfig
+from api.lib.descope.auth_config import get_settings
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -39,7 +39,7 @@ else:
     _DOCS_URL = "/docs"  # Swagger UI path
     _REDOC_URL = "/redoc"  # ReDoc path
 
-
+auth_settings = get_settings()
 bearer_optional = HTTPBearer(auto_error=False)
 
 
@@ -332,7 +332,7 @@ mcp = FastApiMCP(
     description="MCP Server for Applying, and updating Codex Templates.",
     describe_full_response_schema=True,
     describe_all_responses=True,
-    http_client=httpx.AsyncClient(timeout=30),
+    http_client=httpx.AsyncClient(base_url=auth_settings.BASE_URL, timeout=30),
     auth_config=AuthConfig(
         custom_oauth_metadata={
             "issuer": HttpUrl(config.issuer),
