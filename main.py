@@ -1,9 +1,12 @@
 import os
+import sys
 import urllib.parse
 import secrets
 from contextlib import asynccontextmanager
+from loguru import logger
 
 # import httpx
+from fastmcp.server.openapi.routing import MCPType, RouteMap
 from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
@@ -187,17 +190,6 @@ api.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-mcp = FastMCP.from_fastapi(app=api, name="Codex Templates MCP Server")
-mcp_app = mcp.http_app(path="/mcp", transport="http")
-
-
-@asynccontextmanager
-async def global_lifespan(app: FastAPI):
-    async with lifespan(app):
-        async with mcp_app.lifespan(app):
-            yield
-    # Clean up resources if needed
-
 
 @api.get("/ping", operation_id="ping")
 async def ping(request: Request):
@@ -325,7 +317,35 @@ async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
 @api.get("/", operation_id="root")
 async def root():
     """Public root endpoint."""
-    return {"message": "Welcome! Please /login to access the API documentation."}
+    return {"message": "Welcome! Please login to access the API documentation."}
+
+
+mcp = FastMCP.from_fastapi(
+    app=api,
+    name="Codex Templates MCP Server",
+    route_maps=[
+        RouteMap(
+            methods=["GET", "POST"],
+            tags={"mcp-tool"},
+            mcp_type=MCPType.TOOL,
+        ),
+    ],
+)
+mcp_app = mcp.http_app(path="/mcp", transport="http")
+
+
+@asynccontextmanager
+async def global_lifespan(app: FastAPI):
+    async with lifespan(app):
+        async with mcp_app.lifespan(app):
+            logger.remove()
+            logger.add(sys.stderr, level=config.LOG_LEVEL)
+            logger.info(
+                "Application startup complete. Logging Level is set to {log_level}",
+                log_level=config.LOG_LEVEL,
+            )
+            yield
+            # Clean up resources if needed
 
 
 app = FastAPI(
@@ -418,5 +438,4 @@ app = FastAPI(
 # mcp.mount()
 
 if __name__ == "__main__":
-    # mcp.run(path="/mcp")
     pass

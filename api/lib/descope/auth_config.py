@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     API_ENV_MODE: str
     MCP_SERVER_URL: str
     BASE_URL: str
+    LOG_LEVEL: str = "INFO"
 
     def model_post_init(self, _context):
         check(self.DESCOPE_PROJECT_ID != "", "descope_project_id must be set")
