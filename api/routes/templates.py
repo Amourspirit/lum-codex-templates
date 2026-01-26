@@ -124,7 +124,7 @@ async def get_template(
         description="Optional name of the artifact this template is being applied to",
     ),
     session: DescopeSession = Depends(get_descope_session),
-):
+) -> str:
     """
     Retrieve a template by its type and version.
 
@@ -339,7 +339,7 @@ async def get_template_manifest(
         description="Optional name of the artifact this template is being applied to",
     ),
     session: DescopeSession = Depends(get_descope_session),
-):
+) -> ManifestResponse:
     """
     Retrieves the manifest for a specific template type and version.
 
