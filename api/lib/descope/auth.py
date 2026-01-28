@@ -12,7 +12,8 @@ from api.models.descope.descope_session import DescopeSession
 class TokenVerifier:
     def __init__(self):
         self.config = get_settings()
-        self.jwks_client = PyJWKClient(self.config.jwks_url)
+        headers = {"User-Agent": "Mozilla/5.0 (CodexTemplatesFastAPIApp)"}
+        self.jwks_client = PyJWKClient(uri=self.config.jwks_url, headers=headers)
         self.allowed_algorithms = ["RS256"]
 
     async def __call__(

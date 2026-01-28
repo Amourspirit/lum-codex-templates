@@ -193,7 +193,7 @@ api.add_middleware(
 
 
 @api.get("/ping", operation_id="ping")
-async def ping(request: Request):
+async def ping():
     """Handle ping health checks and return a JSON payload acknowledging the request."""
 
     return {"msg": "pong"}
@@ -334,16 +334,21 @@ auth = DescopeProvider(
 
 
 mcp = FastMCP(name="Codex Templates MCP Server", auth=auth)
-mcp_app = mcp.http_app(path="/mcp", transport="http")
+mcp_app = mcp.http_app(path="", transport="http")
 
 mcp_templates.register_routes(mcp)
 
 
-@mcp_app.route("/", methods=["GET"])
-async def serve_index():
-    return JSONResponse(
-        content={"message": "Welcome! Please login to access the API documentation."}
-    )
+# @mcp_app.route("/", methods=["GET"])
+# async def serve_index(request: Request):
+#     # Starlette's routing system automatically passes the Request object to handlers.
+#     # Without it, Python raises a TypeError for the unexpected argument.
+#     return JSONResponse(
+#         content={"message": "Welcome! Please login to access the API documentation."}
+#     )
+
+
+# api.mount("/mcp", mcp_app)
 
 
 @asynccontextmanager
@@ -365,13 +370,17 @@ app = FastAPI(
     openapi_url=_OPEN_URL,  # where schema is served
     docs_url=_DOCS_URL,  # Swagger UI path
     redoc_url=_REDOC_URL,  # ReDoc path
-    routes=[
-        *mcp_app.routes,  # MCP routes
-        *api.routes,  # Original API routes
-    ],
+    routes=api.routes + mcp_app.routes,  # Merge API and MCP routes
     lifespan=global_lifespan,
 )
 
 
 if __name__ == "__main__":
-    pass
+    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
+        import uvicorn
+
+        port = int(
+            os.getenv("PORT", 8000)
+        )  # Use env PORT for deployment (e.g., Render.com)
+        uvicorn.run(app, host="localhost", port=port)
+        # uvicorn.run(mcp_app, host="localhost", port=8001)

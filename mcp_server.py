@@ -1,3 +1,4 @@
+import os
 from fastmcp import FastMCP
 
 # from fastmcp.server.auth.providers.descope import DescopeProvider
@@ -37,6 +38,10 @@ async def serve_index():
 
 
 if __name__ == "__main__":
-    import uvicorn
+    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
+        import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8000)
+        port = int(
+            os.getenv("PORT", 8000)
+        )  # Use env PORT for deployment (e.g., Render.com)
+        uvicorn.run(app, host="localhost", port=port)
