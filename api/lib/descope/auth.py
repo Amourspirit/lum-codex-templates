@@ -82,10 +82,12 @@ class TokenVerifier:
         Returns:
             DescopeSession: An object representing the validated session data.
         """
-
-        key = self._get_signing_key(token)
-        payload = self._decode_token(token, key)
-        return DescopeSession(**payload)
+        try:
+            key = self._get_signing_key(token)
+            payload = self._decode_token(token, key)
+            return DescopeSession(session=payload)
+        except Exception as e:
+            raise UnauthorizedException(f"Token verification failed: {str(e)}")
 
 
 AUTH = TokenVerifier()

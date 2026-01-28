@@ -12,7 +12,7 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastmcp import FastMCP
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
@@ -26,9 +26,9 @@ from api.routes import executor_modes
 from api.routes import privacy_terms
 from api.routes import templates
 from api.routes.descope import route_protection
-from api.lib.descope.descope_provider import DescopeProvider
 from src.config.pkg_config import PkgConfig
 from api.mcp.routes import templates as mcp_templates
+from api.mcp.routes import executor_modes as mcp_executor_modes
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -321,34 +321,11 @@ async def root():
     return {"message": "Welcome! Please login to access the API documentation."}
 
 
-# Create the Descope auth provider
-auth = DescopeProvider(
-    config_url=_SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_CONFIG_URL,
-    project_id=_SETTINGS.DESCOPE_PROJECT_ID,
-    base_url=_SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL,
-    descope_base_url=_SETTINGS.DESCOPE_API_BASE_URL,
-)
-
-
-# Create FastMCP server with the configured Descope auth provider
-
-
-mcp = FastMCP(name="Codex Templates MCP Server", auth=auth)
+mcp = FastMCP(name="Codex Templates MCP Server")
 mcp_app = mcp.http_app(path="", transport="http")
 
 mcp_templates.register_routes(mcp)
-
-
-# @mcp_app.route("/", methods=["GET"])
-# async def serve_index(request: Request):
-#     # Starlette's routing system automatically passes the Request object to handlers.
-#     # Without it, Python raises a TypeError for the unexpected argument.
-#     return JSONResponse(
-#         content={"message": "Welcome! Please login to access the API documentation."}
-#     )
-
-
-# api.mount("/mcp", mcp_app)
+mcp_executor_modes.register_routes(mcp)
 
 
 @asynccontextmanager

@@ -6,6 +6,7 @@ from api.lib.descope.descope_provider import DescopeProvider
 from starlette.responses import FileResponse, JSONResponse
 from api.lib.descope.auth_config import get_settings
 from api.mcp.routes import templates
+from api.mcp.routes import executor_modes
 
 _SETTINGS = get_settings()
 
@@ -28,6 +29,7 @@ mcp = FastMCP(name="Codex Templates MCP Server", auth=auth)
 app = mcp.http_app(path="/mcp", transport="http")
 
 templates.register_routes(mcp)
+executor_modes.register_routes(mcp)
 
 
 @app.route("/", methods=["GET"])

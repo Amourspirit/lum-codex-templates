@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from fastapi.responses import JSONResponse
 
 from ..models.templates.artifact_submission import ArtifactSubmission
-from ..models.templates.template_response import TemplateResponse
 from ..models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
 )
@@ -11,11 +10,9 @@ from ..models.templates.template_status_response import TemplateStatusResponse
 from ..models.templates.verify_artifact_response import VerifyArtifactResponse
 from ..models.templates.finalize_artifact_response import FinalizeArtifactResponse
 from ..models.templates.upgrade_artifact_response import UpgradeArtifactResponse
-from ..models.templates.template_instruction_response import (
-    TemplateInstructionsResponse,
-)
 from ..models.templates.manifest_response import ManifestResponse
 from ..models.descope.descope_session import DescopeSession
+from ..responses.markdown_response import MarkdownResponse
 from ..lib.routes import fn_template
 from ..lib.user.user_info import get_user_monad_name
 from ..lib.descope.session import get_descope_session
@@ -32,11 +29,11 @@ _API_RELATIVE_URL = "/api/v1"
 # https://github.com/laurentS/slowapi/issues/252
 @router.get(
     "/{template_type}/{version}",
-    response_model=TemplateResponse,
+    response_class=MarkdownResponse,
     operation_id="get_template",
     description="Retrieve the template for a specific type and version.",
     summary="Retrieve a template by type and version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def get_template(
     template_type: str,
@@ -48,7 +45,7 @@ async def get_template(
         description="Optional name of the artifact this template is being applied to",
     ),
     session: DescopeSession = Depends(get_descope_session),
-) -> TemplateResponse:
+) -> str:
     """
     Retrieve a template by its type and version.
 
@@ -100,22 +97,23 @@ async def get_template(
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
-    return await fn_template.get_template(
+    result = await fn_template.get_template(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
         monad_name=monad_name,
     )
+    return result.content
 
 
 # rate limiting not working when caching is enabled
 @router.get(
     "/{template_type}/{version}/instructions",
-    response_model=TemplateInstructionsResponse,
+    response_class=MarkdownResponse,
     operation_id="get_template_instructions",
     description="Retrieve the instructions for a specific template type and version.",
     summary="Retrieve template instructions by type and version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def get_template_instructions(
     template_type: str,
@@ -127,7 +125,7 @@ async def get_template_instructions(
         description="Optional name of the artifact this template is being applied to",
     ),
     session: DescopeSession = Depends(get_descope_session),
-) -> TemplateInstructionsResponse:
+) -> str:
     """
     Retrieves and processes the instruction text for a specific template type and version.
     This endpoint reads the corresponding markdown file. It dynamically
@@ -179,12 +177,13 @@ async def get_template_instructions(
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
-    return await fn_template.get_template_instructions(
+    result = await fn_template.get_template_instructions(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
         artifact_name=artifact_name,
     )
+    return result.content
 
 
 # rate limiting not working when caching is enabled
@@ -194,7 +193,7 @@ async def get_template_instructions(
     operation_id="get_template_manifest",
     description="Retrieve the manifest for a specific template type and version.",
     summary="Retrieve template manifest by type and version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def get_template_manifest(
     template_type: str,
@@ -264,7 +263,7 @@ async def get_template_manifest(
     operation_id="get_template_registry",
     description="Retrieve the template registry for a given type and version.",
     summary="Retrieve template registry by type and version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def get_template_registry(
     template_type: str,
@@ -337,7 +336,7 @@ async def get_template_registry(
     operation_id="get_template_status",
     description="Retrieve the current status of a specific template version.",
     summary="Get template status by type and version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def get_template_status(
     template_type: str,
@@ -394,7 +393,7 @@ async def get_template_status(
     operation_id="post_verify_artifact",
     description="Verify the metadata fields of a template artifact against a registered schema.",
     summary="Verify template artifact metadata fields",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def verify_artifact(
     submission: ArtifactSubmission,
@@ -465,7 +464,7 @@ async def verify_artifact(
     operation_id="post_finalize_artifact",
     description="Finalize an artifact submission by cleaning and validating its metadata fields.",
     summary="Finalize template artifact metadata fields",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def finalize_artifact(
     submission: ArtifactSubmission,
@@ -528,7 +527,7 @@ async def finalize_artifact(
     operation_id="post_upgrade_artifact",
     description="Upgrade an artifact to a new template version by applying necessary transformations.",
     summary="Upgrade template artifact to new version",
-    tags=["codex-template", "mcp-tool"],
+    tags=["codex-template"],
 )
 async def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
