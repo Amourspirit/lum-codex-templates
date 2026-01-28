@@ -12,7 +12,8 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "API_ENV_MODE": "dev"
+                "API_ENV_MODE": "dev",
+                "ENV_FILE": ".env.dev"
             }
         },
         {
@@ -23,7 +24,8 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
-                "API_ENV_MODE": "dev"
+                "API_ENV_MODE": "dev",
+                "ENV_FILE": ".env.dev"
             }
         }
     ]

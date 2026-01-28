@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     API_ENV_MODE: str
     MCP_SERVER_URL: str
     BASE_URL: str
+    FASTMCP_SERVER_AUTH: str
+    FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_CONFIG_URL: str
+    FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL: str
     LOG_LEVEL: str = "INFO"
 
     def model_post_init(self, _context):

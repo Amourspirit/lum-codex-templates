@@ -2,7 +2,6 @@ from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
 
-from ..responses.markdown_response import MarkdownResponse
 from ..models.templates.artifact_submission import ArtifactSubmission
 from ..models.templates.template_response import TemplateResponse
 from ..models.templates.upgrade_to_template_submission import (
@@ -21,15 +20,12 @@ from ..lib.routes import fn_template
 from ..lib.user.user_info import get_user_monad_name
 from ..lib.descope.session import get_descope_session
 from ..lib.env import env_info
-from src.config.pkg_config import PkgConfig
 
 
 _TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
 router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
 _API_RELATIVE_URL = "/api/v1"
-
-_TEMPLATE_DIR = PkgConfig().api_info.info_templates.dir_name
 
 
 # rate limiting not working when caching is enabled
@@ -73,7 +69,7 @@ async def get_template(
         HTTPException:
 
     Returns:
-        str: The template content in markdown format.
+        TemplateResponse: The requested template data.
     """
     # raise an error if the session.scopes do not match at least 1 of the template scopes
     logger.debug(f"Getting template: {template_type}, {version}")

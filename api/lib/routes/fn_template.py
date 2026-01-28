@@ -35,10 +35,12 @@ from ..content_processors.pre_processors.pre_process_registry import (
 )
 from src.template.front_mater_meta import FrontMatterMeta
 from src.config.pkg_config import PkgConfig
+from api.config import Config
 
+_CONFIG = Config()
 
-router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
-_API_RELATIVE_URL = "/api/v1"
+router = APIRouter(prefix=f"{_CONFIG.api_v1_prefix}/templates", tags=["Templates"])
+_API_RELATIVE_URL = _CONFIG.api_v1_prefix
 _TEMPLATE_DIR = PkgConfig().api_info.info_templates.dir_name
 
 

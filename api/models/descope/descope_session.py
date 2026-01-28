@@ -49,6 +49,15 @@ class DescopeSession(BaseModel):
         return set(self.session.get("permissions", []))
 
     @cached_property
+    def tenants(self) -> dict[str, Any]:
+        """
+        Tenants associated with the session.
+        Returns:
+            dict[str, Any]: A dictionary of tenants.
+        """
+        return self.session.get("tenants", {})
+
+    @cached_property
     def roles(self) -> set[str]:
         """
         Roles associated with the session.
@@ -82,3 +91,66 @@ class DescopeSession(BaseModel):
             str: A string representing the logical session ID.
         """
         return f"{self.user_id}:{self.iat}"
+
+    def validate_tenant_roles(
+        self, tenant: str, roles: list[str] | str, match_any: bool = False
+    ) -> bool:
+        """
+        Validate that session response has been granted the specified roles on the specified tenant.
+            For a multi-tenant environment use validate_tenant_roles function
+
+        Args:
+            tenant (str): TenantId. if empty string, validates roles on the global level
+            roles (list[str] | str): List of roles to validate for this response
+            match_any (bool): If true, validates that at least one of the specified roles is granted. Default is false (all roles must be granted).
+
+        Return value (bool): returns true if all roles granted; false if at least one role not granted
+        """
+        if isinstance(roles, str):
+            roles = [roles]
+        granted = set()
+        if tenant == "":
+            granted.update(self.roles)
+        else:
+            if tenant not in self.tenants:
+                return False
+            granted.update(self.tenants.get(tenant, {}).get("roles", []))
+        if match_any:
+            for role in roles:
+                if role in granted:
+                    return True
+            return False
+        for role in roles:
+            if role not in granted:
+                return False
+        return True
+
+    def validate_roles(self, roles: list[str] | str, match_any: bool = False) -> bool:
+        """
+        Validate that session response has been granted the specified roles on the global level.
+        Args:
+            roles (list[str] | str): List of roles to validate for this response
+            match_any (bool): If true, validates that at least one of the specified roles is granted. Default is false (all roles must be granted).
+        Return value (bool): returns true if all roles granted; false if at least one role not granted
+        """
+        return self.validate_tenant_roles("", roles=roles, match_any=match_any)
+
+    def validate_scopes(self, scopes: list[str] | str, match_any: bool = False) -> bool:
+        """
+        Validate that session response has been granted the specified scopes.
+        Args:
+            scopes (list[str] | str): List of scopes to validate for this response
+            match_any (bool): If true, validates that at least one of the specified scopes is granted. Default is false (all scopes must be granted).
+        Return value (bool): returns true if all scopes granted; false if at least one scope not granted
+        """
+        if isinstance(scopes, str):
+            scopes = [scopes]
+        if match_any:
+            for scope in scopes:
+                if scope in self.scopes:
+                    return True
+            return False
+        for scope in scopes:
+            if scope not in self.scopes:
+                return False
+        return True

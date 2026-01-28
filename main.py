@@ -6,17 +6,16 @@ from contextlib import asynccontextmanager
 from loguru import logger
 
 # import httpx
-from fastmcp.server.openapi.routing import MCPType, RouteMap
 from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastmcp import FastMCP
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
-from fastmcp import FastMCP
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from api.lib.env import env_info  # Must be early import to load env vars
@@ -27,7 +26,9 @@ from api.routes import executor_modes
 from api.routes import privacy_terms
 from api.routes import templates
 from api.routes.descope import route_protection
+from api.lib.descope.descope_provider import DescopeProvider
 from src.config.pkg_config import PkgConfig
+from api.mcp.routes import templates as mcp_templates
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -155,7 +156,7 @@ def custom_openapi():
 
 
 # auth = TokenVerifier()
-config = get_settings()
+_SETTINGS = get_settings()
 
 
 @asynccontextmanager
@@ -320,18 +321,29 @@ async def root():
     return {"message": "Welcome! Please login to access the API documentation."}
 
 
-mcp = FastMCP.from_fastapi(
-    app=api,
-    name="Codex Templates MCP Server",
-    route_maps=[
-        RouteMap(
-            methods=["GET", "POST"],
-            tags={"mcp-tool"},
-            mcp_type=MCPType.TOOL,
-        ),
-    ],
+# Create the Descope auth provider
+auth = DescopeProvider(
+    config_url=_SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_CONFIG_URL,
+    project_id=_SETTINGS.DESCOPE_PROJECT_ID,
+    base_url=_SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL,
+    descope_base_url=_SETTINGS.DESCOPE_API_BASE_URL,
 )
+
+
+# Create FastMCP server with the configured Descope auth provider
+
+
+mcp = FastMCP(name="Codex Templates MCP Server", auth=auth)
 mcp_app = mcp.http_app(path="/mcp", transport="http")
+
+mcp_templates.register_routes(mcp)
+
+
+@mcp_app.route("/", methods=["GET"])
+async def serve_index():
+    return JSONResponse(
+        content={"message": "Welcome! Please login to access the API documentation."}
+    )
 
 
 @asynccontextmanager
@@ -339,10 +351,10 @@ async def global_lifespan(app: FastAPI):
     async with lifespan(app):
         async with mcp_app.lifespan(app):
             logger.remove()
-            logger.add(sys.stderr, level=config.LOG_LEVEL)
+            logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
             logger.info(
                 "Application startup complete. Logging Level is set to {log_level}",
-                log_level=config.LOG_LEVEL,
+                log_level=_SETTINGS.LOG_LEVEL,
             )
             yield
             # Clean up resources if needed
@@ -360,82 +372,6 @@ app = FastAPI(
     lifespan=global_lifespan,
 )
 
-# # Create the MCP's ASGI app
-# mcp_app = mcp.http_app(path="/")
-
-# # Create a new FastAPI app that combines both sets of routes
-# combined_app = FastAPI(
-#     title="Codex Templates with MCP",
-#     routes=[
-#         *mcp_app.routes,  # MCP routes
-#         *app.routes,  # Original API routes
-#     ],
-#     openapi_url=_OPEN_URL,  # where schema is served
-#     docs_url=_DOCS_URL,  # Swagger UI path
-#     redoc_url=_REDOC_URL,  # ReDoc path
-#     lifespan=mcp_app.lifespan,
-# )
-
-
-# mcp = FastApiMCP(
-#     app,
-#     name="Codex Templates MCP Server",
-#     description="MCP Server for Applying, and updating Codex Templates.",
-#     describe_full_response_schema=True,
-#     describe_all_responses=True,
-#     # http_client=httpx.AsyncClient(base_url=config.MCP_SERVER_URL, timeout=30),
-#     auth_config=AuthConfig(
-#         custom_oauth_metadata={
-#             "issuer": HttpUrl(config.issuer),
-#             "jwks_uri": HttpUrl(config.jwks_url),
-#             "authorization_endpoint": HttpUrl(config.authorization_endpoint),
-#             "response_types_supported": config.response_types_supported,
-#             "subject_types_supported": config.subject_types_supported,
-#             "id_token_signing_alg_values_supported": config.id_token_signing_alg_values_supported,
-#             "code_challenge_methods_supported": config.code_challenge_methods_supported,
-#             "token_endpoint": HttpUrl(config.token_endpoint),
-#             "userinfo_endpoint": HttpUrl(config.userinfo_endpoint),
-#             "scopes_supported": ["openid"],
-#             "claims_supported": [
-#                 "iss",
-#                 "aud",
-#                 "iat",
-#                 "exp",
-#                 "sub",
-#                 "name",
-#                 "email",
-#                 "email_verified",
-#                 "phone_number",
-#                 "phone_number_verified",
-#                 "picture",
-#                 "family_name",
-#                 "given_name",
-#             ],
-#             "revocation_endpoint": HttpUrl(config.revocation_endpoint),
-#             "registration_endpoint": HttpUrl(config.registration_endpoint),
-#             "grant_types_supported": ["authorization_code", "refresh_token"],
-#             "token_endpoint_auth_methods_supported": ["client_secret_post"],
-#             "end_session_endpoint": HttpUrl(config.end_session_endpoint),
-#         },
-#         dependencies=[Depends(AUTH)],
-#     ),
-#     include_operations=[
-#         "read_privacy_policy",
-#         "get_template_cbib",
-#         "get_canonical_executor_mode",
-#         "get_template",
-#         "get_template_instructions",
-#         "get_template_manifest",
-#         "get_template_registry",
-#         "get_template_status",
-#         "verify_artifact",
-#         "finalize_artifact",
-#         "upgrade_artifact",
-#     ],
-# )
-
-# mcp.setup_server()
-# mcp.mount()
 
 if __name__ == "__main__":
     pass
