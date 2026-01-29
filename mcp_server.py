@@ -4,6 +4,7 @@ from fastmcp import FastMCP
 # from fastmcp.server.auth.providers.descope import DescopeProvider
 from api.lib.descope.descope_provider import DescopeProvider
 from starlette.responses import FileResponse, JSONResponse
+from starlette.requests import Request as StarletteRequest
 from api.lib.descope.auth_config import get_settings
 from api.mcp.routes import templates
 from api.mcp.routes import executor_modes
@@ -30,6 +31,27 @@ app = mcp.http_app(path="/mcp", transport="http")
 
 templates.register_routes(mcp)
 executor_modes.register_routes(mcp)
+
+
+@mcp.custom_route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
+async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
+    base_url = str(request.base_url).rstrip("/")
+
+    return JSONResponse(
+        {
+            "resource": base_url,
+            "authorization_servers": [_SETTINGS.authorization_endpoint],
+            "scopes_supported": [
+                "openid",
+                "email",
+                "profile",
+                "login_access",
+                "api.context:read",
+                "mcp.template:read",
+            ],
+            "bearer_methods_supported": ["header", "body"],
+        }
+    )
 
 
 @app.route("/", methods=["GET"])
