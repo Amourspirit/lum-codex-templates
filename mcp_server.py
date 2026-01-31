@@ -1,13 +1,14 @@
 import os
-from fastmcp import FastMCP
+from fastapi.middleware.cors import CORSMiddleware
 
 # from fastmcp.server.auth.providers.descope import DescopeProvider
 from api.lib.descope.descope_provider import DescopeProvider
-from starlette.responses import FileResponse, JSONResponse
-from starlette.requests import Request as StarletteRequest
 from api.lib.descope.auth_config import get_settings
-from api.mcp.routes import templates
-from api.mcp.routes import executor_modes
+
+# from api.mcp.routes import templates as mcp_templates
+# from api.mcp.routes import executor_modes as mcp_executor_modes
+# from api.mcp.routes import privacy_terms as mcp_privacy_terms
+from api.mcp.servers import templates_mcp
 
 _SETTINGS = get_settings()
 
@@ -20,45 +21,24 @@ auth = DescopeProvider(
     descope_base_url=_SETTINGS.DESCOPE_API_BASE_URL,
 )
 
-# Create FastMCP server with the configured Descope auth provider
-
-
-mcp = FastMCP(name="Codex Templates MCP Server", auth=auth)
-
-
 # Create the app with the MCP path
-app = mcp.http_app(path="/mcp", transport="http")
+mcp_templates = templates_mcp.init_mcp(auth=auth)
+app = mcp_templates.http_app(path="/templates/mcp", transport="http")
 
-templates.register_routes(mcp)
-executor_modes.register_routes(mcp)
-
-
-@mcp.custom_route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
-async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
-    base_url = str(request.base_url).rstrip("/")
-
-    return JSONResponse(
-        {
-            "resource": base_url,
-            "authorization_servers": [_SETTINGS.authorization_endpoint],
-            "scopes_supported": [
-                "openid",
-                "email",
-                "profile",
-                "login_access",
-                "api.context:read",
-                "mcp.template:read",
-            ],
-            "bearer_methods_supported": ["header", "body"],
-        }
-    )
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],  # Allows all origins
+#     allow_credentials=True,
+#     allow_methods=["*"],  # Allows all methods
+#     allow_headers=["*"],  # Allows all headers
+# )
 
 
-@app.route("/", methods=["GET"])
-async def serve_index():
-    return JSONResponse(
-        content={"message": "Welcome! Please login to access the API documentation."}
-    )
+# @app.route("/", methods=["GET"])
+# async def serve_index():
+#     return JSONResponse(
+#         content={"message": "Welcome! Please login to access the API documentation."}
+#     )
 
 
 if __name__ == "__main__":
@@ -69,3 +49,4 @@ if __name__ == "__main__":
             os.getenv("PORT", 8000)
         )  # Use env PORT for deployment (e.g., Render.com)
         uvicorn.run(app, host="localhost", port=port)
+        # mcp.run(transport="stdio")

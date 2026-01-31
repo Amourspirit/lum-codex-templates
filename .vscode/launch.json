@@ -14,7 +14,8 @@
             "env": {
                 "API_ENV_MODE": "dev",
                 "ENV_FILE": ".env.dev",
-                "LOCAL_DEV_MODE": "true"
+                "LOCAL_DEV_MODE": "true",
+                "LOG_LEVEL": "DEBUG"
             }
         },
         {
@@ -27,7 +28,8 @@
             "env": {
                 "API_ENV_MODE": "dev",
                 "ENV_FILE": ".env.dev",
-                "LOCAL_DEV_MODE": "true"
+                "LOCAL_DEV_MODE": "true",
+                "LOG_LEVEL": "DEBUG"
             }
         }
     ]

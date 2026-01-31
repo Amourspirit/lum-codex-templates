@@ -13,7 +13,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
-from fastmcp import FastMCP
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
 from slowapi import _rate_limit_exceeded_handler
@@ -27,8 +26,8 @@ from api.routes import privacy_terms
 from api.routes import templates
 from api.routes.descope import route_protection
 from src.config.pkg_config import PkgConfig
-from api.mcp.routes import templates as mcp_templates
-from api.mcp.routes import executor_modes as mcp_executor_modes
+from api.mcp.servers import templates_mcp
+from api.mcp.servers import echo_mcp
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -321,17 +320,18 @@ async def root():
     return {"message": "Welcome! Please login to access the API documentation."}
 
 
-mcp = FastMCP(name="Codex Templates MCP Server")
-mcp_app = mcp.http_app(path="", transport="http")
-
-mcp_templates.register_routes(mcp)
-mcp_executor_modes.register_routes(mcp)
+# mcp = FastMCP(name="Codex Templates MCP Server")
+mcp_templates = templates_mcp.init_mcp()
+mcp_templates_app = mcp_templates.http_app(path="", transport="http")
+mcp_echo_app = echo_mcp.mcp.http_app(path="", transport="http")
 
 
 @asynccontextmanager
 async def global_lifespan(app: FastAPI):
     async with lifespan(app):
-        async with mcp_app.lifespan(app):
+        async with mcp_templates_app.lifespan(app):
+            async with mcp_echo_app.lifespan(app):
+                yield
             logger.remove()
             logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
             logger.info(
@@ -347,9 +347,37 @@ app = FastAPI(
     openapi_url=_OPEN_URL,  # where schema is served
     docs_url=_DOCS_URL,  # Swagger UI path
     redoc_url=_REDOC_URL,  # ReDoc path
-    routes=api.routes + mcp_app.routes,  # Merge API and MCP routes
+    routes=api.routes + mcp_templates_app.routes + mcp_echo_app.routes,
+    # routes=api.routes,
     lifespan=global_lifespan,
 )
+
+app.mount("/templates", mcp_templates_app)  # /templates/mcp
+app.mount("/echo", mcp_echo_app)  # /echo/mcp
+
+
+# @app.route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
+# async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
+#     base_url = str(request.base_url).rstrip("/")
+#     # Normalize to localhost in local dev mode to match MCP Inspector expectations
+#     if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
+#         base_url = base_url.replace("127.0.0.1", "localhost")
+
+#     return JSONResponse(
+#         {
+#             "resource": base_url,
+#             "authorization_servers": [_SETTINGS.authorization_endpoint],
+#             "scopes_supported": [
+#                 "openid",
+#                 "email",
+#                 "profile",
+#                 "login_access",
+#                 "api.context:read",
+#                 "mcp.template:read",
+#             ],
+#             "bearer_methods_supported": ["header", "body"],
+#         }
+#     )
 
 
 if __name__ == "__main__":

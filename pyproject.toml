@@ -426,6 +426,7 @@ single_fields_omitted=[
 
 [dependency-groups]
 dev = [
+    "mcp[cli]>=1.26.0",
     "uvicorn>=0.40.0",
 ]
 

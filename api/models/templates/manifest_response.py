@@ -1,5 +1,5 @@
 from typing import Annotated, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CanonicalMode(BaseModel):
@@ -19,7 +19,8 @@ class CanonicalMode(BaseModel):
     ]
 
 
-class ManifestResponse(BaseModel):
+class ManifestMcpResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     registry_file: Annotated[
         str,
         Field(
@@ -120,6 +121,15 @@ class ManifestResponse(BaseModel):
         ),
     ]
 
+    @staticmethod
+    def from_manifest_response(
+        manifest_response: "ManifestResponse",
+    ) -> "ManifestMcpResponse":
+        """Converts a ManifestResponse to a ManifestMcpResponse."""
+        return ManifestMcpResponse.model_validate(manifest_response.model_dump())
+
+
+class ManifestResponse(ManifestMcpResponse):
     # Optional fields that may be added dynamically by the API
     template_api_path: Annotated[
         Optional[str],

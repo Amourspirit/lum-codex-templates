@@ -45,6 +45,8 @@ _TEMPLATE_DIR = PkgConfig().api_info.info_templates.dir_name
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
+    if not version:
+        return Result(None, Exception("Version cannot be empty."))
     v = version.strip().lower()
     v = v.lstrip("v")
     if not v:
@@ -74,22 +76,22 @@ def _get_template_manifest(template_type: str, version: str, app_root_url: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="Manifest file not found.")
     json_content: dict = json.loads(path.read_text())
-
-    json_content["template_api_path"] = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
-    )
-    json_content["instructions_api_path"] = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
-    )
-    json_content["registry_api_path"] = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
-    )
-    json_content["manifest_api_path"] = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest"
-    )
-    json_content["executor_mode_api_path"] = (
-        f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
-    )
+    if app_root_url:
+        json_content["template_api_path"] = (
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
+        )
+        json_content["instructions_api_path"] = (
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
+        )
+        json_content["registry_api_path"] = (
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
+        )
+        json_content["manifest_api_path"] = (
+            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest"
+        )
+        json_content["executor_mode_api_path"] = (
+            f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
+        )
     return json_content
 
 
