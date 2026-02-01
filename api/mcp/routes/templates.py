@@ -1,4 +1,5 @@
-from typing import Any, Optional, Annotated
+from typing import Any, Optional
+from fastapi import HTTPException, status
 from fastmcp import FastMCP
 from fastmcp.server.context import Context
 from fastmcp.dependencies import CurrentContext
@@ -7,6 +8,7 @@ from loguru import logger
 from api.lib.descope.auth import AUTH
 from api.lib.descope.auth_config import get_settings
 from api.lib.routes import fn_template
+from api.lib.routes import fn_versions
 from api.models.descope.descope_session import DescopeSession
 from api.models.templates.artifact_submission import ArtifactSubmission
 from api.models.templates.finalize_artifact_response import FinalizeArtifactResponse
@@ -24,7 +26,12 @@ from api.models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
 )
 from api.models.templates.verify_artifact_response import VerifyArtifactResponse
-from api.models.args import ArgTemplateVersion, ArgTemplateType, ArgArtifactName
+from api.models.args import (
+    ArgTemplateVersionOptional,
+    ArgTemplateType,
+    ArgArtifactName,
+)
+from api.models.templates.templates_versions import TemplatesVersions
 
 _SETTINGS = get_settings()
 
@@ -72,6 +79,21 @@ async def _header_validate_access() -> DescopeSession:
     return session
 
 
+def _get_latest_template_version(template_type: str) -> str:
+    """
+    Helper function to get the latest version of a given template type.
+    Returns the highest version string or None if not found.
+    """
+    templates_versions = fn_versions.get_available_versions()
+    template_entry = templates_versions.templates.get(template_type)
+    if not template_entry:
+        raise ValueError(f"Template type '{template_type}' not found.")
+    if not template_entry.versions:
+        raise ValueError(f"No versions found for template type '{template_type}'.")
+    ver = template_entry.versions[0]
+    return f"v{ver}" if not ver.startswith("v") else ver
+
+
 def register_routes(mcp: FastMCP):
     @mcp.tool(
         title="Get Codex Template",
@@ -80,7 +102,7 @@ def register_routes(mcp: FastMCP):
     )
     async def get_template(
         input_type: ArgTemplateType,
-        input_ver: ArgTemplateVersion,
+        input_ver: ArgTemplateVersionOptional,
         ctx: Context = CurrentContext(),
     ) -> TemplateResponse:
         """
@@ -88,7 +110,8 @@ def register_routes(mcp: FastMCP):
 
         Args:
             input_type (ArgTemplateType): type of the template to retrieve.
-            input_ver (ArgTemplateVersion): version of the template to retrieve.
+            input_ver (ArgTemplateVersionOptional): version of the template to retrieve.
+                If not provided, the latest version for the template type will be used.
             ctx (Context): The FastMCP context object containing request information. Automatically provided.
 
         Raises:
@@ -102,17 +125,29 @@ def register_routes(mcp: FastMCP):
         try:
             session = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
 
         app_root_url = ctx_util.get_request_app_root_url(ctx=ctx, return_default=True)
 
         monad_name = get_user_monad_name(session=session)
 
         # Call the shared logic
+        if not input_ver.version:
+            try:
+                ver = _get_latest_template_version(template_type=input_type.type)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+                )
+        else:
+            ver = input_ver.version
 
         return await fn_template.get_template(
             template_type=input_type.type,
-            version=input_ver.version,
+            version=ver,
             app_root_url=app_root_url,
             monad_name=monad_name,
         )
@@ -124,7 +159,7 @@ def register_routes(mcp: FastMCP):
     )
     async def get_template_instructions(
         input_type: ArgTemplateType,
-        input_ver: ArgTemplateVersion,
+        input_ver: ArgTemplateVersionOptional,
         input_artifact_name: Optional[ArgArtifactName] = None,
         ctx: Context = CurrentContext(),
     ) -> TemplateInstructionsResponse:
@@ -136,7 +171,8 @@ def register_routes(mcp: FastMCP):
 
         Args:
             input_type (ArgTemplateType): type of the template to retrieve.
-            input_ver (ArgTemplateVersion): version of the template to retrieve.
+            input_ver (ArgTemplateVersionOptional): version of the template to retrieve.
+                If not provided, the latest version for the template type will be used.
             ctx (Context): The FastMCP context object containing request information. Automatically provided.
         Returns:
             TemplateInstructionsResponse: The processed template instructions.
@@ -150,15 +186,28 @@ def register_routes(mcp: FastMCP):
         try:
             _ = await _ctx_validate_template_access(ctx=ctx)
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
         # monad_name = get_user_monad_name(session=session)
+        if not input_ver.version:
+            try:
+                ver = _get_latest_template_version(template_type=input_type.type)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+                )
+        else:
+            ver = input_ver.version
+
         cfg = Config()
         artifact_name = None
         if input_artifact_name is not None:
             artifact_name = input_artifact_name.name
         return await fn_template.get_template_instructions(
             template_type=input_type.type,
-            version=input_ver.version,
+            version=ver,
             app_root_url=cfg.current_api_prefix,
             artifact_name=artifact_name,
         )
@@ -185,14 +234,14 @@ def register_routes(mcp: FastMCP):
     #         enabled=True,
     #     )
     @mcp.resource(
-        "resource://template_manifest/{template_type}/{version}",
+        "manifest://manifest/{template_type}/{version}",
         title="Template Manifest",
         mime_type="application/json",
         tags=set(["codex-template"]),
     )
-    async def template_manifest_route(
+    async def manifest(
         template_type: str,
-        version: str,
+        version: str = "latest",
         ctx: Context = CurrentContext(),
     ) -> ManifestMcpResponse:
         """
@@ -211,12 +260,66 @@ def register_routes(mcp: FastMCP):
         try:
             _ = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
-        # app_root_url = ctx_util.get_request_app_root_url(ctx=ctx, return_default=True)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        if version == "latest":
+            try:
+                ver = _get_latest_template_version(template_type=template_type)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+                )
+        else:
+            ver = version
 
         result = await fn_template.get_template_manifest(
             template_type=template_type,
-            version=version,
+            version=ver,
+            app_root_url="",
+        )
+        return ManifestMcpResponse.from_manifest_response(result)
+
+    @mcp.resource(
+        "manifest://manifest_latest/{template_type}",
+        title="Template Manifest Latest",
+        mime_type="application/json",
+        tags=set(["codex-template"]),
+    )
+    async def manifest_latest(
+        template_type: str,
+        ctx: Context = CurrentContext(),
+    ) -> ManifestMcpResponse:
+        """
+        Retrieves the latest manifest for a specific codex template type.
+
+        Args:
+            template_type (str): The type of the codex template (e.g., 'glyph', 'stone', 'dyad', 'node_reg', etc.).
+        Returns:
+            ManifestResponse: The validated manifest object for the requested codex template.
+        Raises:
+            Exception: on errors such as authentication failure or insufficient permissions.
+        """
+        logger.debug("get_template called")
+
+        try:
+            _ = await _header_validate_access()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        try:
+            ver = _get_latest_template_version(template_type=template_type)
+        except ValueError as e:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+        result = await fn_template.get_template_manifest(
+            template_type=template_type,
+            version=ver,
             app_root_url="",
         )
         return ManifestMcpResponse.from_manifest_response(result)
@@ -229,7 +332,7 @@ The response includes the template registry data, which determines the structure
     )
     async def get_template_registry(
         input_type: ArgTemplateType,
-        input_ver: ArgTemplateVersion,
+        input_ver: ArgTemplateVersionOptional,
         ctx: Context = CurrentContext(),
     ) -> dict[str, Any]:
         """
@@ -241,7 +344,7 @@ The response includes the template registry data, which determines the structure
 
         Args:
             input_type (ArgTemplateType): The category or type of the template registry to retrieve.
-            input_ver (ArgTemplateVersion): The specific version of the template registry.
+            input_ver (ArgTemplateVersionOptional): The specific version of the template registry.
             ctx (Context): The FastMCP context object containing request information. Automatically provided.
 
         Returns:
@@ -252,13 +355,26 @@ The response includes the template registry data, which determines the structure
         try:
             session = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        if not input_ver.version:
+            try:
+                ver = _get_latest_template_version(template_type=input_type.type)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+                )
+        else:
+            ver = input_ver.version
 
         monad_name = get_user_monad_name(session)
 
         return await fn_template.get_template_registry(
             template_type=input_type.type,
-            version=input_ver.version,
+            version=ver,
             monad_name=monad_name,
         )
 
@@ -273,7 +389,7 @@ and required permissions.""",
     )
     async def get_template_status(
         input_type: ArgTemplateType,
-        input_ver: ArgTemplateVersion,
+        input_ver: ArgTemplateVersionOptional,
         ctx: Context = CurrentContext(),
     ) -> TemplateStatusResponse:
         """
@@ -284,7 +400,7 @@ and required permissions.""",
 
         Args:
             input_type (ArgTemplateType): The category or type of the template registry to retrieve.
-            input_ver (ArgTemplateVersion): The specific version of the template registry.
+            input_ver (ArgTemplateVersionOptional): The specific version of the template registry.
             ctx (Context): The FastMCP context object containing request information. Automatically provided.
         Returns:
             TemplateStatusResponse: A response object containing availability status,
@@ -295,10 +411,23 @@ and required permissions.""",
         try:
             _ = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        if not input_ver.version:
+            try:
+                ver = _get_latest_template_version(template_type=input_type.type)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+                )
+        else:
+            ver = input_ver.version
 
         return await fn_template.get_template_status(
-            template_type=input_type.type, version=input_ver.version
+            template_type=input_type.type, version=ver
         )
 
     @mcp.tool(
@@ -335,7 +464,10 @@ correctness, and adherence to defined rules.
         try:
             _ = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
 
         app_root_url = ctx_util.get_request_app_root_url(ctx=ctx, return_default=True)
 
@@ -372,7 +504,10 @@ within the registry, and cleans metadata fields according to the registry schema
         try:
             _ = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
 
         return await fn_template.finalize_artifact(submission=submission)
 
@@ -404,10 +539,60 @@ and constructs a response with the upgraded content and metadata.""",
         try:
             _ = await _header_validate_access()
         except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
 
         app_root_url = ctx_util.get_request_app_root_url(ctx=ctx, return_default=True)
 
         return await fn_template.upgrade_to_template(
             submission=submission, app_root_url=app_root_url
         )
+
+    @mcp.tool(
+        title="Get Codex Template Versions",
+        description="""Use this tool to retrieve the available versions of codex templates.
+This function returns a structured response with template versions. The versions are sorted in descending order so that the highest version appears first.""",
+        tags=set(["codex-template"]),
+    )
+    async def get_codex_templates_versions(
+        ctx: Context = CurrentContext(),
+    ) -> TemplatesVersions:
+        try:
+            _ = await _header_validate_access()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        return fn_versions.get_available_versions()
+
+    @mcp.tool(
+        title="Get Codex Template Version",
+        description="""Use this tool to retrieve the latest version for a specific codex template type.
+The return version will have a prefix of 'v', e.g., 'v1.0'.""",
+        tags=set(["codex-template"]),
+    )
+    async def get_codex_template_latest_version(
+        input_type: ArgTemplateType,
+        ctx: Context = CurrentContext(),
+    ) -> str:
+        try:
+            _ = await _header_validate_access()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Authentication failed: {str(e)}",
+            )
+
+        versions = fn_versions.get_available_versions()
+        template_entry = versions.templates.get(input_type.type)
+        if not template_entry or not template_entry.versions:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Template type '{input_type.type}' not found.",
+            )
+        ver = template_entry.versions[0]
+        return f"v{ver}" if not ver.startswith("v") else ver
