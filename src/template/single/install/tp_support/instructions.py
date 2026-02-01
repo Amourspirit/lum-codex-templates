@@ -57,7 +57,7 @@ class Instructions:
     ) -> str:
         return f"""{entry.invocation},
 to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
-for **{{Artifact Name}}**, applying strict Codex enforcement."""
+for **{{{{artifact_name}}}}**, applying strict Codex enforcement."""
 
     def _get_ced(self, fm: FrontMatterMeta, registry: dict) -> dict[str, Any]:
         # return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
@@ -199,9 +199,8 @@ Use this declaration block to manually apply the template with full canonical en
 This template adheres to executor mode:
 
 > **{self._cbib["id"]}**
-
-📘 API Definition:  
-[`[[API_RELATIVE_URL]]/executor_modes/CANONICAL-EXECUTOR-MODE-V{self._cbib["version"]}`]([[API_ROOT_URL]]/executor_modes/CANONICAL-EXECUTOR-MODE-V{self._cbib["version"]})
+{{# jinja template will replace the following #}}
+{{{{ link_definition_block }}}}
 
 * * *
 
@@ -219,9 +218,9 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
 
 ## 🧪 Invocation
 
-**Template application scope:** `artifact_name: {{Artifact Name}}`  
 **Rendering mode:** `strict_canonical`  
 **Field enforcement:** `registry_only`
+{{{{ template_scope_block }}}}
 
 ### Invocation Prompt
 

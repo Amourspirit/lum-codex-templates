@@ -5,6 +5,7 @@ from fastmcp.server.context import Context
 from fastmcp.dependencies import CurrentContext
 from fastmcp.server.dependencies import get_http_headers
 from loguru import logger
+from api.lib.kind import ServerModeKind
 from api.lib.descope.auth import AUTH
 from api.lib.descope.auth_config import get_settings
 from api.lib.routes import fn_template
@@ -29,7 +30,7 @@ from api.models.templates.verify_artifact_response import VerifyArtifactResponse
 from api.models.args import (
     ArgTemplateVersionOptional,
     ArgTemplateType,
-    ArgArtifactName,
+    ArgArtifactNameOptional,
 )
 from api.models.templates.templates_versions import TemplatesVersions
 
@@ -160,7 +161,7 @@ def register_routes(mcp: FastMCP):
     async def get_template_instructions(
         input_type: ArgTemplateType,
         input_ver: ArgTemplateVersionOptional,
-        input_artifact_name: Optional[ArgArtifactName] = None,
+        input_artifact_name: ArgArtifactNameOptional,
         ctx: Context = CurrentContext(),
     ) -> TemplateInstructionsResponse:
         """
@@ -203,13 +204,14 @@ def register_routes(mcp: FastMCP):
 
         cfg = Config()
         artifact_name = None
-        if input_artifact_name is not None:
+        if input_artifact_name.name:
             artifact_name = input_artifact_name.name
         return await fn_template.get_template_instructions(
             template_type=input_type.type,
             version=ver,
             app_root_url=cfg.current_api_prefix,
             artifact_name=artifact_name,
+            server_mode_kind=ServerModeKind.MCP,
         )
 
     #     @mcp.tool(

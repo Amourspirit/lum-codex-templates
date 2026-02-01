@@ -1,7 +1,9 @@
 import json
 from datetime import datetime
+from math import e
 from pathlib import Path
 from typing import Any, cast
+from jinja2 import Template
 from loguru import logger
 from fastapi import APIRouter, HTTPException, status
 
@@ -36,12 +38,14 @@ from ..content_processors.pre_processors.pre_process_registry import (
 from src.template.front_mater_meta import FrontMatterMeta
 from src.config.pkg_config import PkgConfig
 from api.config import Config
+from api.lib.kind import ServerModeKind
 
 _CONFIG = Config()
+_SETTINGS = PkgConfig()
 
 router = APIRouter(prefix=f"{_CONFIG.api_v1_prefix}/templates", tags=["Templates"])
 _API_RELATIVE_URL = _CONFIG.api_v1_prefix
-_TEMPLATE_DIR = PkgConfig().api_info.info_templates.dir_name
+_TEMPLATE_DIR = _SETTINGS.api_info.info_templates.dir_name
 
 
 def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
@@ -161,10 +165,10 @@ async def get_template(
             )
         else:
             logger.debug("No monad name provided, skipping pre-processing.")
-    except Exception as e:
-        logger.error("Error during template pre-processing: {e}", e=e)
+    except Exception as error:
+        logger.error("Error during template pre-processing: {e}", e=error)
         raise HTTPException(
-            status_code=500, detail=f"Error during template pre-processing: {e}"
+            status_code=500, detail=f"Error during template pre-processing: {error}"
         )
 
     return TemplateResponse(
@@ -179,6 +183,7 @@ async def get_template_instructions(
     version: str,
     app_root_url: str,
     artifact_name: str | None = None,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateInstructionsResponse:
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -197,26 +202,73 @@ async def get_template_instructions(
         )
     fm = FrontMatterMeta(file_path=path)
 
-    content = fm.content.replace("[[API_RELATIVE_URL]]", _API_RELATIVE_URL).replace(
-        "[[API_ROOT_URL]]", app_root_url
+    if artifact_name is None:
+        has_artifact_name = False
+        artifact_name = "{Artifact Name}"
+    else:
+        has_artifact_name = True
+
+    # process Jinja2 template
+    cbib_ver = _SETTINGS.template_cbib_api.version
+
+    if server_mode_kind == ServerModeKind.API:
+        link_block = f"""📘 **API Definition:**  
+[`{_API_RELATIVE_URL}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver}`]({app_root_url}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver})"""
+    else:
+        link_block = f"""📘 **MCP Definition:**
+
+- Resource Name: `template_executor_mode`
+- Resource URI: `executor-mode://executor_mode/{cbib_ver}`"""
+
+    if artifact_name:
+        template_scope_block = (
+            f"**Template application scope:** `artifact_name: {artifact_name}`  "
+        )
+    else:
+        template_scope_block = ""
+
+    template: Template = Template(source=fm.content)
+    content = template.render(
+        link_definition_block=link_block,
+        artifact_name=artifact_name,
+        template_scope_block=template_scope_block,
     )
+
     fm.content = content
 
     if fm.has_field("canonical_executor_mode"):
-        fm.frontmatter["canonical_executor_mode"]["api_path"] = (
-            f"{app_root_url}/executor_modes/CANONICAL-EXECUTOR-MODE-V{fm.frontmatter['canonical_executor_mode']['version']}"
-        )
+        if server_mode_kind == ServerModeKind.API:
+            fm.frontmatter["canonical_executor_mode"]["api_path"] = (
+                f"{app_root_url}/executor_modes/CANONICAL-EXECUTOR-MODE-V{fm.frontmatter['canonical_executor_mode']['version']}"
+            )
+        elif server_mode_kind == ServerModeKind.MCP:
+            fm.frontmatter["canonical_executor_mode"]["resource_uri"] = (
+                f"executor-mode://executor_mode/{cbib_ver}"
+            )
+            fm.frontmatter["canonical_executor_mode"]["resource_name"] = (
+                "template_executor_mode"
+            )
 
     if fm.has_field("template_registry"):
-        fm.frontmatter["template_registry"]["api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
-        )
+        if server_mode_kind == ServerModeKind.API:
+            fm.frontmatter["template_registry"]["api_path"] = (
+                f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
+            )
+        elif server_mode_kind == ServerModeKind.MCP:
+            fm.frontmatter["template_registry"]["mcp_tool_name"] = (
+                "get_template_registry"
+            )
+
     if fm.has_field("template_info"):
-        fm.frontmatter["template_info"]["api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
-        )
+        if server_mode_kind == ServerModeKind.API:
+            fm.frontmatter["template_info"]["api_path"] = (
+                f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
+            )
+        elif server_mode_kind == ServerModeKind.MCP:
+            fm.frontmatter["template_info"]["mcp_tool_name"] = "get_template"
+
     text = fm.get_template_text()
-    if artifact_name:
+    if has_artifact_name:
         text = text.replace("{Artifact Name}", artifact_name)
 
     return TemplateInstructionsResponse(
@@ -242,10 +294,10 @@ async def get_template_registry(
             )
             return processed_reg
         logger.debug("No monad name found in session for registry pre-processing.")
-    except Exception as e:
-        logger.error("Error during registry pre-processing: {e}", e=e)
+    except Exception as error:
+        logger.error("Error during registry pre-processing: {e}", e=error)
         raise HTTPException(
-            status_code=500, detail=f"Error during registry pre-processing: {e}"
+            status_code=500, detail=f"Error during registry pre-processing: {error}"
         )
     return reg
 

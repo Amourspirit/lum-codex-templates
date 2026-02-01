@@ -59,44 +59,47 @@ def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exce
     return Result(v, None)
 
 
+async def _get_template_cbib_internal(input: ArgTemplateVersion) -> CbibResponse:
+    logger.debug("get_template_cbib called")
+    try:
+        _ = await _header_validate_access()
+    except Exception as e:
+        raise Exception(f"Authentication failed: {str(e)}")
+
+    v_result = _validate_version_str(input.version)
+    if not Result.is_success(v_result):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
+        )
+    ver = v_result.data
+    path = Path(f"api/{_TEMPLATE_DIR}/executor_modes/{ver}/cbib.json")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="CBIB file not found.")
+    json_content = json.loads(path.read_text())
+    return CbibResponse(**json_content)
+
+
 def register_routes(mcp: FastMCP):
-    async def _get_template_cbib_internal(input: ArgTemplateVersion) -> CbibResponse:
-        logger.debug("get_template_cbib called")
-        try:
-            _ = await _header_validate_access()
-        except Exception as e:
-            raise Exception(f"Authentication failed: {str(e)}")
-
-        v_result = _validate_version_str(input.version)
-        if not Result.is_success(v_result):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
-            )
-        ver = v_result.data
-        path = Path(f"api/{_TEMPLATE_DIR}/executor_modes/{ver}/cbib.json")
-        if not path.exists():
-            raise HTTPException(status_code=404, detail="CBIB file not found.")
-        json_content = json.loads(path.read_text())
-        return CbibResponse(**json_content)
-
-    @mcp.tool(
-        title="Get Template CBIB",
-        description="Retrieve the CBIB file for a specific executor mode version that is use in Codex templates, Usually the `resource://default_cbib` resource can be used instead unless a specific version is needed.",
+    @mcp.resource(
+        "executor-mode://executor_mode/{version}",
+        title="Get Template Executor Mode (CBIB) by Version",
+        mime_type="application/json",
+        description="Use this executor_mode resource when retrieving the Executor Mode (CBIB) file for a specific executor mode version that is used in Codex templates. Usually the `executor_mode://default_executor_mode` resource can be used instead unless a specific version is needed.",
         tags=set(["codex-template", "executor-modes"]),
     )
-    async def get_template_cbib(
-        input: ArgTemplateVersion, ctx: Context = CurrentContext()
+    async def template_executor_mode(
+        version: str, ctx: Context = CurrentContext()
     ) -> CbibResponse:
-        return await _get_template_cbib_internal(input)
+        return await _get_template_cbib_internal(ArgTemplateVersion(version=version))
 
     @mcp.resource(
-        "resource://default_cbib",
-        title="Default CBIB",
+        "executor-mode://default_executor_mode",
+        title="Default Executor Mode (CBIB)",
         mime_type="application/json",
         tags=set(["codex-template", "executor-modes"]),
-        description="Use this resource when the CBIB for applying executor mode to codex templates.",
+        description="Use this executor_mode resource when the for applying default executor mode to codex templates.",
     )
-    async def default_template_cbib(
+    async def default_template_executor_mode(
         ctx: Context = CurrentContext(),
     ) -> CbibResponse:
         default_version = _PKG_CONFIG.template_cbib_api.version
