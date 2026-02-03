@@ -1,8 +1,9 @@
 from typing import Annotated, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UpgradeArtifactResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
     status: Annotated[
         int,
         Field(
@@ -18,7 +19,7 @@ class UpgradeArtifactResponse(BaseModel):
             description="Indicates if the upgraded template requires a field being to interact.",
         ),
     ]
-    template_content: Annotated[
+    content: Annotated[
         str,
         Field(
             title="Template Content",
@@ -65,6 +66,49 @@ class UpgradeArtifactResponse(BaseModel):
         ),
     ]
 
+    extra_fields: Annotated[
+        list[str],
+        Field(
+            default_factory=list,
+            title="Extra Fields",
+            description="List of extra fields found not included in registry.",
+        ),
+    ]
+    content_media_type: Annotated[
+        Optional[str],
+        Field(
+            default="text/markdown",
+            description="Media type (contentMediaType) of the content, default is 'text/markdown'.",
+        ),
+    ] = "text/markdown"
+    content_has_front_matter: Annotated[
+        Optional[bool],
+        Field(
+            default=True,
+            description="Indicates if the content includes Front-Matter, default is True.",
+        ),
+    ] = True
+
+
+class UpgradeArtifactMcpResponse(UpgradeArtifactResponse):
+    pass
+
+    @staticmethod
+    def from_artifact_response(
+        response: UpgradeArtifactResponse,
+    ) -> "UpgradeArtifactMcpResponse":
+        """
+        Static Method: Creates an instance of UpgradeArtifactMcpResponse from an UpgradeArtifactResponse object.
+        Args:
+            response (UpgradeArtifactResponse): The original upgrade artifact response to convert.
+        Returns:
+            UpgradeArtifactMcpResponse: A new instance populated with data from the original response.
+        """
+
+        return UpgradeArtifactMcpResponse(**response.model_dump())
+
+
+class UpgradeArtifactApiResponse(UpgradeArtifactResponse):
     template_api_path: Annotated[
         Optional[str],
         Field(
@@ -101,11 +145,16 @@ class UpgradeArtifactResponse(BaseModel):
         ),
     ] = None
 
-    extra_fields: Annotated[
-        list[str],
-        Field(
-            default_factory=list,
-            title="Extra Fields",
-            description="List of extra fields found not included in registry.",
-        ),
-    ]
+    @staticmethod
+    def from_artifact_response(
+        response: UpgradeArtifactResponse,
+    ) -> "UpgradeArtifactApiResponse":
+        """
+        Static Method: Creates an instance of UpgradeArtifactApiResponse from an UpgradeArtifactResponse object.
+        Args:
+            response (UpgradeArtifactResponse): The original upgrade artifact response to convert.
+        Returns:
+            UpgradeArtifactApiResponse: A new instance populated with data from the original response.
+        """
+
+        return UpgradeArtifactApiResponse(**response.model_dump())

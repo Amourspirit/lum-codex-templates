@@ -25,7 +25,11 @@ class ConfigCache:
         """Get the path to the API templates directory."""
         key = "api_templates_path"
         if key not in self._cache:
-            p = self.get_api_path() / self.config.api_info.info_templates.dir_name
+            p = (
+                self.get_api_path()
+                / self.config.api_info.info_templates.dir_name
+                / "templates"
+            )
             self._cache[key] = p
         return self._cache[key]
 
@@ -33,7 +37,11 @@ class ConfigCache:
         """Get the path to the API templates cbib directory."""
         key = "api_cbib_path"
         if key not in self._cache:
-            p = self.get_api_templates_path() / "executor_modes"
+            p = (
+                self.get_api_path()
+                / self.config.api_info.info_templates.dir_name
+                / "executor_modes"
+            )
             self._cache[key] = p
         return self._cache[key]
 

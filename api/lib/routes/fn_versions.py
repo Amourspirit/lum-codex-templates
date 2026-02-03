@@ -6,12 +6,13 @@ from functools import lru_cache
 
 def _get_base_path() -> Path:
     config = PkgConfig()
-    base_path = (
-        config.root_path
-        / config.api_info.base_dir
-        / config.api_info.info_templates.dir_name  # codex-templates
-    )
-    return base_path
+    return config.config_cache.get_api_templates_path()
+    # base_path = (
+    #     config.root_path
+    #     / config.api_info.base_dir
+    #     / config.api_info.info_templates.dir_name  # codex-templates
+    # )
+    # return base_path
 
 
 @lru_cache()
@@ -53,3 +54,31 @@ def get_available_versions() -> TemplatesVersions:
             versions=versions,
         )
     return templates_versions
+
+
+def get_available_template_types() -> list[str]:
+    """
+    Retrieves a list of all available template types.
+    This function scans the available versions and extracts the unique keys
+    representing the different types of templates supported.
+    Returns:
+        list[str]: A list of strings identifying the available template types.
+    """
+
+    versions = get_available_versions()
+    return sorted(versions.templates.keys())
+
+
+def get_latest_version_for_template(template_type: str) -> str | None:
+    """
+    Retrieves the latest version string for a given template type.
+    Args:
+        template_type (str): The type of the template for which to get the latest version.
+    Returns:
+        str | None: The latest version string if available, otherwise None.
+    """
+    versions = get_available_versions()
+    template_entry = versions.templates.get(template_type)
+    if template_entry and template_entry.versions:
+        return template_entry.versions[0]  # Return the highest version
+    return None

@@ -7,9 +7,11 @@ from ..models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
 )
 from ..models.templates.template_status_response import TemplateStatusResponse
-from ..models.templates.verify_artifact_response import VerifyArtifactResponse
+from ..models.templates.verify_artifact_response import VerifyArtifactApiResponse
 from ..models.templates.finalize_artifact_response import FinalizeArtifactResponse
-from ..models.templates.upgrade_artifact_response import UpgradeArtifactResponse
+from ..models.templates.upgrade_artifact_response import (
+    UpgradeArtifactApiResponse,
+)
 from ..models.templates.manifest_response import ManifestResponse
 from ..models.descope.descope_session import DescopeSession
 from ..responses.markdown_response import MarkdownResponse
@@ -389,7 +391,7 @@ async def get_template_status(
 
 @router.post(
     "/verify",
-    response_model=VerifyArtifactResponse,
+    response_model=VerifyArtifactApiResponse,
     operation_id="post_verify_artifact",
     description="Verify the metadata fields of a template artifact against a registered schema.",
     summary="Verify template artifact metadata fields",
@@ -453,7 +455,7 @@ async def verify_artifact(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
-    return await fn_template.verify_artifact(
+    return await fn_template.verify_api_artifact(
         submission=submission, app_root_url=app_root_url
     )
 
@@ -523,7 +525,7 @@ async def finalize_artifact(
 
 @router.post(
     "/upgrade",
-    response_model=UpgradeArtifactResponse,
+    response_model=UpgradeArtifactApiResponse,
     operation_id="post_upgrade_artifact",
     description="Upgrade an artifact to a new template version by applying necessary transformations.",
     summary="Upgrade template artifact to new version",
@@ -577,6 +579,6 @@ async def upgrade_to_template(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
-    return await fn_template.upgrade_to_template(
+    return await fn_template.upgrade_to_api_template(
         submission=submission, app_root_url=app_root_url
     )

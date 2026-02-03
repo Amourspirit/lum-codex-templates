@@ -1,6 +1,6 @@
 import json
-from pathlib import Path
 from fastmcp import FastMCP
+from fastmcp.exceptions import ResourceError
 from fastmcp.server.context import Context
 from fastmcp.dependencies import CurrentContext
 from fastmcp.server.dependencies import get_http_headers
@@ -14,9 +14,10 @@ from src.config.pkg_config import PkgConfig
 from api.models.args import ArgTemplateVersion
 
 
-_PKG_CONFIG = PkgConfig()
+_SETTINGS = PkgConfig()
 
-_TEMPLATE_DIR = _PKG_CONFIG.api_info.info_templates.dir_name
+# _TEMPLATE_DIR = _SETTINGS.api_info.info_templates.dir_name
+_CBIB_PATH = _SETTINGS.config_cache.get_api_cbib_path()
 
 
 async def _header_validate_access() -> DescopeSession:
@@ -72,9 +73,9 @@ async def _get_template_cbib_internal(input: ArgTemplateVersion) -> CbibResponse
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    path = Path(f"api/{_TEMPLATE_DIR}/executor_modes/{ver}/cbib.json")
+    path = _CBIB_PATH / ver / "cbib.json"
     if not path.exists():
-        raise HTTPException(status_code=404, detail="CBIB file not found.")
+        raise ResourceError("CBIB file not found.")
     json_content = json.loads(path.read_text())
     return CbibResponse(**json_content)
 
@@ -86,6 +87,7 @@ def register_routes(mcp: FastMCP):
         mime_type="application/json",
         description="Use this executor_mode resource when retrieving the Executor Mode (CBIB) file for a specific executor mode version that is used in Codex templates. Usually the `executor_mode://default_executor_mode` resource can be used instead unless a specific version is needed.",
         tags=set(["codex-template", "executor-modes"]),
+        annotations={"readOnlyHint": True, "idempotentHint": True},
     )
     async def template_executor_mode(
         version: str, ctx: Context = CurrentContext()
@@ -98,16 +100,15 @@ def register_routes(mcp: FastMCP):
         mime_type="application/json",
         tags=set(["codex-template", "executor-modes"]),
         description="Use this executor_mode resource when the for applying default executor mode to codex templates.",
+        annotations={"readOnlyHint": True, "idempotentHint": True},
     )
     async def default_template_executor_mode(
         ctx: Context = CurrentContext(),
     ) -> CbibResponse:
-        default_version = _PKG_CONFIG.template_cbib_api.version
+        default_version = _SETTINGS.template_cbib_api.version
         v_result = _validate_version_str(f"v{default_version}")
         if not Result.is_success(v_result):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
-            )
+            raise ResourceError(str(v_result.error))
         ver = v_result.data
 
         logger.debug("resource://default_cbib: Default CBIB version: {v}", v=ver)

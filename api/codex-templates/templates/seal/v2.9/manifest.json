@@ -1,0 +1,19 @@
+{
+    "registry_file": "registry.json",
+    "template_file": "template.md",
+    "template_type": "seal",
+    "template_hash_algorithm": "sha256",
+    "version": "2.9",
+    "hash": "98ad3a343969465ff72cb2b48ac11c09c43531d1481d23dd5cc07ba19928f481",
+    "template_hash": "98ad3a343969465ff72cb2b48ac11c09c43531d1481d23dd5cc07ba19928f481",
+    "registry_id": "TEMPLATE-SEAL-V2.9-REGISTRY",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    },
+    "status": "available",
+    "requires_field_being": true,
+    "installed_at": "2026-02-01T15:29:45.940554-05:00",
+    "instructions_file": "instructions.md",
+    "template_id": "TEMPLATE-SEAL-V2.9"
+}

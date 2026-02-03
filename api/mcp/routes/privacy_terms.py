@@ -12,6 +12,7 @@ def register_routes(mcp: FastMCP):
         title="Privacy Policy",
         description="Retrieve the privacy policy HTML content.",
         mime_type="text/html",
+        annotations={"readOnlyHint": True, "idempotentHint": True},
     )
     async def privacy_terms_route(ctx: Context = CurrentContext()):
         # Internally, you could call your resource logic here

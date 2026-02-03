@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from math import e
 from pathlib import Path
 from typing import Any, cast
 from jinja2 import Template
@@ -8,8 +7,8 @@ from loguru import logger
 from fastapi import APIRouter, HTTPException, status
 
 # from fastapi_cache.decorator import cache
+import mcp
 from pydantic import ValidationError
-
 
 # from ..routes.limiter import limiter
 from ...models.templates.artifact_submission import ArtifactSubmission
@@ -17,9 +16,17 @@ from ...models.templates.upgrade_to_template_submission import (
     UpgradeToTemplateSubmission,
 )
 from ...models.templates.template_status_response import TemplateStatusResponse
-from ...models.templates.verify_artifact_response import VerifyArtifactResponse
+from ...models.templates.verify_artifact_response import (
+    VerifyArtifactApiResponse,
+    VerifyArtifactMcpResponse,
+    VerifyArtifactResponse,
+)
 from ...models.templates.finalize_artifact_response import FinalizeArtifactResponse
-from ...models.templates.upgrade_artifact_response import UpgradeArtifactResponse
+from ...models.templates.upgrade_artifact_response import (
+    UpgradeArtifactMcpResponse,
+    UpgradeArtifactResponse,
+    UpgradeArtifactApiResponse,
+)
 from ...models.templates.manifest_response import ManifestResponse
 from ...models.templates.template_response import TemplateResponse
 from ...models.templates.template_instruction_response import (
@@ -39,24 +46,38 @@ from src.template.front_mater_meta import FrontMatterMeta
 from src.config.pkg_config import PkgConfig
 from api.config import Config
 from api.lib.kind import ServerModeKind
+from api.lib.exceptions import (
+    VersionError,
+    VersionLatestError,
+    VersionEmptyError,
+    VersionFormatError,
+    VersionNoneError,
+)
+from . import fn_versions
 
 _CONFIG = Config()
 _SETTINGS = PkgConfig()
 
 router = APIRouter(prefix=f"{_CONFIG.api_v1_prefix}/templates", tags=["Templates"])
 _API_RELATIVE_URL = _CONFIG.api_v1_prefix
-_TEMPLATE_DIR = _SETTINGS.api_info.info_templates.dir_name
+_TEMPLATE_DIR = _SETTINGS.config_cache.get_api_templates_path()
 
 
-def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exception]:
+def _validate_version_str(
+    version: str | None,
+) -> Result[str, None] | Result[None, VersionError]:
+    if version is None:
+        return Result(None, VersionNoneError("Version cannot be None."))
     if not version:
-        return Result(None, Exception("Version cannot be empty."))
+        return Result(None, VersionEmptyError("Version cannot be empty."))
     v = version.strip().lower()
+    if v == "latest":
+        return Result(None, VersionLatestError("Version 'latest' is not allowed here."))
     v = v.lstrip("v")
     if not v:
-        return Result(None, Exception("Version cannot be empty."))
+        return Result(None, VersionEmptyError("Version cannot be empty."))
     if not v.replace(".", "").isdigit():
-        return Result(None, Exception("Invalid version format."))
+        return Result(None, VersionFormatError("Invalid version format."))
     if v.isdigit():
         v = f"{v}.0"
     if not v.startswith("v"):
@@ -64,7 +85,12 @@ def _validate_version_str(version: str) -> Result[str, None] | Result[None, Exce
     return Result(v, None)
 
 
-def _get_template_manifest(template_type: str, version: str, app_root_url: str):
+def _get_template_manifest(
+    template_type: str,
+    version: str,
+    app_root_url: str,
+    server_mode_kind: ServerModeKind,
+) -> dict[str, Any]:
     logger.debug(
         "Fetching manifest for template_type: {template_type}, version: {version}",
         template_type=template_type,
@@ -75,23 +101,23 @@ def _get_template_manifest(template_type: str, version: str, app_root_url: str):
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
 
-    path = Path.cwd() / f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest.json"
+    path = _TEMPLATE_DIR / template_type / ver / "manifest.json"
 
     if not path.exists():
         raise HTTPException(status_code=404, detail="Manifest file not found.")
     json_content: dict = json.loads(path.read_text())
-    if app_root_url:
+    if server_mode_kind == ServerModeKind.API and app_root_url:
         json_content["template_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
+            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}"
         )
         json_content["instructions_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
+            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/instructions"
         )
         json_content["registry_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
+            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/registry"
         )
         json_content["manifest_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/manifest"
+            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/manifest"
         )
         json_content["executor_mode_api_path"] = (
             f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
@@ -107,7 +133,7 @@ def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
         )
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
-    path = Path() / f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/registry.json"
+    path = _TEMPLATE_DIR / template_type / ver / "registry.json"
     if not path.exists():
         logger.error("Registry file not found at path: {path}", path=path)
         raise HTTPException(status_code=404, detail="Registry file not found.")
@@ -120,6 +146,7 @@ async def get_template(
     version: str,
     app_root_url: str,
     monad_name: str | None = None,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateResponse:
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -130,7 +157,7 @@ async def get_template(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    path = Path(f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/template.md")
+    path = _TEMPLATE_DIR / template_type / ver / "template.md"
     if not path.exists():
         logger.error("Template file not found at path: {path}", path=path)
         raise HTTPException(
@@ -194,7 +221,7 @@ async def get_template_instructions(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    path = Path(f"api/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions.md")
+    path = _TEMPLATE_DIR / template_type / ver / "instructions.md"
     if not path.exists():
         logger.error("Instructions file not found at path: {path}", path=path)
         raise HTTPException(
@@ -252,7 +279,7 @@ async def get_template_instructions(
     if fm.has_field("template_registry"):
         if server_mode_kind == ServerModeKind.API:
             fm.frontmatter["template_registry"]["api_path"] = (
-                f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
+                f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/registry"
             )
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["template_registry"]["mcp_tool_name"] = (
@@ -262,7 +289,7 @@ async def get_template_instructions(
     if fm.has_field("template_info"):
         if server_mode_kind == ServerModeKind.API:
             fm.frontmatter["template_info"]["api_path"] = (
-                f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}"
+                f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}"
             )
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["template_info"]["mcp_tool_name"] = "get_template"
@@ -282,6 +309,7 @@ async def get_template_registry(
     template_type: str,
     version: str,
     monad_name: str | None = None,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> dict[str, Any]:
     reg = _get_template_registry(template_type, version)
 
@@ -303,7 +331,9 @@ async def get_template_registry(
 
 
 async def get_template_status(
-    template_type: str, version: str
+    template_type: str,
+    version: str,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateStatusResponse:
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -330,7 +360,10 @@ async def get_template_status(
 
 
 async def get_template_manifest(
-    template_type: str, version: str, app_root_url: str
+    template_type: str,
+    version: str,
+    app_root_url: str,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> ManifestResponse:
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
@@ -341,14 +374,14 @@ async def get_template_manifest(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(v_result.error)
         )
     ver = v_result.data
-    results_dict = _get_template_manifest(template_type, ver, app_root_url)
+    results_dict = _get_template_manifest(
+        template_type, ver, app_root_url, server_mode_kind=server_mode_kind
+    )
     manifest = ManifestResponse(**results_dict)
     return manifest
 
 
-async def verify_artifact(
-    submission: ArtifactSubmission, app_root_url: str
-) -> VerifyArtifactResponse:
+def _verify_artifact(submission: ArtifactSubmission) -> VerifyArtifactResponse:
     content = submission.template_content.strip()
     if not content:
         logger.error("Template frontmatter is empty.")
@@ -371,8 +404,8 @@ async def verify_artifact(
             detail="Field template_version is not specified in frontmatter.",
         )
 
-    registry_path = Path(
-        f"api/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}/registry.json"
+    registry_path = (
+        _TEMPLATE_DIR / fm.template_type / f"v{fm.template_version}" / "registry.json"
     )
     if not registry_path.is_absolute():
         registry_path = Path.cwd() / registry_path
@@ -397,10 +430,6 @@ async def verify_artifact(
             detail=str(result.error),
         )
 
-    template_api_path = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}"
-    )
-
     dt_now = datetime.now().astimezone()
     default_result = {
         "status": 200,
@@ -410,12 +439,9 @@ async def verify_artifact(
         "registry_id": registry.get("registry_id"),
         "registry_version": registry.get("registry_version"),
         "field_validation": "pass",
-        "template_api_path": template_api_path,
-        "registry_api_path": f"{template_api_path}/registry",
-        "manifest_api_path": f"{template_api_path}/manifest",
-        "instructions_api_path": f"{template_api_path}/instructions",
         "verified_at": dt_now.isoformat(),
     }
+
     data = result.data
     if not data:
         raise HTTPException(
@@ -470,7 +496,33 @@ async def verify_artifact(
     return result
 
 
-async def finalize_artifact(submission: ArtifactSubmission) -> FinalizeArtifactResponse:
+async def verify_mcp_artifact(
+    submission: ArtifactSubmission,
+) -> VerifyArtifactMcpResponse:
+    artifact_response = _verify_artifact(submission)
+    default_result = artifact_response.model_dump()
+    return VerifyArtifactMcpResponse(**default_result)
+
+
+async def verify_api_artifact(
+    submission: ArtifactSubmission,
+    app_root_url: str,
+) -> VerifyArtifactApiResponse:
+    artifact_response = _verify_artifact(submission)
+    default_result = artifact_response.model_dump()
+    template_api_path = f"{app_root_url}/{_TEMPLATE_DIR}/{artifact_response.template_type}/v{artifact_response.template_version}"
+
+    default_result["template_api_path"] = template_api_path
+    default_result["registry_api_path"] = f"{template_api_path}/registry"
+    default_result["manifest_api_path"] = f"{template_api_path}/manifest"
+    default_result["instructions_api_path"] = f"{template_api_path}/instructions"
+    return VerifyArtifactApiResponse(**default_result)
+
+
+async def finalize_artifact(
+    submission: ArtifactSubmission,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
+) -> FinalizeArtifactResponse:
     content = submission.template_content.strip()
     if not content:
         logger.error("Template frontmatter is empty.")
@@ -492,8 +544,8 @@ async def finalize_artifact(submission: ArtifactSubmission) -> FinalizeArtifactR
             detail="Field template_version is not specified in frontmatter.",
         )
 
-    registry_path = Path(
-        f"api/{_TEMPLATE_DIR}/{fm.template_type}/v{fm.template_version}/registry.json"
+    registry_path = (
+        _TEMPLATE_DIR / fm.template_type / f"v{fm.template_version}" / "registry.json"
     )
     if not registry_path.is_absolute():
         registry_path = Path.cwd() / registry_path
@@ -511,7 +563,7 @@ async def finalize_artifact(submission: ArtifactSubmission) -> FinalizeArtifactR
     result = clean_instance.cleanup()
 
     default_result = {
-        "template_content": result.get_template_text(),
+        "content": result.get_template_text(),
         "status": status.HTTP_200_OK,
     }
 
@@ -526,24 +578,19 @@ async def finalize_artifact(submission: ArtifactSubmission) -> FinalizeArtifactR
     return finalize_result
 
 
-async def upgrade_to_template(
-    submission: UpgradeToTemplateSubmission, app_root_url: str
+def _upgrade_to_template(
+    submission: UpgradeToTemplateSubmission,
+    app_root_url: str,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> UpgradeArtifactResponse:
     contents = submission.markdown_content.strip()
-    v_result = _validate_version_str(submission.new_version)
-    if not Result.is_success(v_result):
-        logger.error(
-            "Version validation failed: {v_result_error}", v_result_error=v_result.error
-        )
-        raise HTTPException(status_code=400, detail=str(v_result.error))
-    new_version = v_result.data
-
     if not contents:
         logger.error("Template contents are empty.")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Template contents cannot be empty.",
         )
+
     try:
         upgrade_fm = FrontMatterMeta.from_content(contents)
     except Exception as e:
@@ -552,6 +599,40 @@ async def upgrade_to_template(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error parsing template contents: {e}",
         )
+
+    v_result = _validate_version_str(submission.new_version)
+    if Result.is_failure(v_result):
+        if isinstance(
+            v_result.error, (VersionLatestError, VersionNoneError, VersionEmptyError)
+        ):
+            versions = fn_versions.get_available_versions().templates
+            latest_version = versions.get(upgrade_fm.template_type)
+            if not latest_version:
+                logger.error(
+                    "No available versions found for template_type: {template_type}",
+                    template_type=upgrade_fm.template_type,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"No available versions found for template_type: {upgrade_fm.template_type}",
+                )
+            latest_version_for_template = fn_versions.get_latest_version_for_template(
+                upgrade_fm.template_type
+            )
+            if latest_version_for_template is None:
+                upgrade_fm.template_version = ""
+            else:
+                submission.new_version = latest_version_for_template
+                upgrade_fm.template_version = latest_version_for_template
+
+    v_result = _validate_version_str(submission.new_version)
+    if not Result.is_success(v_result):
+        logger.error(
+            "Version validation failed: {v_result_error}", v_result_error=v_result.error
+        )
+        raise HTTPException(status_code=400, detail=str(v_result.error))
+    new_version = v_result.data
+
     if not upgrade_fm.template_type:
         logger.error("Field template_type is not specified in frontmatter.")
         raise HTTPException(
@@ -560,9 +641,7 @@ async def upgrade_to_template(
         )
 
     try:
-        path = Path(
-            f"api/{_TEMPLATE_DIR}/{upgrade_fm.template_type}/{new_version}/template.md"
-        )
+        path = _TEMPLATE_DIR / upgrade_fm.template_type / new_version / "template.md"
         if not path.exists():
             logger.error("Template file not found at path: {path}", path=path)
             raise HTTPException(status_code=404, detail="Template file not found.")
@@ -587,9 +666,6 @@ async def upgrade_to_template(
             detail=f"Error applying upgrade: {e}",
         )
 
-    manifest = _get_template_manifest(
-        upgrade_fm.template_type, new_version, app_root_url
-    )
     dt_now = datetime.now().astimezone()
     result = {
         "status": status.HTTP_200_OK,
@@ -597,24 +673,86 @@ async def upgrade_to_template(
         "template_id": upgrade_fm.template_id,
         "template_version": new_version,
         "requires_field_being": True,
-        "template_content": upgraded_fm.get_template_text(),
+        "content": upgraded_fm.get_template_text(),
+        "content_media_type": "text/markdown",
+        "content_has_front_matter": True,
         "artifact_name": submission.artifact_name.strip(),
         "upgraded_at": dt_now.isoformat(),
-        "template_api_path": manifest["template_api_path"],
-        "registry_api_path": manifest["registry_api_path"],
-        "manifest_api_path": manifest["manifest_api_path"],
-        "instructions_api_path": manifest["instructions_api_path"],
-        "executor_mode_api_path": manifest["executor_mode_api_path"],
         "extra_fields": extra_fields,
     }
 
     try:
-        upgrade_result = UpgradeArtifactResponse(**result)
+        upgrade_result = UpgradeArtifactMcpResponse(**result)
     except ValidationError as e:
         logger.error("Validation error in UpgradeArtifactResponse: {error}", error=e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Validation error in UpgradeArtifactResponse: {e}",
+        )
+
+    return upgrade_result
+
+
+async def upgrade_to_api_template(
+    submission: UpgradeToTemplateSubmission,
+    app_root_url: str,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
+) -> UpgradeArtifactApiResponse:
+    try:
+        artifact_response = _upgrade_to_template(
+            submission, app_root_url, server_mode_kind=server_mode_kind
+        )
+        mcp_result_model = UpgradeArtifactApiResponse.from_artifact_response(
+            artifact_response
+        )
+        mcp_result = mcp_result_model.model_dump()
+
+        manifest = _get_template_manifest(
+            mcp_result_model.template_type,
+            mcp_result_model.template_version,
+            app_root_url,
+            server_mode_kind=server_mode_kind,
+        )
+
+        manifest_fields = {
+            "template_api_path",
+            "registry_api_path",
+            "manifest_api_path",
+            "instructions_api_path",
+            "executor_mode_api_path",
+        }
+        for field in manifest_fields:
+            if field in manifest:
+                mcp_result[field] = manifest[field]
+        upgrade_result = UpgradeArtifactApiResponse(**mcp_result)
+    except ValidationError as e:
+        logger.error("Error in UpgradeArtifactApiResponse: {error}", error=e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Validation error in UpgradeArtifactApiResponse: {e}",
+        )
+
+    return upgrade_result
+
+
+async def upgrade_to_mcp_template(
+    submission: UpgradeToTemplateSubmission,
+    app_root_url: str,
+    server_mode_kind: ServerModeKind = ServerModeKind.API,
+) -> UpgradeArtifactMcpResponse:
+    try:
+        artifact_response = _upgrade_to_template(
+            submission, app_root_url, server_mode_kind=server_mode_kind
+        )
+
+        upgrade_result = UpgradeArtifactMcpResponse.from_artifact_response(
+            artifact_response
+        )
+    except ValidationError as e:
+        logger.error("Error in UpgradeArtifactMcpResponse: {error}", error=e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Validation error in UpgradeArtifactMcpResponse: {e}",
         )
 
     return upgrade_result

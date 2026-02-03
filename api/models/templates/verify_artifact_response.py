@@ -53,42 +53,6 @@ class VerifyArtifactResponse(BaseModel):
         ),
     ] = "pass"
 
-    template_api_path: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Template API Path",
-            description="API path for the template.",
-        ),
-    ] = None
-
-    registry_api_path: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Registry API Path",
-            description="API path for the registry.",
-        ),
-    ] = None
-
-    manifest_api_path: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Manifest API Path",
-            description="API path for the manifest.",
-        ),
-    ] = None
-
-    instructions_api_path: Annotated[
-        Optional[str],
-        Field(
-            default=None,
-            title="Instructions API Path",
-            description="API path for the instructions.",
-        ),
-    ] = None
-
     registry_version: Annotated[
         Optional[str],
         Field(
@@ -131,3 +95,79 @@ class VerifyArtifactResponse(BaseModel):
             description="List of rule errors found during verification.",
         ),
     ]
+
+
+class VerifyArtifactMcpResponse(VerifyArtifactResponse):
+    @staticmethod
+    def from_verify_artifact_response(
+        response: VerifyArtifactResponse,
+    ) -> "VerifyArtifactMcpResponse":
+        """
+        Static Method: Creates a VerifyArtifactMcpResponse instance from a VerifyArtifactResponse object.
+        This method converts a VerifyArtifactResponse into a VerifyArtifactMcpResponse by
+        dumping the model's data and unpacking it as keyword arguments to the constructor.
+
+        Args:
+            response (VerifyArtifactResponse): The response object to convert from.
+
+        Returns:
+            VerifyArtifactMcpResponse: The converted MCP response object.
+        """
+
+        return VerifyArtifactMcpResponse(**response.model_dump())
+
+
+class VerifyArtifactApiResponse(VerifyArtifactResponse):
+    template_api_path: Annotated[
+        Optional[str],
+        Field(
+            default=None,
+            title="Template API Path",
+            description="API path for the template.",
+        ),
+    ] = None
+
+    registry_api_path: Annotated[
+        Optional[str],
+        Field(
+            default=None,
+            title="Registry API Path",
+            description="API path for the registry.",
+        ),
+    ] = None
+
+    manifest_api_path: Annotated[
+        Optional[str],
+        Field(
+            default=None,
+            title="Manifest API Path",
+            description="API path for the manifest.",
+        ),
+    ] = None
+
+    instructions_api_path: Annotated[
+        Optional[str],
+        Field(
+            default=None,
+            title="Instructions API Path",
+            description="API path for the instructions.",
+        ),
+    ] = None
+
+    @staticmethod
+    def from_verify_artifact_response(
+        response: VerifyArtifactResponse,
+    ) -> "VerifyArtifactApiResponse":
+        """
+        Static Method: Converts a VerifyArtifactResponse object into a VerifyArtifactApiResponse object.
+        This method takes a VerifyArtifactResponse instance, dumps its model data,
+        and uses it to instantiate a new VerifyArtifactApiResponse object.
+
+        Args:
+            response (VerifyArtifactResponse): The response object to be converted.
+
+        Returns:
+            VerifyArtifactApiResponse: The resulting API response object created from the input response.
+        """
+
+        return VerifyArtifactApiResponse(**response.model_dump())
