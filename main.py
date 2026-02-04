@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 from loguru import logger
 
 # import httpx
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import JSONResponse
 from fastapi import Depends, FastAPI, Request, Security
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
@@ -27,6 +29,7 @@ from api.routes import templates
 from api.routes.descope import route_protection
 from src.config.pkg_config import PkgConfig
 from api.mcp.servers import templates_mcp
+
 # from api.mcp.servers import echo_mcp
 
 if env_info.API_ENV_MODE == "prod":
@@ -357,28 +360,37 @@ app.mount("/templates", mcp_templates_app)  # /templates/mcp
 
 
 # @app.route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
-# async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
-#     base_url = str(request.base_url).rstrip("/")
-#     # Normalize to localhost in local dev mode to match MCP Inspector expectations
-#     if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
-#         base_url = base_url.replace("127.0.0.1", "localhost")
+async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
+    base_url = str(request.base_url).rstrip("/")
+    # Normalize to localhost in local dev mode to match MCP Inspector expectations
+    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
+        base_url = base_url.replace("127.0.0.1", "localhost")
 
-#     return JSONResponse(
-#         {
-#             "resource": base_url,
-#             "authorization_servers": [_SETTINGS.authorization_endpoint],
-#             "scopes_supported": [
-#                 "openid",
-#                 "email",
-#                 "profile",
-#                 "login_access",
-#                 "api.context:read",
-#                 "mcp.template:read",
-#             ],
-#             "bearer_methods_supported": ["header", "body"],
-#         }
-#     )
+    return JSONResponse(
+        {
+            "resource": base_url,
+            "authorization_servers": [_SETTINGS.authorization_endpoint],
+            "scopes_supported": [
+                "openid",
+                "email",
+                "profile",
+                "login_access",
+                "api.context:read",
+                "mcp.template:read",
+            ],
+            "bearer_methods_supported": ["header", "body"],
+        }
+    )
 
+
+app.add_route(
+    "/.well-known/oauth-protected-resource", oauth_metadata, methods=["GET", "OPTIONS"]
+)
+app.add_route(
+    "/.well-known/oauth-protected-resource/templates/mcp",
+    oauth_metadata,
+    methods=["GET", "OPTIONS"],
+)
 
 if __name__ == "__main__":
     if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
