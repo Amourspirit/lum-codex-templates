@@ -27,7 +27,7 @@ from api.routes import templates
 from api.routes.descope import route_protection
 from src.config.pkg_config import PkgConfig
 from api.mcp.servers import templates_mcp
-from api.mcp.servers import echo_mcp
+# from api.mcp.servers import echo_mcp
 
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
@@ -322,31 +322,24 @@ async def root():
 
 # mcp = FastMCP(name="Codex Templates MCP Server")
 mcp_templates = templates_mcp.init_mcp()
-mcp_templates_app = mcp_templates.http_app(path="", transport="http")
-mcp_echo_app = echo_mcp.mcp.http_app(path="", transport="http")
+mcp_templates_app = mcp_templates.http_app(path="/mcp", transport="http")
+# mcp_echo_app = echo_mcp.mcp.http_app(path="", transport="http")
 
 
 @asynccontextmanager
 async def global_lifespan(app: FastAPI):
     async with lifespan(app):
         async with mcp_templates_app.lifespan(app):
+            # async with mcp_echo_app.lifespan(app):
+            #     yield
             logger.remove()
             logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
             logger.info(
                 "Application startup complete. Logging Level is set to {log_level}",
                 log_level=_SETTINGS.LOG_LEVEL,
             )
-            # async with mcp_echo_app.lifespan(app):
-            #     logger.remove()
-            #     logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
-            #     logger.info(
-            #         "Application startup complete. Logging Level is set to {log_level}",
-            #         log_level=_SETTINGS.LOG_LEVEL,
-            #     )
-            #     yield
             yield
             # Clean up resources if needed
-        yield
 
 
 app = FastAPI(
@@ -354,13 +347,13 @@ app = FastAPI(
     openapi_url=_OPEN_URL,  # where schema is served
     docs_url=_DOCS_URL,  # Swagger UI path
     redoc_url=_REDOC_URL,  # ReDoc path
-    routes=api.routes + mcp_templates_app.routes + mcp_echo_app.routes,
+    routes=api.routes,  # + mcp_templates_app.routes,
     # routes=api.routes,
     lifespan=global_lifespan,
 )
 
 app.mount("/templates", mcp_templates_app)  # /templates/mcp
-app.mount("/echo", mcp_echo_app)  # /echo/mcp
+# app.mount("/echo", mcp_echo_app)  # /echo/mcp
 
 
 # @app.route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
