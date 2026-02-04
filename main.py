@@ -383,12 +383,67 @@ async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
     )
 
 
+async def oauth_authorization_server_metadata(
+    request: StarletteRequest,
+) -> JSONResponse:
+    """Return OAuth 2.0 authorization server metadata for MCP discovery."""
+    base_url = str(request.base_url).rstrip("/")
+    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
+        base_url = base_url.replace("127.0.0.1", "localhost")
+    auth_endpoint = _SETTINGS.authorization_endpoint.rstrip("/")
+    return JSONResponse(
+        {
+            "issuer": auth_endpoint,  # e.g., https://auth.descope.io/YOUR_PROJECT_ID
+            "authorization_endpoint": f"{auth_endpoint}/oauth2/v1/authorize",
+            "token_endpoint": f"{auth_endpoint}/oauth2/v1/token",
+            "userinfo_endpoint": f"{auth_endpoint}/oauth2/v1/userinfo",
+            "jwks_uri": f"{auth_endpoint}/.well-known/jwks",
+            "scopes_supported": [
+                "openid",
+                "email",
+                "profile",
+                "login_access",
+                "api.context:read",
+                "mcp.template:read",
+            ],
+            "response_types_supported": ["code"],
+            "grant_types_supported": ["authorization_code", "refresh_token"],
+            "token_endpoint_auth_methods_supported": [
+                "client_secret_basic",
+                "client_secret_post",
+            ],
+            "id_token_signing_alg_values_supported": ["RS256"],
+            "claims_supported": [
+                "sub",
+                "iss",
+                "aud",
+                "exp",
+                "iat",
+                "email",
+                "email_verified",
+                "name",
+            ],
+        }
+    )
+
+
 app.add_route(
     "/.well-known/oauth-protected-resource", oauth_metadata, methods=["GET", "OPTIONS"]
 )
 app.add_route(
     "/.well-known/oauth-protected-resource/templates/mcp",
     oauth_metadata,
+    methods=["GET", "OPTIONS"],
+)
+
+app.add_route(
+    "/.well-known/oauth-authorization-server",
+    oauth_authorization_server_metadata,
+    methods=["GET", "OPTIONS"],
+)
+app.add_route(
+    "/templates/mcp/.well-known/oauth-authorization-server",
+    oauth_authorization_server_metadata,
     methods=["GET", "OPTIONS"],
 )
 
