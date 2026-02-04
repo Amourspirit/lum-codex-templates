@@ -390,14 +390,13 @@ async def oauth_authorization_server_metadata(
     base_url = str(request.base_url).rstrip("/")
     if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
         base_url = base_url.replace("127.0.0.1", "localhost")
-    auth_endpoint = _SETTINGS.authorization_endpoint.rstrip("/")
     return JSONResponse(
         {
-            "issuer": auth_endpoint,  # e.g., https://auth.descope.io/YOUR_PROJECT_ID
-            "authorization_endpoint": f"{auth_endpoint}/oauth2/v1/authorize",
-            "token_endpoint": f"{auth_endpoint}/oauth2/v1/token",
-            "userinfo_endpoint": f"{auth_endpoint}/oauth2/v1/userinfo",
-            "jwks_uri": f"{auth_endpoint}/.well-known/jwks",
+            "issuer": _SETTINGS.issuer,  # e.g., https://auth.descope.io/YOUR_PROJECT_ID
+            "authorization_endpoint": _SETTINGS.authorization_endpoint,
+            "token_endpoint": _SETTINGS.token_endpoint,
+            "userinfo_endpoint": _SETTINGS.userinfo_endpoint,
+            "jwks_uri": _SETTINGS.jwks_url,
             "scopes_supported": [
                 "openid",
                 "email",
