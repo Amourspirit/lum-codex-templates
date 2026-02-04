@@ -330,16 +330,23 @@ mcp_echo_app = echo_mcp.mcp.http_app(path="", transport="http")
 async def global_lifespan(app: FastAPI):
     async with lifespan(app):
         async with mcp_templates_app.lifespan(app):
-            async with mcp_echo_app.lifespan(app):
-                yield
             logger.remove()
             logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
             logger.info(
                 "Application startup complete. Logging Level is set to {log_level}",
                 log_level=_SETTINGS.LOG_LEVEL,
             )
+            # async with mcp_echo_app.lifespan(app):
+            #     logger.remove()
+            #     logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
+            #     logger.info(
+            #         "Application startup complete. Logging Level is set to {log_level}",
+            #         log_level=_SETTINGS.LOG_LEVEL,
+            #     )
+            #     yield
             yield
             # Clean up resources if needed
+        yield
 
 
 app = FastAPI(

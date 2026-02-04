@@ -7,7 +7,6 @@ from loguru import logger
 from fastapi import APIRouter, HTTPException, status
 
 # from fastapi_cache.decorator import cache
-import mcp
 from pydantic import ValidationError
 
 # from ..routes.limiter import limiter
