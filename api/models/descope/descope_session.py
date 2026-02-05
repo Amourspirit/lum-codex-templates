@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 from pydantic import BaseModel, Field
 from functools import cached_property
+from loguru import logger
 
 
 class DescopeSession(BaseModel):
@@ -110,18 +111,41 @@ class DescopeSession(BaseModel):
             roles = [roles]
         granted = set()
         if tenant == "":
+            logger.debug(
+                "DescopeSession.validate_tenant_roles() Validating global roles: {roles}",
+                roles=self.roles,
+            )
             granted.update(self.roles)
         else:
             if tenant not in self.tenants:
+                logger.debug(
+                    "DescopeSession.validate_tenant_roles() tenant {tenant} not found in session tenants",
+                    tenant=tenant,
+                )
                 return False
             granted.update(self.tenants.get(tenant, {}).get("roles", []))
+        logger.debug(
+            "DescopeSession.validate_tenant_roles() Validating roles for tenant {tenant}: {roles}",
+            tenant=tenant,
+            roles=granted,
+        )
         if match_any:
             for role in roles:
                 if role in granted:
+                    logger.debug(
+                        "DescopeSession.validate_tenant_roles() role {role} granted for tenant {tenant}",
+                        role=role,
+                        tenant=tenant,
+                    )
                     return True
             return False
         for role in roles:
             if role not in granted:
+                logger.debug(
+                    "DescopeSession.validate_tenant_roles() role {role} NOT granted for tenant {tenant}",
+                    role=role,
+                    tenant=tenant,
+                )
                 return False
         return True
 

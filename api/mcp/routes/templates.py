@@ -4,8 +4,7 @@ from fastmcp import FastMCP
 from fastmcp.server.context import Context
 from fastmcp.dependencies import CurrentContext
 from fastmcp.server.dependencies import get_http_headers
-from fastmcp.prompts.prompt import Message
-from mcp.types import PromptMessage, TextContent, ToolUseContent
+from mcp.types import PromptMessage, TextContent
 from loguru import logger
 from api.config import Config
 from api.lib.descope.auth import AUTH
