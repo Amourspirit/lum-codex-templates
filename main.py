@@ -185,7 +185,7 @@ async def oauth_protected_resource(path: str = ""):
         "resource": _SETTINGS.BASE_URL,
         "authorization_servers": _SETTINGS.authorization_servers,
         "bearer_methods_supported": ["header"],
-        "scopes_supported": ["openid", "profile", "email"],
+        "scopes_supported": _SETTINGS.scopes_supported,
     }
 
 
@@ -261,8 +261,8 @@ async def mcp_auth_middleware(request: Request, call_next):
                         "mcp_auth_middleware() Detected tool call in MCP request"
                     )
                     required_scopes = [
-                        "mcp.template:read",
-                        "api.context:read",
+                        "mcp:template:read",
+                        "api:context:read",
                     ]  # get required scope for your tool
 
                 try:

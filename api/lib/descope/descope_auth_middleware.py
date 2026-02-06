@@ -47,8 +47,8 @@ class DescopeAuthMiddleware(BaseHTTPMiddleware):
             required_scopes = []
             if is_tool_call:
                 required_scopes = [
-                    "mcp.template:read",
-                    "api.context:read",
+                    "mc:template:read",
+                    "api:context:read",
                 ]  # get required scope for your tool
                 # validation_options.required_scopes = required_scopes
 

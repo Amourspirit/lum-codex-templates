@@ -49,10 +49,10 @@ async def _ctx_validate_template_access(ctx: Context) -> DescopeSession:
     if not token:
         raise Exception("Access token is required.")
     session = await AUTH.verify_token(token)
-    if not session.validate_roles(["mcp.template.user"], match_any=True):
+    if not session.validate_roles(["mcp:template.user"], match_any=True):
         logger.error("User does not have the required role to access templates.")
         raise Exception("User does not have the required role to access templates.")
-    if not session.validate_scopes(["mcp.template:read"], match_any=True):
+    if not session.validate_scopes(["mcp:template:read"], match_any=True):
         logger.error("User does not have the required scope to access templates.")
         raise Exception("User does not have the required scope to access templates.")
     return session

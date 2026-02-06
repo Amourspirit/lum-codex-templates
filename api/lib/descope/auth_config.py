@@ -75,10 +75,10 @@ class Settings(BaseSettings):
             "profile",
             "email",
             "login_access",
-            "mcp:tools.invoke",
-            "mcp:context.read",
-            "api.context:read",
-            "mcp.template:read",
+            "mcp:tools:invoke",
+            "mcp:context:read",
+            "api:context:read",
+            "mcp:template:read",
         ]
 
     @property
