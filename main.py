@@ -234,9 +234,11 @@ async def mcp_auth_middleware(request: Request, call_next):
     token_data = auth_context_var.set(None)
 
     if request.url.path.startswith("/.well-known/"):
+        logger.debug("mcp_auth_middleware() Skipping auth for well-known path")
         return await call_next(request)
 
     if request.url.path.startswith("/templates/mcp"):
+        logger.debug("mcp_auth_middleware() Processing MCP request")
         authorization = request.headers.get("authorization")
 
         if authorization:
@@ -255,6 +257,9 @@ async def mcp_auth_middleware(request: Request, call_next):
 
                 required_scopes = []
                 if is_tool_call:
+                    logger.debug(
+                        "mcp_auth_middleware() Detected tool call in MCP request"
+                    )
                     required_scopes = [
                         "mcp.template:read",
                         "api.context:read",
@@ -264,6 +269,10 @@ async def mcp_auth_middleware(request: Request, call_next):
                     session = await AUTH.verify_token(token)
                     if required_scopes:
                         if not session.validate_scopes(required_scopes, match_any=True):
+                            logger.debug(
+                                "mcp_auth_middleware() Insufficient scopes: {scopes}",
+                                scopes=session.session.get("scopes"),
+                            )
                             raise HTTPException(
                                 status_code=status.HTTP_403_FORBIDDEN,
                                 detail="Insufficient scopes for the requested resource",
@@ -275,6 +284,7 @@ async def mcp_auth_middleware(request: Request, call_next):
                             }
                         )
                 except UnauthorizedException:
+                    logger.debug("mcp_auth_middleware() Invalid or expired token")
                     return JSONResponse(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         content={"detail": "Invalid or expired token"},
@@ -283,12 +293,16 @@ async def mcp_auth_middleware(request: Request, call_next):
                             "WWW-Authenticate": f'Bearer realm="OAuth", resource_metadata="{_SETTINGS.BASE_URL}/.well-known/oauth-protected-resource"'
                         },
                     )
-                except Exception:
+                except Exception as e:
+                    logger.error("Token validation error: {error}", error=e)
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Token validation failed",
                     )
         else:
+            logger.debug(
+                "mcp_auth_middleware() No Authorization header provided for MCP request"
+            )
             auth_context_var.reset(token_data)
 
     response = await call_next(request)
