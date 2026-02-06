@@ -20,7 +20,11 @@ class ConfigMeta(type):
                     data = json.load(file)
             else:
                 # Provide default values if config.json doesn't exist
-                data = {"current_api_prefix": "/api/v1", "api_v1_prefix": "/api/v1"}
+                data = {
+                    "current_api_prefix": "/api/v1",
+                    "api_v1_prefix": "/api/v1",
+                    "templates_mcp_path": "/templates/mcp",
+                }
             cls._instance = super().__call__(**data)
         return cls._instance
 
@@ -40,6 +44,11 @@ class Config(metaclass=ConfigMeta):
     api_v1_prefix: str = ""
     """
     API v1 prefix such as ``/api/v1``
+    """
+
+    templates_mcp_path: str = ""
+    """
+    Path for the templates MCP such as ``/templates/mcp``
     """
 
 

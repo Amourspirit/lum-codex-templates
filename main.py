@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import urllib.parse
@@ -6,19 +7,14 @@ from contextlib import asynccontextmanager
 from loguru import logger
 
 # import httpx
-from starlette.requests import Request as StarletteRequest
 from starlette.responses import JSONResponse
-from fastapi import Depends, FastAPI, Request, Security
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from api.lib.env import env_info  # Must be early import to load env vars
 from api.lib.descope.auth import TokenVerifier, AUTH
 from api.lib.descope.auth_config import get_settings
@@ -32,6 +28,7 @@ from api.mcp.servers import templates_mcp
 
 # from api.mcp.servers import echo_mcp
 
+
 if env_info.API_ENV_MODE == "prod":
     _FAST_API_CUSTOM_OPEN_API_PREFIX = ""
     _OPEN_URL = None  # where schema is served
@@ -44,28 +41,12 @@ else:
     _REDOC_URL = "/redoc"  # ReDoc path
 
 bearer_optional = HTTPBearer(auto_error=False)
-
-
-def _get_host_port(request: Request) -> tuple[str, int]:
-    server = request.scope.get("server")
-    if not server:
-        raise ValueError("Server information not found in request scope")
-    host, port = server
-    return host, port
+_request_auth_context: dict = {}
 
 
 def _get_docs_url(request: Request) -> str:
     base_url = str(request.base_url).rstrip("/")
     return f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs"
-
-
-def _get_descope_url(request: Request) -> str:
-    docs_url = _get_docs_url(request)
-    url = (
-        f"{env_info.DESCOPE_LOGIN_BASE_URL}/{_FAST_API_CUSTOM_OPEN_API_PREFIX}{env_info.DESCOPE_PROJECT_ID}"
-        f"?redirect_uri={docs_url}"
-    )
-    return url
 
 
 def _require_login_or_redirect(
@@ -103,47 +84,16 @@ def _require_login_or_redirect(
         return get_redirect_response(docs_url, state)
 
 
-def _require_login_or_redirect2(
-    request: Request,
-    creds: HTTPAuthorizationCredentials | None = Depends(bearer_optional),
-):
-    def get_redirect_response(url: str) -> RedirectResponse:
-        auth_url = (
-            f"https://auth.descope.io/{env_info.DESCOPE_PROJECT_ID}"
-            f"?flow=sign-codex_templates-redirect"
-            f"&redirectUrl={url}"
-        )
-        print(f"Redirecting to Descope URL: {auth_url}")
-        return RedirectResponse(url=auth_url, status_code=status.HTTP_302_FOUND)
-
-    base_url = str(request.base_url).rstrip("/")
-    redirect_url = f"{base_url}{_FAST_API_CUSTOM_OPEN_API_PREFIX}/callback"
-    encoded_redirect = urllib.parse.quote(redirect_url, safe="")
-
-    # No Authorization header -> redirect to Descope login flow
-    if creds is None:
-        return get_redirect_response(encoded_redirect)
-
-    # Validate token with your existing Descope validator (AUTH)
-    try:
-        # If your AUTH is a callable / dependency, adjust accordingly.
-        # The idea: validate token and return payload/claims.
-        payload = TokenVerifier()
-        return payload
-    except UnauthenticatedException:
-        return get_redirect_response(encoded_redirect)
-
-
 def custom_openapi():
-    if api.openapi_schema:
-        return api.openapi_schema
-    config = PkgConfig()
+    if app.openapi_schema:
+        return app.openapi_schema
+    pkg_config = PkgConfig()
     # get the default schema
     openapi_schema = get_openapi(
-        title=config.api_info.title,
-        version=config.api_info.version,
-        description=config.api_info.description,
-        routes=api.routes,
+        title=pkg_config.api_info.title,
+        version=pkg_config.api_info.version,
+        description=pkg_config.api_info.description,
+        routes=app.routes,
     )
     # inject servers metadata
     servers = env_info.get_api_servers()
@@ -153,136 +103,184 @@ def custom_openapi():
     if servers:
         openapi_schema["servers"] = servers
 
-    api.openapi_schema = openapi_schema
-    return api.openapi_schema
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
 
 
 # auth = TokenVerifier()
 _SETTINGS = get_settings()
 
+mcp_templates = templates_mcp.init_mcp()
+
+# ============================================================================
+# Create the MCP HTTP app FIRST (needed for lifespan)
+# ============================================================================
+mcp_templates_app = mcp_templates.http_app(path="/mcp", transport="streamable-http")
+
+# ============================================================================
+# FastAPI Application with Combined Lifespan
+# ============================================================================
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load startup resources
-    # https://fastapi.tiangolo.com/advanced/events/#async-context-manager
-    FastAPICache.init(backend=InMemoryBackend())
-    yield
-    # Clean up resources if needed
+    """
+    Combined lifespan handler that manages both FastAPI and FastMCP lifecycles.
+    This is CRITICAL for Streamable HTTP transport to work properly.
+    """
+
+    # Initialize FastMCP's lifespan (required for Streamable HTTP)
+    async with mcp_templates_app.lifespan(app):
+        logger.remove()
+        logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
+        logger.info(
+            "Application startup complete. Logging Level is set to {log_level}",
+            log_level=_SETTINGS.LOG_LEVEL,
+        )
+        yield
+
+    logger.info("👋 Shutting down...")
 
 
-api = FastAPI()
+# Create a combined lifespan to manage the MCP session manager
+app = FastAPI(
+    title="Codex Templates",
+    openapi_url=_OPEN_URL,  # where schema is served
+    docs_url=_DOCS_URL,  # Swagger UI path
+    redoc_url=_REDOC_URL,  # ReDoc path
+    lifespan=lifespan,
+)
 
-
-api.include_router(templates.router)
-api.include_router(executor_modes.router)
-api.include_router(privacy_terms.router)
-api.include_router(route_protection.router)
-# app.include_router(login.router)
-# app.state.limiter = limiter
-
-api.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
-
-
-api.openapi = custom_openapi  # override OpenAPI generator
-
-api.add_middleware(
+# ============================================================================
+# CORS Middleware - Required for MCP Inspector
+# ============================================================================
+app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],  # In production, specify your actual origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
 
 
-@api.get("/ping", operation_id="ping")
-async def ping():
-    """Handle ping health checks and return a JSON payload acknowledging the request."""
+app.include_router(templates.router)
+app.include_router(executor_modes.router)
+app.include_router(privacy_terms.router)
+app.include_router(route_protection.router)
+# app.include_router(login.router)
+# app.state.limiter = limiter
+# app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
+app.openapi = custom_openapi  # override OpenAPI generator
 
-    return {"msg": "pong"}
-
-
-@api.get("/env_check/{env_var}", operation_id="env_check")
-async def env_check(env_var: str, auth_result: str = Security(AUTH)):
-    """Check whether a specified environment variable is set and report its status.
-    Args:
-        env_var: The name of the environment variable to inspect.
-        request: The incoming HTTP request associated with the check.
-    Returns:
-        A dictionary containing the environment variable name, whether it is set,
-        and, if applicable, the type of the stored value.
-    """
-
-    value = os.getenv(env_var, None)
-    if value is None:
-        return {"env_var": env_var, "value": "Not Set"}
-    return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
+# OAuth 2.0 Discovery Endpoints (Required for MCP Inspector v0.19.0)
+# ============================================================================
 
 
-@api.get(
-    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json",
-    include_in_schema=False,
-    operation_id="openapi_schema",
-)
-async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-    """Generate the OpenAPI schema for the application.
-    Parameters
-    ----------
-    credentials : HTTPAuthorizationCredentials, optional
-        Authorization credentials provided by the configured security dependency.
-    Returns
-    -------
-    dict
-        The OpenAPI specification describing the registered API routes.
-    """
-
-    return get_openapi(title="Your API", version="1.0.0", routes=api.routes)
+@app.get("/.well-known/oauth-protected-resource")
+@app.get("/.well-known/oauth-protected-resource/{path:path}")
+async def oauth_protected_resource(path: str = ""):
+    """OAuth 2.0 Protected Resource Metadata (RFC 8707)."""
+    return {
+        "resource": _SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL,
+        "authorization_servers": _SETTINGS.authorization_servers,
+        "bearer_methods_supported": ["header"],
+        "scopes_supported": ["openid", "profile", "email"],
+    }
 
 
-@api.get(
-    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs",
-    include_in_schema=False,
-    operation_id="docs_ui",
-)
-async def docs_ui(user=Depends(_require_login_or_redirect)):
-    """Render the Swagger UI for authenticated users or return a redirect response when authentication is required.
-    Parameters
-    ----------
-    user : Any
-        Result from the `_require_login_or_redirect` dependency, which may be a user object or a `RedirectResponse`.
-    Returns
-    -------
-    HTMLResponse | RedirectResponse
-        Swagger UI HTML response when authenticated, otherwise the redirect response.
-    """
-
-    if isinstance(user, RedirectResponse):
-        return user
-    return get_swagger_ui_html(
-        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
-    )
+@app.get("/.well-known/oauth-authorization-server")
+async def oauth_authorization_server():
+    """OAuth 2.0 Authorization Server Metadata (RFC 8414)."""
+    return {
+        "issuer": _SETTINGS.issuer,
+        "authorization_endpoint": _SETTINGS.authorization_endpoint,  # f"{descope_base}/oauth2/v1/authorize",
+        "token_endpoint": _SETTINGS.token_endpoint,  # f"{descope_base}/oauth2/v1/token",
+        "jwks_uri": _SETTINGS.jwks_url,  # f"{descope_base}/.well-known/jwks.json",
+        "response_types_supported": _SETTINGS.response_types_supported,
+        "grant_types_supported": _SETTINGS.grant_types_supported,
+        "token_endpoint_auth_methods_supported": _SETTINGS.token_endpoint_auth_methods_supported,
+        "scopes_supported": _SETTINGS.scopes_supported,
+    }
 
 
-@api.get(
-    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc",
-    include_in_schema=False,
-    operation_id="redoc_ui",
-)
-async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
-    """
-    Return the ReDoc HTML page for the OpenAPI schema, respecting custom prefix settings.
-    Parameters
-    ----------
-    credentials : fastapi.security.HTTPAuthorizationCredentials
-        Authorization credentials extracted via the configured security dependency.
-    Returns
-    -------
-    str
-        HTML markup generated by `fastapi.openapi.docs.get_redoc_html` for the configured OpenAPI endpoint.
-    """
+@app.get("/.well-known/openid-configuration")
+async def openid_configuration():
+    """OpenID Connect Discovery endpoint."""
+    return {
+        "issuer": _SETTINGS.issuer,
+        "authorization_endpoint": _SETTINGS.authorization_endpoint,
+        "token_endpoint": _SETTINGS.token_endpoint,
+        "userinfo_endpoint": _SETTINGS.userinfo_endpoint,
+        "jwks_uri": _SETTINGS.jwks_url,
+        "response_types_supported": _SETTINGS.response_types_supported,
+        "subject_types_supported": _SETTINGS.subject_types_supported,
+        "id_token_signing_alg_values_supported": _SETTINGS.id_token_signing_alg_values_supported,
+        "scopes_supported": _SETTINGS.scopes_supported,
+        "token_endpoint_auth_methods_supported": _SETTINGS.token_endpoint_auth_methods_supported,
+        "claims_supported": _SETTINGS.claims_supported,
+    }
 
-    return get_redoc_html(
-        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
-    )
+
+# ============================================================================
+# Authentication Middleware for MCP Endpoint
+# ============================================================================
+
+
+@app.middleware("http")
+async def mcp_auth_middleware(request: Request, call_next):
+    """Middleware to validate Descope tokens for MCP endpoint requests."""
+    global _request_auth_context
+    if request.url.path.startswith("/.well-known/"):
+        return await call_next(request)
+
+    if request.url.path.startswith("/templates/mcp"):
+        authorization = request.headers.get("authorization")
+
+        if authorization:
+            parts = authorization.split()
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+                request_body = await request.body()
+
+                # Parse JSON from bytes
+                try:
+                    request_data = json.loads(request_body.decode("utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    request_data = {}
+
+                is_tool_call = request_data.get("method") == "tools/call"
+
+                required_scopes = []
+                if is_tool_call:
+                    required_scopes = [
+                        "mcp.template:read",
+                        "api.context:read",
+                    ]  # get required scope for your tool
+
+                try:
+                    session = await AUTH.verify_token(token)
+                    if required_scopes:
+                        if not session.validate_scopes(required_scopes, match_any=True):
+                            raise HTTPException(
+                                status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Insufficient scopes for the requested resource",
+                            )
+                        _request_auth_context["current"] = {
+                            "user_id": session.user_id,
+                            "claims": session.session,
+                        }
+
+                except Exception:
+                    _request_auth_context["current"] = None
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Token validation failed",
+                    )
+        else:
+            _request_auth_context["current"] = None
+
+    response = await call_next(request)
+    return response
 
 
 # Protected /docs route
@@ -316,135 +314,120 @@ async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
 #     return {"message": "You are authenticated!", "user": user}
 
 
+# ============================================================================
+# Mount FastMCP to FastAPI
+# ============================================================================
+
+app.mount("/templates", mcp_templates_app)
+
+
 # Public route
-@api.get("/", operation_id="root")
+@app.get("/", operation_id="root")
 async def root():
     """Public root endpoint."""
     return {"message": "Welcome! Please login to access the API documentation."}
 
 
-# mcp = FastMCP(name="Codex Templates MCP Server")
-mcp_templates = templates_mcp.init_mcp()
-mcp_templates_app = mcp_templates.http_app(path="/mcp", transport="http")
-# mcp_echo_app = echo_mcp.mcp.http_app(path="", transport="http")
+@app.get("/ping", operation_id="ping")
+async def ping():
+    """Handle ping health checks and return a JSON payload acknowledging the request."""
+
+    return {"msg": "pong"}
 
 
-@asynccontextmanager
-async def global_lifespan(app: FastAPI):
-    async with lifespan(app):
-        async with mcp_templates_app.lifespan(app):
-            # async with mcp_echo_app.lifespan(app):
-            #     yield
-            logger.remove()
-            logger.add(sys.stderr, level=_SETTINGS.LOG_LEVEL)
-            logger.info(
-                "Application startup complete. Logging Level is set to {log_level}",
-                log_level=_SETTINGS.LOG_LEVEL,
-            )
-            yield
-            # Clean up resources if needed
+@app.get("/env_check/{env_var}", operation_id="env_check")
+async def env_check(env_var: str, auth_result: str = Security(AUTH)):
+    """Check whether a specified environment variable is set and report its status.
+    Args:
+        env_var: The name of the environment variable to inspect.
+        request: The incoming HTTP request associated with the check.
+    Returns:
+        A dictionary containing the environment variable name, whether it is set,
+        and, if applicable, the type of the stored value.
+    """
+
+    value = os.getenv(env_var, None)
+    if value is None:
+        return {"env_var": env_var, "value": "Not Set"}
+    return {"env_var": env_var, "value": "Is Set", "type": str(type(value))}
 
 
-app = FastAPI(
-    title="Codex Templates",
-    openapi_url=_OPEN_URL,  # where schema is served
-    docs_url=_DOCS_URL,  # Swagger UI path
-    redoc_url=_REDOC_URL,  # ReDoc path
-    routes=api.routes,  # + mcp_templates_app.routes,
-    # routes=api.routes,
-    lifespan=global_lifespan,
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json",
+    include_in_schema=False,
+    operation_id="openapi_schema",
 )
+async def openapi_schema(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    """Generate the OpenAPI schema for the application.
+    Parameters
+    ----------
+    credentials : HTTPAuthorizationCredentials, optional
+        Authorization credentials provided by the configured security dependency.
+    Returns
+    -------
+    dict
+        The OpenAPI specification describing the registered API routes.
+    """
 
-app.mount("/templates", mcp_templates_app)  # /templates/mcp
-# app.mount("/echo", mcp_echo_app)  # /echo/mcp
+    return get_openapi(title="Your API", version="1.0.0", routes=app.routes)
 
 
-# @app.route("/.well-known/oauth-protected-resource", methods=["GET", "OPTIONS"])
-async def oauth_metadata(request: StarletteRequest) -> JSONResponse:
-    base_url = str(request.base_url).rstrip("/")
-    # Normalize to localhost in local dev mode to match MCP Inspector expectations
-    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
-        base_url = base_url.replace("127.0.0.1", "localhost")
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/docs",
+    include_in_schema=False,
+    operation_id="docs_ui",
+)
+async def docs_ui(user=Depends(_require_login_or_redirect)):
+    """Render the Swagger UI for authenticated users or return a redirect response when authentication is required.
+    Parameters
+    ----------
+    user : Any
+        Result from the `_require_login_or_redirect` dependency, which may be a user object or a `RedirectResponse`.
+    Returns
+    -------
+    HTMLResponse | RedirectResponse
+        Swagger UI HTML response when authenticated, otherwise the redirect response.
+    """
 
-    return JSONResponse(
-        {
-            "resource": base_url,
-            "authorization_servers": [_SETTINGS.authorization_endpoint],
-            "scopes_supported": [
-                "openid",
-                "email",
-                "profile",
-                "login_access",
-                "api.context:read",
-                "mcp.template:read",
-            ],
-            "bearer_methods_supported": ["header", "body"],
-        }
+    if isinstance(user, RedirectResponse):
+        return user
+    return get_swagger_ui_html(
+        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="API Docs"
     )
 
 
-async def oauth_authorization_server_metadata(
-    request: StarletteRequest,
-) -> JSONResponse:
-    """Return OAuth 2.0 authorization server metadata for MCP discovery."""
-    base_url = str(request.base_url).rstrip("/")
-    if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":
-        base_url = base_url.replace("127.0.0.1", "localhost")
-    return JSONResponse(
-        {
-            "issuer": _SETTINGS.issuer,  # e.g., https://auth.descope.io/YOUR_PROJECT_ID
-            "authorization_endpoint": _SETTINGS.authorization_endpoint,
-            "token_endpoint": _SETTINGS.token_endpoint,
-            "userinfo_endpoint": _SETTINGS.userinfo_endpoint,
-            "jwks_uri": _SETTINGS.jwks_url,
-            "scopes_supported": [
-                "openid",
-                "email",
-                "profile",
-                "login_access",
-                "api.context:read",
-                "mcp.template:read",
-            ],
-            "response_types_supported": ["code"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "token_endpoint_auth_methods_supported": [
-                "client_secret_basic",
-                "client_secret_post",
-            ],
-            "id_token_signing_alg_values_supported": ["RS256"],
-            "claims_supported": [
-                "sub",
-                "iss",
-                "aud",
-                "exp",
-                "iat",
-                "email",
-                "email_verified",
-                "name",
-            ],
-        }
+@app.get(
+    f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/redoc",
+    include_in_schema=False,
+    operation_id="redoc_ui",
+)
+async def redoc_ui(credentials: HTTPAuthorizationCredentials = Security(AUTH)):
+    """
+    Return the ReDoc HTML page for the OpenAPI schema, respecting custom prefix settings.
+    Parameters
+    ----------
+    credentials : fastapi.security.HTTPAuthorizationCredentials
+        Authorization credentials extracted via the configured security dependency.
+    Returns
+    -------
+    str
+        HTML markup generated by `fastapi.openapi.docs.get_redoc_html` for the configured OpenAPI endpoint.
+    """
+
+    return get_redoc_html(
+        openapi_url=f"{_FAST_API_CUSTOM_OPEN_API_PREFIX}/openapi.json", title="ReDoc"
     )
 
 
-app.add_route(
-    "/.well-known/oauth-protected-resource", oauth_metadata, methods=["GET", "OPTIONS"]
-)
-app.add_route(
-    "/.well-known/oauth-protected-resource/templates/mcp",
-    oauth_metadata,
-    methods=["GET", "OPTIONS"],
-)
+# ============================================================================
+# Error Handlers
+# ============================================================================
 
-app.add_route(
-    "/.well-known/oauth-authorization-server",
-    oauth_authorization_server_metadata,
-    methods=["GET", "OPTIONS"],
-)
-app.add_route(
-    "/templates/mcp/.well-known/oauth-authorization-server",
-    oauth_authorization_server_metadata,
-    methods=["GET", "OPTIONS"],
-)
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+
 
 if __name__ == "__main__":
     if os.getenv("LOCAL_DEV_MODE", "false").lower() == "true":

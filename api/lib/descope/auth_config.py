@@ -30,6 +30,10 @@ class Settings(BaseSettings):
             )
 
     @property
+    def authorization_servers(self) -> list[str]:
+        return [f"{self.DESCOPE_API_BASE_URL}/{self.DESCOPE_PROJECT_ID}"]
+
+    @property
     def issuer_candidates(self) -> list[str]:
         return [
             f"{self.DESCOPE_API_BASE_URL}/v1/apps/{self.DESCOPE_PROJECT_ID}",
@@ -54,7 +58,32 @@ class Settings(BaseSettings):
 
     @property
     def response_types_supported(self) -> list[str]:
-        return ["code"]
+        return ["code", "token", "id_token"]
+
+    @property
+    def grant_types_supported(self) -> list[str]:
+        return ["authorization_code", "refresh_token"]
+
+    @property
+    def token_endpoint_auth_methods_supported(self) -> list[str]:
+        return ["client_secret_basic", "client_secret_post"]
+
+    @property
+    def scopes_supported(self) -> list[str]:
+        return [
+            "openid",
+            "profile",
+            "email",
+            "login_access",
+            "mcp:tools.invoke",
+            "mcp:context.read",
+            "api.context:read",
+            "mcp.template:read",
+        ]
+
+    @property
+    def claims_supported(self) -> list[str]:
+        return ["sub", "email", "name", "picture"]
 
     @property
     def subject_types_supported(self) -> list[str]:

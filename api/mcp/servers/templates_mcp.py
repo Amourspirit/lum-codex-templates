@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 from loguru import logger
 from fastmcp import FastMCP
 from api.mcp.routes import templates as mcp_templates
@@ -8,7 +8,7 @@ from api.lib.descope.auth_config import get_settings
 
 _SETTINGS = get_settings()
 
-mcp = None
+mcp = cast(FastMCP, None)
 
 
 def init_mcp(auth: Any = None) -> FastMCP:
