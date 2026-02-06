@@ -271,7 +271,7 @@ async def mcp_auth_middleware(request: Request, call_next):
                         if not session.validate_scopes(required_scopes, match_any=True):
                             logger.debug(
                                 "mcp_auth_middleware() Insufficient scopes: {scopes}",
-                                scopes=session.session.get("scopes"),
+                                scopes=session.scopes,
                             )
                             raise HTTPException(
                                 status_code=status.HTTP_403_FORBIDDEN,
