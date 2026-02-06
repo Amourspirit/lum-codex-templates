@@ -304,6 +304,14 @@ async def mcp_auth_middleware(request: Request, call_next):
                 "mcp_auth_middleware() No Authorization header provided for MCP request"
             )
             auth_context_var.reset(token_data)
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={"detail": "No Authorization header provided for MCP request"},
+                # headers={"WWW-Authenticate": "Bearer"},
+                headers={
+                    "WWW-Authenticate": f'Bearer realm="OAuth", resource_metadata="{_SETTINGS.BASE_URL}/.well-known/oauth-protected-resource"'
+                },
+            )
 
     response = await call_next(request)
     return response
