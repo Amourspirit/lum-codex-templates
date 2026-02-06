@@ -236,8 +236,22 @@ async def mcp_auth_middleware(request: Request, call_next):
         "mcp_auth_middleware() Start processing request: {path}", path=request.url.path
     )
 
-    if request.url.path.startswith("/.well-known/"):
-        logger.debug("mcp_auth_middleware() Skipping auth for well-known path")
+    allow_path_prefixes = (
+        "/ping",
+        "/env_check",
+        "/.well-known/oauth-protected-resource",
+        "/.well-known/",
+    )
+
+    if request.url.path == ("/"):
+        logger.debug("mcp_auth_middleware() Skipping auth root path")
+        return await call_next(request)
+
+    if request.url.path.startswith(allow_path_prefixes):
+        logger.debug(
+            "mcp_auth_middleware() Skipping auth for path: {path}",
+            path=request.url.path,
+        )
         return await call_next(request)
 
     if request.url.path.startswith("/templates/mcp"):
