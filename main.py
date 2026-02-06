@@ -232,6 +232,9 @@ async def mcp_auth_middleware(request: Request, call_next):
     """Middleware to validate Descope tokens for MCP endpoint requests."""
     # Reset context for this request
     token_data = auth_context_var.set(None)
+    logger.debug(
+        "mcp_auth_middleware() Start processing request: {path}", path=request.url.path
+    )
 
     if request.url.path.startswith("/.well-known/"):
         logger.debug("mcp_auth_middleware() Skipping auth for well-known path")
