@@ -7,6 +7,7 @@ Requirements:
 import os
 from typing import Annotated
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 
 from fastapi import FastAPI, Depends, HTTPException, Header, Request
 from fastapi.responses import JSONResponse
@@ -26,18 +27,17 @@ SERVER_URL = "http://localhost:8000"
 # Initialize Descope client
 descope_client = DescopeClient(project_id=DESCOPE_PROJECT_ID)
 
+# ContextVar for thread-safe request context handling
+auth_context_var: ContextVar[dict | None] = ContextVar("auth_context", default=None)
+
 # ============================================================================
-# Descope Authentication Dependency
+# Descope Authentication Dependency (For standard FastAPI routes)
 # ============================================================================
 
 
 async def validate_descope_token(
     authorization: Annotated[str | None, Header()] = None,
 ) -> dict:
-    """
-    FastAPI dependency that validates Descope JWT from Authorization header.
-    Returns the validated token claims if successful.
-    """
     if not authorization:
         raise HTTPException(status_code=401, detail="Missing Authorization header")
 
@@ -74,8 +74,6 @@ mcp = FastMCP(
     stateless_http=True,
 )
 
-_request_auth_context: dict = {}
-
 
 @mcp.tool()
 async def private_template(ctx: Context) -> str:
@@ -83,11 +81,12 @@ async def private_template(ctx: Context) -> str:
     A protected MCP tool that requires Descope authentication.
     Returns a personalized message with the authenticated user's ID.
     """
-    auth_context = getattr(ctx, "_auth_context", None) or _request_auth_context.get(
-        "current"
-    )
+    # Retrieve context safely from ContextVar or FastMCP context
+    auth_context = getattr(ctx, "_auth_context", None) or auth_context_var.get()
 
     if not auth_context:
+        # This fallback usually won't be reached if middleware enforces auth,
+        # but it serves as a secondary guardrail.
         return "Error: Authentication required. Please provide a valid Descope token."
 
     user_id = auth_context.get("user_id", "unknown")
@@ -139,7 +138,7 @@ async def get_template(template_name: str) -> dict:
 
 
 # ============================================================================
-# Create the MCP HTTP app FIRST (needed for lifespan)
+# Create the MCP HTTP app
 # ============================================================================
 
 mcp_templates_app = mcp.http_app(path="/mcp", transport="streamable-http")
@@ -151,15 +150,10 @@ mcp_templates_app = mcp.http_app(path="/mcp", transport="streamable-http")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Combined lifespan handler that manages both FastAPI and FastMCP lifecycles.
-    This is CRITICAL for Streamable HTTP transport to work properly.
-    """
     print("🚀 Starting FastAPI + FastMCP server...")
     print("📍 MCP endpoint: http://localhost:8000/templates/mcp")
     print(f"🔐 Descope Project ID: {DESCOPE_PROJECT_ID}")
 
-    # Initialize FastMCP's lifespan (required for Streamable HTTP)
     async with mcp_templates_app.lifespan(app):
         yield
 
@@ -170,11 +164,11 @@ app = FastAPI(
     title="Templates API with MCP",
     description="FastAPI application with FastMCP Streamable HTTP transport and Descope auth",
     version="1.0.0",
-    lifespan=lifespan,  # Use our combined lifespan handler
+    lifespan=lifespan,
 )
 
 # ============================================================================
-# CORS Middleware - Required for MCP Inspector
+# CORS Middleware
 # ============================================================================
 
 app.add_middleware(
@@ -187,17 +181,20 @@ app.add_middleware(
 )
 
 # ============================================================================
-# OAuth 2.0 Discovery Endpoints (Required for MCP Inspector v0.19.0)
+# OAuth 2.0 Discovery Endpoints
 # ============================================================================
 
 
 @app.get("/.well-known/oauth-protected-resource")
-@app.get("/.well-known/oauth-protected-resource/{path:path}")
-async def oauth_protected_resource(path: str = ""):
-    """OAuth 2.0 Protected Resource Metadata (RFC 8707)."""
+async def oauth_protected_resource():
+    """
+    OAuth 2.0 Protected Resource Metadata (RFC 8707).
+    Tells the client where to find the authorization server for this resource.
+    """
     return {
         "resource": SERVER_URL,
-        "authorization_servers": [f"https://api.descope.com/{DESCOPE_PROJECT_ID}"],
+        # Point to self if serving metadata, or Descope directly
+        "authorization_servers": [SERVER_URL],
         "bearer_methods_supported": ["header"],
         "scopes_supported": ["openid", "profile", "email"],
     }
@@ -205,13 +202,16 @@ async def oauth_protected_resource(path: str = ""):
 
 @app.get("/.well-known/oauth-authorization-server")
 async def oauth_authorization_server():
-    """OAuth 2.0 Authorization Server Metadata (RFC 8414)."""
-    # descope_base = f"https://api.descope.com/{DESCOPE_PROJECT_ID}"
+    """
+    OAuth 2.0 Authorization Server Metadata (RFC 8414).
+    Maps the auth endpoints to Descope.
+    """
+    descope_base = f"https://api.descope.com/{DESCOPE_PROJECT_ID}"
     return {
-        "issuer": _SETTINGS.issuer,
-        "authorization_endpoint": _SETTINGS.authorization_endpoint,  # f"{descope_base}/oauth2/v1/authorize",
-        "token_endpoint": _SETTINGS.token_endpoint,  # f"{descope_base}/oauth2/v1/token",
-        "jwks_uri": _SETTINGS.jwks_url,  # f"{descope_base}/.well-known/jwks.json",
+        "issuer": descope_base,
+        "authorization_endpoint": f"{descope_base}/oauth2/v1/authorize",
+        "token_endpoint": f"{descope_base}/oauth2/v1/token",
+        "jwks_uri": f"{descope_base}/.well-known/jwks.json",
         "response_types_supported": ["code", "token"],
         "grant_types_supported": ["authorization_code", "refresh_token"],
         "token_endpoint_auth_methods_supported": [
@@ -222,59 +222,68 @@ async def oauth_authorization_server():
     }
 
 
-@app.get("/.well-known/openid-configuration")
-async def openid_configuration():
-    """OpenID Connect Discovery endpoint."""
-    descope_base = f"https://api.descope.com/{DESCOPE_PROJECT_ID}"
-    return {
-        "issuer": descope_base,
-        "authorization_endpoint": f"{descope_base}/oauth2/v1/authorize",
-        "token_endpoint": f"{descope_base}/oauth2/v1/token",
-        "userinfo_endpoint": f"{descope_base}/oauth2/v1/userinfo",
-        "jwks_uri": f"{descope_base}/.well-known/jwks.json",
-        "response_types_supported": ["code", "id_token", "token"],
-        "subject_types_supported": ["public"],
-        "id_token_signing_alg_values_supported": ["RS256"],
-        "scopes_supported": ["openid", "profile", "email"],
-        "token_endpoint_auth_methods_supported": [
-            "client_secret_basic",
-            "client_secret_post",
-        ],
-        "claims_supported": ["sub", "email", "name", "picture"],
-    }
-
-
 # ============================================================================
-# Authentication Middleware for MCP Endpoint
+# Authentication Middleware for MCP Endpoint (CRITICAL FIX)
 # ============================================================================
 
 
 @app.middleware("http")
 async def mcp_auth_middleware(request: Request, call_next):
-    """Middleware to validate Descope tokens for MCP endpoint requests."""
-    global _request_auth_context
+    """
+    Middleware to validate Descope tokens for MCP endpoint requests.
+    RETURNS 401 IF UNAUTHENTICATED to trigger client auth flow.
+    """
+    # Reset context for this request
+    token_data = auth_context_var.set(None)
 
     if request.url.path.startswith("/templates/mcp"):
         authorization = request.headers.get("authorization")
 
-        if authorization:
-            parts = authorization.split()
-            if len(parts) == 2 and parts[0].lower() == "bearer":
-                token = parts[1]
-                try:
-                    jwt_response = descope_client.validate_session(token)
-                    _request_auth_context["current"] = {
-                        "user_id": jwt_response.get("sub"),
-                        "email": jwt_response.get("email"),
-                        "claims": jwt_response,
-                    }
-                except AuthException:
-                    _request_auth_context["current"] = None
-        else:
-            _request_auth_context["current"] = None
+        # 1. Check for Authorization Header
+        if not authorization:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Authentication required"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-    response = await call_next(request)
-    return response
+        # 2. Parse Bearer Token
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Invalid Authorization header format"},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        token = parts[1]
+
+        # 3. Validate Token with Descope
+        try:
+            jwt_response = descope_client.validate_session(token)
+            auth_context_var.set(
+                {
+                    "user_id": jwt_response.get("sub"),
+                    "email": jwt_response.get("email"),
+                    "claims": jwt_response,
+                }
+            )
+        except AuthException:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Invalid or expired token"},
+                # headers={"WWW-Authenticate": "Bearer"},
+                headers={
+                    "WWW-Authenticate": f'Bearer realm="OAuth", resource_metadata="{SERVER_URL}/.well-known/oauth-protected-resource"'
+                },
+            )
+
+    try:
+        response = await call_next(request)
+        return response
+    finally:
+        # Clean up context var (optional but good practice)
+        auth_context_var.reset(token_data)
 
 
 # ============================================================================
@@ -290,50 +299,12 @@ app.mount("/templates", mcp_templates_app)
 
 @app.get("/")
 async def root():
-    """Health check and API info endpoint."""
     return {
         "status": "healthy",
         "service": "Templates API with MCP",
-        "mcp_endpoint": "/templates/mcp",
-        "docs": "/docs",
-        "well_known": {
-            "oauth_protected_resource": "/.well-known/oauth-protected-resource",
-            "oauth_authorization_server": "/.well-known/oauth-authorization-server",
-            "openid_configuration": "/.well-known/openid-configuration",
-        },
+        "mcp_endpoint": "/templates/mcp/sse",  # Hint for users
     }
 
-
-@app.get("/private")
-async def private_route(user: AuthenticatedUser):
-    """Protected route that requires a valid Descope session."""
-    return {
-        "message": "You have accessed a private route!",
-        "user_id": user["user_id"],
-        "email": user.get("email"),
-        "authenticated": True,
-    }
-
-
-@app.get("/public")
-async def public_route():
-    """Public route - no authentication required."""
-    return {"message": "This is a public endpoint", "authenticated": False}
-
-
-# ============================================================================
-# Error Handlers
-# ============================================================================
-
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
-
-
-# ============================================================================
-# Run Server
-# ============================================================================
 
 if __name__ == "__main__":
     import uvicorn

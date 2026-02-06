@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from loguru import logger
 
 # import httpx
+from contextvars import ContextVar
 from starlette.responses import JSONResponse
 from fastapi import Depends, FastAPI, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,10 +16,10 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette import status
+from api.lib.exceptions import UnauthenticatedException, UnauthorizedException
 from api.lib.env import env_info  # Must be early import to load env vars
 from api.lib.descope.auth import TokenVerifier, AUTH
 from api.lib.descope.auth_config import get_settings
-from api.lib.exceptions import UnauthenticatedException
 from api.routes import executor_modes
 from api.routes import privacy_terms
 from api.routes import templates
@@ -41,7 +42,7 @@ else:
     _REDOC_URL = "/redoc"  # ReDoc path
 
 bearer_optional = HTTPBearer(auto_error=False)
-_request_auth_context: dict = {}
+auth_context_var: ContextVar[dict | None] = ContextVar("auth_context", default=None)
 
 
 def _get_docs_url(request: Request) -> str:
@@ -181,7 +182,7 @@ app.openapi = custom_openapi  # override OpenAPI generator
 async def oauth_protected_resource(path: str = ""):
     """OAuth 2.0 Protected Resource Metadata (RFC 8707)."""
     return {
-        "resource": _SETTINGS.FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL,
+        "resource": _SETTINGS.BASE_URL,
         "authorization_servers": _SETTINGS.authorization_servers,
         "bearer_methods_supported": ["header"],
         "scopes_supported": ["openid", "profile", "email"],
@@ -229,7 +230,9 @@ async def openid_configuration():
 @app.middleware("http")
 async def mcp_auth_middleware(request: Request, call_next):
     """Middleware to validate Descope tokens for MCP endpoint requests."""
-    global _request_auth_context
+    # Reset context for this request
+    token_data = auth_context_var.set(None)
+
     if request.url.path.startswith("/.well-known/"):
         return await call_next(request)
 
@@ -265,19 +268,28 @@ async def mcp_auth_middleware(request: Request, call_next):
                                 status_code=status.HTTP_403_FORBIDDEN,
                                 detail="Insufficient scopes for the requested resource",
                             )
-                        _request_auth_context["current"] = {
-                            "user_id": session.user_id,
-                            "claims": session.session,
-                        }
-
+                        auth_context_var.set(
+                            {
+                                "user_id": session.user_id,
+                                "claims": session.session,
+                            }
+                        )
+                except UnauthorizedException:
+                    return JSONResponse(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        content={"detail": "Invalid or expired token"},
+                        # headers={"WWW-Authenticate": "Bearer"},
+                        headers={
+                            "WWW-Authenticate": f'Bearer realm="OAuth", resource_metadata="{_SETTINGS.BASE_URL}/.well-known/oauth-protected-resource"'
+                        },
+                    )
                 except Exception:
-                    _request_auth_context["current"] = None
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Token validation failed",
                     )
         else:
-            _request_auth_context["current"] = None
+            auth_context_var.reset(token_data)
 
     response = await call_next(request)
     return response
