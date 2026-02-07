@@ -272,15 +272,19 @@ async def mcp_auth_middleware(request: Request, call_next):
 
                 is_tool_call = request_data.get("method") == "tools/call"
 
-                required_scopes = []
+                required_scopes = None
                 if is_tool_call:
                     logger.debug(
                         "mcp_auth_middleware() Detected tool call in MCP request"
                     )
-                    required_scopes = [
-                        "mcp:template:read",
-                        "api:context:read",
-                    ]  # get required scope for your tool
+                    scopes = env_info.get_api_scopes()
+                    required_scopes = list(
+                        scopes.read_scopes | scopes.write_scopes
+                    )  # get required scope for your tool
+                    logger.debug(
+                        "mcp_auth_middleware() Required at least one scope for tool call: {scopes}",
+                        scopes=required_scopes,
+                    )
 
                 try:
                     session = await AUTH.verify_token(token)
