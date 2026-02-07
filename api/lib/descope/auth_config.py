@@ -70,16 +70,13 @@ class Settings(BaseSettings):
 
     @property
     def scopes_supported(self) -> list[str]:
-        return [
-            "openid",
-            "profile",
-            "email",
-            "login_access",
-            "mcp:tools:invoke",
-            "mcp:context:read",
-            "api:context:read",
-            "mcp:template:read",
-        ]
+        scopes = env_info.get_api_scopes()
+        scopes_set = scopes.read_scopes | scopes.write_scopes
+        scopes_set.add("openid")
+        scopes_set.add("profile")
+        scopes_set.add("email")
+
+        return list(scopes_set)
 
     @property
     def claims_supported(self) -> list[str]:

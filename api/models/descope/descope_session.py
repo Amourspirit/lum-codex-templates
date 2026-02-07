@@ -167,14 +167,15 @@ class DescopeSession(BaseModel):
             match_any (bool): If true, validates that at least one of the specified scopes is granted. Default is false (all scopes must be granted).
         Return value (bool): returns true if all scopes granted; false if at least one scope not granted
         """
+        local_scopes = self.scopes
         if isinstance(scopes, str):
             scopes = [scopes]
         if match_any:
             for scope in scopes:
-                if scope in self.scopes:
+                if scope in local_scopes:
                     return True
             return False
         for scope in scopes:
-            if scope not in self.scopes:
+            if scope not in local_scopes:
                 return False
         return True

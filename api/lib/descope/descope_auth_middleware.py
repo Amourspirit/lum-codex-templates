@@ -37,17 +37,12 @@ class DescopeAuthMiddleware(BaseHTTPMiddleware):
             except (json.JSONDecodeError, UnicodeDecodeError):
                 request_data = {}
 
-            # validation_options = TokenValidationOptions(
-            #     issuer=settings.SCALEKIT_ENVIRONMENT_URL,
-            #     audience=[settings.SCALEKIT_AUDIENCE_NAME],
-            # )
-
             is_tool_call = request_data.get("method") == "tools/call"
 
             required_scopes = []
             if is_tool_call:
                 required_scopes = [
-                    "mc:template:read",
+                    "mcp:template:read",
                     "api:context:read",
                 ]  # get required scope for your tool
                 # validation_options.required_scopes = required_scopes
@@ -70,7 +65,6 @@ class DescopeAuthMiddleware(BaseHTTPMiddleware):
         except HTTPException as e:
             # resource_metadata=
             # This is  oauth-protected-resource such as `/.well-known/oauth-protected-resource/mcp`
-            pth = cfg.templates_mcp_path.rstrip("/")
             base_url = str(request.base_url).rstrip("/")
             return JSONResponse(
                 status_code=e.status_code,
