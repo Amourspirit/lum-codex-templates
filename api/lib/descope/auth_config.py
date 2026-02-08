@@ -36,6 +36,10 @@ class Settings(BaseSettings):
         return self.API_ENV_MODE == "prod"
 
     @property
+    def is_development(self) -> bool:
+        return self.API_ENV_MODE == "dev"
+
+    @property
     def authorization_servers(self) -> list[str]:
         return [f"{self.DESCOPE_API_BASE_URL}/{self.DESCOPE_PROJECT_ID}"]
 

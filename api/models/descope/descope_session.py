@@ -1,4 +1,4 @@
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
 from pydantic import BaseModel, Field
 from functools import cached_property
 from loguru import logger
@@ -12,6 +12,23 @@ class DescopeSession(BaseModel):
         dict[str, Any],
         Field(title="Session", description="The session data provided by Descope."),
     ]
+    access_token: Annotated[
+        Optional[str],
+        Field(
+            title="Access Token",
+            description="The raw access token string from Descope.",
+            default=None,
+        ),
+    ] = None
+
+    refresh_token: Annotated[
+        Optional[str],
+        Field(
+            title="Refresh Token",
+            description="The raw refresh token string from Descope.",
+            default=None,
+        ),
+    ] = None
 
     @cached_property
     def iat(self) -> str:
@@ -30,6 +47,15 @@ class DescopeSession(BaseModel):
             str: The user ID.
         """
         return self.session.get("sub", "")
+
+    @cached_property
+    def email(self) -> str:
+        """
+        Email associated with the session.
+        Returns:
+            str: The user's email.
+        """
+        return self.session.get("email", "")
 
     @cached_property
     def auth_methods(self) -> set[str]:

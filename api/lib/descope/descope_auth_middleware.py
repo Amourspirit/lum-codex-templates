@@ -3,7 +3,6 @@ from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from descope.descope_client import DescopeClient
-from api.config import cfg
 from . import auth
 
 # from fastapi.security import HTTPBearer
