@@ -1,3 +1,4 @@
+from typing import Literal
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from src.util.validation import check
@@ -11,12 +12,13 @@ class Settings(BaseSettings):
     DESCOPE_API_BASE_URL: str
     DESCOPE_FLOW_ID: str
     DESCOPE_INBOUND_APP_CLIENT_SECRET: str
+    DESCOPE_INBOUND_APP_CLIENT_ID: str
     DESCOPE_LOGIN_BASE_URL: str
-    API_ENV_MODE: str
     MCP_SERVER_URL: str
     BASE_URL: str
     FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_CONFIG_URL: str
     FASTMCP_SERVER_AUTH_DESCOPEPROVIDER_BASE_URL: str
+    API_ENV_MODE: Literal["dev", "prod"] = "prod"
     LOG_LEVEL: str = "INFO"
 
     def model_post_init(self, _context):
@@ -28,6 +30,10 @@ class Settings(BaseSettings):
                 "descope_api_base_url",
                 self.DESCOPE_API_BASE_URL.rstrip("/"),
             )
+
+    @property
+    def is_production(self) -> bool:
+        return self.API_ENV_MODE == "prod"
 
     @property
     def authorization_servers(self) -> list[str]:
