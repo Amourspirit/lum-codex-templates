@@ -120,6 +120,10 @@ class Settings(BaseSettings):
     def end_session_endpoint(self) -> str:
         return f"{self.DESCOPE_API_BASE_URL}/oauth2/v1/apps/logout"
 
+    @property
+    def api_callback_url(self) -> str:
+        return f"{self.BASE_URL}/callback"
+
 
 @lru_cache()
 def get_settings():

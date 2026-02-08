@@ -48,8 +48,6 @@ app = FastAPI()
 # --- Configuration ---
 auth_settings = get_settings()
 
-REDIRECT_URI = f"{auth_settings.BASE_URL}/callback"
-
 descope_client = DescopeClient(project_id=auth_settings.DESCOPE_PROJECT_ID)
 
 
@@ -74,9 +72,9 @@ def login(request: Request):
     params = {
         "response_type": "code",
         "client_id": auth_settings.DESCOPE_INBOUND_APP_CLIENT_ID,
-        "redirect_uri": REDIRECT_URI,
+        "redirect_uri": auth_settings.api_callback_url,  # Must match the one registered in Descope and used in /callback
         # "scope": "login_access api.context:read profile email profile",
-        "scope": "email profile",  # Standard scopes
+        "scope": "login_access api.context:read email profile",  # Standard scopes
         "state": state,
     }
 
@@ -162,7 +160,7 @@ async def callback(code: str, state: str | None, request: Request):
         token_data = {
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": REDIRECT_URI,
+            "redirect_uri": auth_settings.api_callback_url,  # Must match the one used in /login
             "client_id": auth_settings.DESCOPE_INBOUND_APP_CLIENT_ID,
             "client_secret": auth_settings.DESCOPE_INBOUND_APP_CLIENT_SECRET,
         }
