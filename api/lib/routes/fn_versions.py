@@ -69,16 +69,23 @@ def get_available_template_types() -> list[str]:
     return sorted(versions.templates.keys())
 
 
-def get_latest_version_for_template(template_type: str) -> str | None:
+def get_latest_version_for_template(
+    template_type: str, v_prefix: bool = True
+) -> str | None:
     """
     Retrieves the latest version string for a given template type.
     Args:
         template_type (str): The type of the template for which to get the latest version.
+        v_prefix (bool): If True, the returned version string starts with 'v'; Otherwise, it does not. Default is True.
     Returns:
         str | None: The latest version string if available, otherwise None.
     """
+    tp = template_type.lower()
     versions = get_available_versions()
-    template_entry = versions.templates.get(template_type)
+    template_entry = versions.templates.get(tp)
     if template_entry and template_entry.versions:
-        return template_entry.versions[0]  # Return the highest version
+        version = template_entry.versions[0]  # Return the highest version
+        if v_prefix and not version.startswith("v"):
+            version = f"v{version}"
+        return version
     return None

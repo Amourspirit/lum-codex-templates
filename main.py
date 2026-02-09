@@ -22,6 +22,7 @@ from api.routes import well_known
 from api.routes import auth_routes
 from api.routes import env_check
 from api.routes import doc_routes
+from api.routes import prompts
 from src.config.pkg_config import PkgConfig
 from api.mcp.servers import templates_mcp
 
@@ -116,6 +117,7 @@ app.include_router(templates.router)
 app.include_router(executor_modes.router)
 app.include_router(privacy_terms.router)
 app.include_router(well_known.router)  # Include the .well-known endpoints
+app.include_router(prompts.router)  # Include the prompts endpoints
 app.include_router(
     auth_routes.router
 )  # Include authentication routes (login/logout/callback)
