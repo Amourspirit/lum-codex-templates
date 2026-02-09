@@ -128,6 +128,9 @@ async def get_template(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     if artifact_name:
+        artifact_name = artifact_name.strip()
+
+    if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
     result = await fn_template.get_template(
@@ -135,6 +138,7 @@ async def get_template(
         version=version,
         app_root_url=app_root_url,
         monad_name=monad_name,
+        artifact_name=artifact_name,
     )
     return result.content
 
@@ -305,6 +309,7 @@ async def get_template_manifest(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
+        artifact_name=artifact_name,
     )
 
 

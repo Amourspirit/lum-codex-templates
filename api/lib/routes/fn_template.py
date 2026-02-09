@@ -52,7 +52,9 @@ from api.lib.exceptions import (
     VersionFormatError,
     VersionNoneError,
 )
+from api.lib.routes import api_path as api_path_utils
 from . import fn_versions
+from urllib.parse import quote
 
 _CONFIG = Config()
 _SETTINGS = PkgConfig()
@@ -89,7 +91,9 @@ def _get_template_manifest(
     version: str,
     app_root_url: str,
     server_mode_kind: ServerModeKind,
+    artifact_name: str | None = None,
 ) -> dict[str, Any]:
+    template_type = template_type.strip().lower()
     logger.debug(
         "Fetching manifest for template_type: {template_type}, version: {version}",
         template_type=template_type,
@@ -106,21 +110,23 @@ def _get_template_manifest(
         raise HTTPException(status_code=404, detail="Manifest file not found.")
     json_content: dict = json.loads(path.read_text())
     if server_mode_kind == ServerModeKind.API and app_root_url:
-        json_content["template_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}"
+        api_paths = api_path_utils.get_api_paths_template(
+            template_type=template_type,
+            version=ver,
+            app_root_url=app_root_url,
+            artifact_name=artifact_name,
         )
-        json_content["instructions_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/instructions"
+        json_content["template_api_path"] = api_paths["template_api_path"]
+        json_content["instructions_api_path"] = api_paths["instructions_api_path"]
+        json_content["registry_api_path"] = api_paths["registry_api_path"]
+        json_content["manifest_api_path"] = api_paths["manifest_api_path"]
+
+        # http://localhost:8000/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE?version=v1.0
+        api_path = api_path_utils.get_api_path_executor_mode(
+            version=json_content["canonical_mode"]["version"],
+            app_root_url=app_root_url,
         )
-        json_content["registry_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/registry"
-        )
-        json_content["manifest_api_path"] = (
-            f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/manifest"
-        )
-        json_content["executor_mode_api_path"] = (
-            f"{app_root_url}/executor_modes/{json_content['canonical_mode']['executor_mode']}-V{json_content['canonical_mode']['version']}"
-        )
+        json_content["executor_mode_api_path"] = api_path
     return json_content
 
 
@@ -146,7 +152,9 @@ async def get_template(
     app_root_url: str,
     monad_name: str | None = None,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
+    artifact_name: str | None = None,
 ) -> TemplateResponse:
+    template_type = template_type.strip().lower()
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
@@ -163,17 +171,22 @@ async def get_template(
             status_code=status.HTTP_404_NOT_FOUND, detail="Template file not found."
         )
     fm = FrontMatterMeta(file_path=path)
+
+    api_paths = api_path_utils.get_api_paths_template(
+        template_type=template_type,
+        version=ver,
+        app_root_url=app_root_url,
+        artifact_name=artifact_name,
+    )
+
     if fm.has_field("template_registry"):
-        api_path = f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/registry"
-        fm.frontmatter["template_registry"]["api_path"] = api_path
+        fm.frontmatter["template_registry"]["api_path"] = api_paths["registry_api_path"]
         fm.recompute_sha256()
 
     if not fm.has_field("instruction_info"):
         fm.set_field("instruction_info", {})
     fm.frontmatter["instruction_info"]["id"] = "instructions"
-    fm.frontmatter["instruction_info"]["api_path"] = (
-        f"{app_root_url}/{_TEMPLATE_DIR}/{template_type}/{ver}/instructions"
-    )
+    fm.frontmatter["instruction_info"]["api_path"] = api_paths["instructions_api_path"]
     text = fm.get_template_text()
     try:
         if monad_name:
@@ -211,6 +224,7 @@ async def get_template_instructions(
     artifact_name: str | None = None,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateInstructionsResponse:
+    template_type = template_type.strip().lower()
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
@@ -237,9 +251,14 @@ async def get_template_instructions(
     # process Jinja2 template
     cbib_ver = _SETTINGS.template_cbib_api.version
 
+    cem_api_path = None
     if server_mode_kind == ServerModeKind.API:
+        cem_api_path = api_path_utils.get_api_path_executor_mode(
+            version=fm.frontmatter["canonical_executor_mode"]["version"],
+            app_root_url=app_root_url,
+        )
         link_block = f"""📘 **API Definition:**  
-[`{_API_RELATIVE_URL}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver}`]({app_root_url}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver})"""
+[`{_API_RELATIVE_URL}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver}`]({cem_api_path})"""
     else:
         link_block = f"""📘 **MCP Definition:**
 
@@ -263,10 +282,8 @@ async def get_template_instructions(
     fm.content = content
 
     if fm.has_field("canonical_executor_mode"):
-        if server_mode_kind == ServerModeKind.API:
-            fm.frontmatter["canonical_executor_mode"]["api_path"] = (
-                f"{app_root_url}/executor_modes/CANONICAL-EXECUTOR-MODE-V{fm.frontmatter['canonical_executor_mode']['version']}"
-            )
+        if server_mode_kind == ServerModeKind.API and cem_api_path:
+            fm.frontmatter["canonical_executor_mode"]["api_path"] = cem_api_path
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["canonical_executor_mode"]["resource_uri"] = (
                 f"executor-mode://executor_mode/{cbib_ver}"
@@ -275,11 +292,18 @@ async def get_template_instructions(
                 "template_executor_mode"
             )
 
+    api_paths = api_path_utils.get_api_paths_template(
+        template_type=template_type,
+        version=ver,
+        app_root_url=app_root_url,
+        artifact_name=artifact_name,
+    )
+
     if fm.has_field("template_registry"):
         if server_mode_kind == ServerModeKind.API:
-            fm.frontmatter["template_registry"]["api_path"] = (
-                f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}/registry"
-            )
+            fm.frontmatter["template_registry"]["api_path"] = api_paths[
+                "registry_api_path"
+            ]
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["template_registry"]["mcp_tool_name"] = (
                 "get_template_registry"
@@ -287,9 +311,7 @@ async def get_template_instructions(
 
     if fm.has_field("template_info"):
         if server_mode_kind == ServerModeKind.API:
-            fm.frontmatter["template_info"]["api_path"] = (
-                f"{app_root_url}/{_TEMPLATE_DIR.name}/{template_type}/{ver}"
-            )
+            fm.frontmatter["template_info"]["api_path"] = api_paths["template_api_path"]
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["template_info"]["mcp_tool_name"] = "get_template"
 
@@ -310,6 +332,7 @@ async def get_template_registry(
     monad_name: str | None = None,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> dict[str, Any]:
+    template_type = template_type.strip().lower()
     reg = _get_template_registry(template_type, version)
 
     try:
@@ -334,6 +357,7 @@ async def get_template_status(
     version: str,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateStatusResponse:
+    template_type = template_type.strip().lower()
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
@@ -363,7 +387,9 @@ async def get_template_manifest(
     version: str,
     app_root_url: str,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
+    artifact_name: str | None = None,
 ) -> ManifestResponse:
+    template_type = template_type.strip().lower()
     v_result = _validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
@@ -374,7 +400,11 @@ async def get_template_manifest(
         )
     ver = v_result.data
     results_dict = _get_template_manifest(
-        template_type, ver, app_root_url, server_mode_kind=server_mode_kind
+        template_type,
+        ver,
+        app_root_url,
+        server_mode_kind=server_mode_kind,
+        artifact_name=artifact_name,
     )
     manifest = ManifestResponse(**results_dict)
     return manifest
@@ -509,12 +539,20 @@ async def verify_api_artifact(
 ) -> VerifyArtifactApiResponse:
     artifact_response = _verify_artifact(submission)
     default_result = artifact_response.model_dump()
-    template_api_path = f"{app_root_url}/{_TEMPLATE_DIR}/{artifact_response.template_type}/v{artifact_response.template_version}"
 
-    default_result["template_api_path"] = template_api_path
-    default_result["registry_api_path"] = f"{template_api_path}/registry"
-    default_result["manifest_api_path"] = f"{template_api_path}/manifest"
-    default_result["instructions_api_path"] = f"{template_api_path}/instructions"
+    artifact_name = submission.artifact_name if submission.artifact_name else None
+
+    api_paths = api_path_utils.get_api_paths_template(
+        template_type=artifact_response.template_type,
+        version=artifact_response.template_version,
+        app_root_url=app_root_url,
+        artifact_name=artifact_name,
+    )
+
+    default_result["template_api_path"] = api_paths["template_api_path"]
+    default_result["registry_api_path"] = api_paths["registry_api_path"]
+    default_result["manifest_api_path"] = api_paths["manifest_api_path"]
+    default_result["instructions_api_path"] = api_paths["instructions_api_path"]
     return VerifyArtifactApiResponse(**default_result)
 
 
