@@ -1,6 +1,7 @@
 from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
+from mcp.types import PromptMessage, TextContent
 
 from ..models.templates.artifact_submission import ArtifactSubmission
 from ..models.templates.upgrade_to_template_submission import (
@@ -19,7 +20,7 @@ from ..lib.routes import fn_template
 from ..lib.user.user_info import get_user_monad_name
 from ..lib.descope.session import get_descope_session
 from ..lib.env import env_info
-
+from ..lib.routes import fn_versions
 
 _TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
@@ -27,24 +28,49 @@ router = APIRouter(prefix="/api/v1/templates", tags=["Templates"])
 _API_RELATIVE_URL = "/api/v1"
 
 
+# region Helper Functions
+def _get_latest_template_version(template_type: str) -> str:
+    """
+    Helper function to get the latest version of a given template type.
+    Returns the highest version string or None if not found.
+    """
+    typ = template_type.lower()
+    templates_versions = fn_versions.get_available_versions()
+    template_entry = templates_versions.templates.get(typ)
+    if not template_entry:
+        raise ValueError(f"Template type '{typ}' not found.")
+    if not template_entry.versions:
+        raise ValueError(f"No versions found for template type '{typ}'.")
+    ver = template_entry.versions[0]
+    return f"v{ver}" if not ver.startswith("v") else ver
+
+
+# endregion Helper Functions
+
+
+# region Template Endpoints
+
+
 # rate limiting not working when caching is enabled
 # https://github.com/laurentS/slowapi/issues/252
 @router.get(
-    "/{template_type}/{version}",
+    "/{template_type}",
     response_class=MarkdownResponse,
     operation_id="get_template",
     description="Retrieve the template for a specific type and version.",
     summary="Retrieve a template by type and version",
-    tags=["codex-template"],
 )
 async def get_template(
     template_type: str,
-    version: str,
     request: Request,
     response: Response,
     artifact_name: str = Query(
         default=None,
         description="Optional name of the artifact this template is being applied to",
+    ),
+    version: str = Query(
+        default=None,
+        description="Optional version of the template to retrieve in the format of `vX.Y` or `X.Y`. If not provided, the latest version will be returned.",
     ),
     session: DescopeSession = Depends(get_descope_session),
 ) -> str:
@@ -52,17 +78,16 @@ async def get_template(
     Retrieve a template by its type and version.
 
     - **template_type**: The type of the template to retrieve.
-    - **version**: The version of the template to retrieve in the format of `vX.Y` or `X.Y`.
     - **artifact_name**: (Optional) Name of the artifact this template is being applied to.
+    - **version**: (optional) The version of the template in the format of `vX.Y` or `X.Y`.
 
     \f
     Args:
         template_type (str): type of the template to retrieve.
-        version (str): version of the template to retrieve.
-        request (Request): the incoming HTTP request.
-        response (Response): the HTTP response object.
         artifact_name (str, optional): optional name of the artifact this template is being applied to.
-        session: DescopeSession = Depends(get_descope_session),
+            Defaults to None.
+        version (str, optional): The specific version of the template to retrieve. If not provided, the latest version will be used.
+            Defaults to None.
 
     Raises:
         HTTPException:
@@ -96,6 +121,16 @@ async def get_template(
 
     monad_name = get_user_monad_name(session)
 
+    if not version:
+        try:
+            version = _get_latest_template_version(template_type)
+            logger.debug(
+                "No version specified. Using latest version: {version}", version=version
+            )
+        except ValueError as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -110,21 +145,23 @@ async def get_template(
 
 # rate limiting not working when caching is enabled
 @router.get(
-    "/{template_type}/{version}/instructions",
+    "/{template_type}/instructions",
     response_class=MarkdownResponse,
     operation_id="get_template_instructions",
     description="Retrieve the instructions for a specific template type and version.",
     summary="Retrieve template instructions by type and version",
-    tags=["codex-template"],
 )
 async def get_template_instructions(
     template_type: str,
-    version: str,
     request: Request,
     response: Response,
     artifact_name: str = Query(
         default=None,
         description="Optional name of the artifact this template is being applied to",
+    ),
+    version: str = Query(
+        default=None,
+        description="Optional version of the template to retrieve in the format of `vX.Y` or `X.Y`. If not provided, the latest version will be returned.",
     ),
     session: DescopeSession = Depends(get_descope_session),
 ) -> str:
@@ -135,18 +172,15 @@ async def get_template_instructions(
     frontmatter metadata with absolute API paths.
 
     - **template_type**: The type of the template.
-    - **version**: The version of the template in the format of `vX.Y` or `X.Y`.
     - **artifact_name**: (Optional) Name of the artifact this template is being applied to.
+    - **version**: (optional) The version of the template in the format of `vX.Y` or `X.Y`.
 
     \f
     Args:
         template_type (str): The category or type of the template.
-        version (str): The specific version of the template to retrieve.
-        request (Request): The FastAPI request object used to resolve base URLs.
-        response (Response): The FastAPI response object used to set custom headers.
         artifact_name (str, optional): An optional name of the artifact to be injected
             into the template text. Defaults to None.
-        session (DescopeSession): The authenticated user session containing security scopes.
+        version (str, optional): The specific version of the template to retrieve. If not provided, the latest version will be used.
     Returns:
         str: The processed template instructions with placeholders resolved.
     Raises:
@@ -176,6 +210,16 @@ async def get_template_instructions(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
+    if not version:
+        try:
+            version = _get_latest_template_version(template_type)
+            logger.debug(
+                "No version specified. Using latest version: {version}", version=version
+            )
+        except ValueError as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -190,21 +234,23 @@ async def get_template_instructions(
 
 # rate limiting not working when caching is enabled
 @router.get(
-    "/{template_type}/{version}/manifest",
+    "/{template_type}/manifest",
     response_model=ManifestResponse,
     operation_id="get_template_manifest",
     description="Retrieve the manifest for a specific template type and version.",
     summary="Retrieve template manifest by type and version",
-    tags=["codex-template"],
 )
 async def get_template_manifest(
     template_type: str,
-    version: str,
     request: Request,
     response: Response,
     artifact_name: str = Query(
         default=None,
         description="Optional name of the artifact this template is being applied to",
+    ),
+    version: str = Query(
+        default=None,
+        description="Optional version of the template to retrieve in the format of `vX.Y` or `X.Y`. If not provided, the latest version will be returned.",
     ),
     session: DescopeSession = Depends(get_descope_session),
 ) -> ManifestResponse:
@@ -212,17 +258,14 @@ async def get_template_manifest(
     Retrieves the manifest for a specific template type and version.
 
     - **template_type**: The type of the template.
-    - **version**: The version of the template in the format of `vX.Y` or `X.Y`.
+    - **version**: (optional) The version of the template in the format of `vX.Y` or `X.Y`.
     - **artifact_name**: (Optional) Name of the artifact this template is being applied to.
 
     \f
     Args:
         template_type (str): The category or type of the template.
-        version (str): The specific version of the template.
-        request (Request): The incoming FastAPI request object.
-        response (Response): The FastAPI response object, used to append custom headers.
+        version (str, optional): The specific version of the template to retrieve. If not provided, the latest version will be used.
         artifact_name (str, optional): Optional name of the artifact this template is being applied to.
-        session (DescopeSession): The authenticated user session, derived from dependencies.
     Returns:
         ManifestResponse: The validated manifest object for the requested template.
     Raises:
@@ -249,6 +292,16 @@ async def get_template_manifest(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
+    if not version:
+        try:
+            version = _get_latest_template_version(template_type)
+            logger.debug(
+                "No version specified. Using latest version: {version}", version=version
+            )
+        except ValueError as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -260,21 +313,23 @@ async def get_template_manifest(
 
 
 @router.get(
-    "/{template_type}/{version}/registry",
+    "/{template_type}/registry",
     response_class=JSONResponse,
     operation_id="get_template_registry",
     description="Retrieve the template registry for a given type and version.",
     summary="Retrieve template registry by type and version",
-    tags=["codex-template"],
 )
 async def get_template_registry(
     template_type: str,
-    version: str,
     request: Request,
     response: Response,
     artifact_name: str = Query(
         default=None,
         description="Optional name of the artifact this template is being applied to",
+    ),
+    version: str = Query(
+        default=None,
+        description="Optional version of the template to retrieve in the format of `vX.Y` or `X.Y`. If not provided, the latest version will be returned.",
     ),
     session: DescopeSession = Depends(get_descope_session),
 ):
@@ -286,16 +341,15 @@ async def get_template_registry(
     if an artifact name is provided.
 
     - **template_type**: The type/category of the template registry to retrieve.
-    - **version**: The version of the template registry in the format of `vX.Y` or `X.Y`.
     - **artifact_name**: (Optional) Name of the artifact this template is being applied to.
+    - **version**: (optional) The version of the template in the format of `vX.Y` or `X.Y`.
 
     \f
     Args:
         template_type (str): The category or type of the template registry to retrieve.
-        version (str): The specific version of the template registry.
-        request (Request): The incoming FastAPI request object.
-        response (Response): The outgoing FastAPI response object used to append custom headers.
         artifact_name (str, optional): The name of the artifact the template is applied to.
+            Defaults to None.
+        version (str, optional): The specific version of the template to retrieve. If not provided, the latest version will be used.
             Defaults to None.
         session (DescopeSession): The authenticated user session obtained via dependency injection.
     Returns:
@@ -322,6 +376,16 @@ async def get_template_registry(
 
     monad_name = get_user_monad_name(session)
 
+    if not version:
+        try:
+            version = _get_latest_template_version(template_type)
+            logger.debug(
+                "No version specified. Using latest version: {version}", version=version
+            )
+        except ValueError as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
     if artifact_name:
         response.headers["X-Artifact-Name"] = artifact_name
 
@@ -333,17 +397,18 @@ async def get_template_registry(
 
 
 @router.get(
-    "/{template_type}/{version}/status",
+    "/{template_type}/status",
     response_model=TemplateStatusResponse,
     operation_id="get_template_status",
     description="Retrieve the current status of a specific template version.",
     summary="Get template status by type and version",
-    tags=["codex-template"],
 )
 async def get_template_status(
     template_type: str,
-    version: str,
-    request: Request,
+    version: str = Query(
+        default=None,
+        description="Optional version of the template to retrieve in the format of `vX.Y` or `X.Y`. If not provided, the latest version will be returned.",
+    ),
     session: DescopeSession = Depends(get_descope_session),
 ):
     """
@@ -353,14 +418,13 @@ async def get_template_status(
     and required permissions.
 
     - **template_type**: The type/category of the template.
-    - **version**: The version of the template in the format of `vX.Y` or `X.Y`.
+    - **artifact_name**: (Optional) Name of the artifact this template is being applied to.
 
     \f
     Args:
         template_type (str): The category or type designation of the template.
-        version (str): The version string of the template to query.
-        request (Request): The FastAPI request object.
-        session (DescopeSession): The authenticated user session obtained from the dependency.
+        version (str, optional): The specific version of the template to retrieve. If not provided, the latest version will be used.
+            Defaults to None.
     Returns:
         TemplateStatusResponse: A response object containing availability status,
             versioning info, and the last verification timestamp.
@@ -384,6 +448,16 @@ async def get_template_status(
             detail="Authentication required to access template status.",
         )
 
+    if not version:
+        try:
+            version = _get_latest_template_version(template_type)
+            logger.debug(
+                "No version specified. Using latest version: {version}", version=version
+            )
+        except ValueError as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
     return await fn_template.get_template_status(
         template_type=template_type, version=version
     )
@@ -395,7 +469,6 @@ async def get_template_status(
     operation_id="post_verify_artifact",
     description="Verify the metadata fields of a template artifact against a registered schema.",
     summary="Verify template artifact metadata fields",
-    tags=["codex-template"],
 )
 async def verify_artifact(
     submission: ArtifactSubmission,
@@ -466,7 +539,6 @@ async def verify_artifact(
     operation_id="post_finalize_artifact",
     description="Finalize an artifact submission by cleaning and validating its metadata fields.",
     summary="Finalize template artifact metadata fields",
-    tags=["codex-template"],
 )
 async def finalize_artifact(
     submission: ArtifactSubmission,
@@ -529,7 +601,6 @@ async def finalize_artifact(
     operation_id="post_upgrade_artifact",
     description="Upgrade an artifact to a new template version by applying necessary transformations.",
     summary="Upgrade template artifact to new version",
-    tags=["codex-template"],
 )
 async def upgrade_to_template(
     submission: UpgradeToTemplateSubmission,
@@ -582,3 +653,111 @@ async def upgrade_to_template(
     return await fn_template.upgrade_to_api_template(
         submission=submission, app_root_url=app_root_url
     )
+
+
+# endregion Template Endpoints
+
+
+# region Template Prompts
+@router.get(
+    "/prompt/{template_type}/{artifact_name}",
+    response_class=JSONResponse,
+    operation_id="prompt_template_upgrade",
+    description="Retrieve a structured prompt for upgrading an artifact to the latest version of a specified template type. The prompt includes instructions, template content, and registry information to guide the upgrade process.",
+    summary="Retrieve a structured prompt for upgrading an artifact to the latest template version",
+)
+async def get_template_prompt(
+    template_type: str,
+    artifact_name: str,
+    request: Request,
+    response: Response,
+    session: DescopeSession = Depends(get_descope_session),
+):
+
+    if session:
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.read_scopes):
+            logger.error("Insufficient scope to access template registry.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient scope to access template registry.",
+            )
+    else:
+        logger.error("Authentication required to access template registry.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to access template registry.",
+        )
+
+    tt = template_type.strip().lower()
+    if not tt:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Template type is required.",
+        )
+
+    try:
+        latest_version = _get_latest_template_version(template_type)
+        logger.debug(
+            "No version specified. Using latest version: {version}",
+            version=latest_version,
+        )
+    except ValueError as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+    if artifact_name:
+        response.headers["X-Artifact-Name"] = artifact_name
+
+    system_content = (
+        "You are an assistant that can:  \n"
+        "- Call tools (e.g. `get_codex_template_instructions`) to perform active queries.\n"
+        "- Load resources (URIs starting with `executor-mode://`) to read static documentation.\n"
+        "\n"
+        "Available tools:  \n"
+        "  1. get_codex_template(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)\n"
+        "    - Use this when you need to get the full template content for a specific type and version.\n"
+        "  2. get_codex_template_instructions(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional, input_artifact_name: ArgArtifactNameOptional)\n"
+        "    - Use this when you need to get the instructions on how to apply templates.\n"
+        "  3. get_codex_template_registry(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)\n"
+        "    - Use this when you need to get the registry for the template. This registry determines how the metadata in the template is structured and the rules to apply.\n"
+        "  4. verify_codex_template_artifact(artifact_name: str, template_content: str)\n"
+        "    - Use this to verify the metadata fields of a template artifact against the registered schema.\n"
+        "    - Input `template_content` should include the full markdown content with frontmatter.\n"
+        "  5. finalize_codex_template_artifact(artifact_name: str, template_content: str)\n"
+        "    - Use this to finalize an artifact submission by validating and cleaning its metadata.\n"
+        "    - Input `template_content` should include the full markdown content with frontmatter.\n"
+        "\n\n"
+        "Available resources:  \n"
+        "  1. executor-mode://default_executor_mode\n"
+        "    - Executor mode used when applying templates.\n"
+    )
+    system_msg = PromptMessage(
+        role="assistant", content=TextContent(type="text", text=system_content)
+    )
+
+    user_content = (
+        f"Upgrade the artifact named '{artifact_name}' to the latest template of type `{tt}` and version '{latest_version}'.  \n"
+        f'  1. Call tool `get_codex_template({{"input_type":{{"type":"{tt}"}},"input_ver":{{"version":"{latest_version}"}}}})` to get the full template content.\n'
+        "    - This is the target template to upgrade to.\n"
+        "  2. Use the resource `executor-mode://default_executor_mode` to understand the executor mode to apply the template.\n"
+        f'  3. Call tool `get_codex_template_registry({{"input_type":{{"type":"{tt}"}},"input_ver":{{"version":"{latest_version}"}}}})` to get the template registry.\n'
+        "    - Use this registry to understand the structure and rules for the template metadata.\n"
+        f'  4. Call tool `get_codex_template_instructions({{"input_type":{{"type":"{tt}"}},"input_ver":{{"version":"{latest_version}"}},"input_artifact_name":{{"name":"{artifact_name}"}}}})` to get the instructions for applying the template.\n'
+        "    - Use these instructions to guide the upgrade process.\n"
+        "\n"
+        "Proceed to upgrade the artifact by applying the template according to the instructions and registry rules.\n"
+        "Now that the the upgrade is complete, it is time to verify and finalize the upgraded artifact.\n"
+        "\n"
+        "4. Pass the upgraded template content, including the full markdown content with frontmatter, to `verify_codex_template_artifact` tool to verify the metadata fields.\n"
+        "5. Next, pass the verified template content to `finalize_codex_template_artifact` tool to finalize the artifact submission.\n"
+        "6. Provide the finalized artifact as the output."
+    )
+
+    user_msg = PromptMessage(
+        role="user", content=TextContent(type="text", text=user_content)
+    )
+
+    return [system_msg, user_msg]
+
+
+# endregion Template Prompts

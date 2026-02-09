@@ -149,7 +149,7 @@ async def callback(code: str, state: str | None, request: Request):
         refresh_token = tokens.get("refresh_token")
         max_age = tokens.get("expires_in", 3600)  # Default to 1 hour if not provided
 
-        redirect_response = RedirectResponse(url="/dashboard")
+        redirect_response = RedirectResponse(url="/docs")
 
         secure = (
             _AUTH_SETTINGS.is_production
