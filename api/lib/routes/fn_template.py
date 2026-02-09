@@ -116,17 +116,23 @@ def _get_template_manifest(
             app_root_url=app_root_url,
             artifact_name=artifact_name,
         )
-        json_content["template_api_path"] = api_paths["template_api_path"]
-        json_content["instructions_api_path"] = api_paths["instructions_api_path"]
-        json_content["registry_api_path"] = api_paths["registry_api_path"]
-        json_content["manifest_api_path"] = api_paths["manifest_api_path"]
+        json_content["template_info"]["api_path"] = api_paths["template_api_path"]
+        json_content["instructions_info"]["api_path"] = api_paths[
+            "instructions_api_path"
+        ]
+        json_content["registry_info"]["api_path"] = api_paths["registry_api_path"]
+        json_content["api_path"] = api_paths["manifest_api_path"]
 
         # http://localhost:8000/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE?version=v1.0
+        c_result = _validate_version_str(json_content["canonical_mode"]["version"])
+        if not Result.is_success(c_result):
+            raise HTTPException(status_code=400, detail=str(c_result.error))
+        c_ver = c_result.data
         api_path = api_path_utils.get_api_path_executor_mode(
-            version=json_content["canonical_mode"]["version"],
+            version=c_ver,
             app_root_url=app_root_url,
         )
-        json_content["executor_mode_api_path"] = api_path
+        json_content["canonical_mode"]["api_path"] = api_path
     return json_content
 
 

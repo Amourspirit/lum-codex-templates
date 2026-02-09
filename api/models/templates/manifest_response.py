@@ -1,52 +1,22 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class CanonicalMode(BaseModel):
-    version: Annotated[
+class TemplateInfo(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    template_type: Annotated[
         str,
         Field(
-            title="Executor Mode Version",
-            description="The version of the executor mode used by the template.",
-        ),
-    ]
-    executor_mode: Annotated[
-        str,
-        Field(
-            title="Executor Mode",
-            description="The name of the executor mode used by the template.",
+            title="Template Type",
+            description="Type of the template.",
         ),
     ]
 
-
-class ManifestMcpResponse(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    registry_file: Annotated[
-        str,
-        Field(
-            title="Registry File",
-            description="Name of the registry file associated with the template. E.g., `registry.json`.",
-        ),
-    ]
     template_file: Annotated[
         str,
         Field(
             title="Template File",
             description="Name of the template file associated with the template. E.g., `template.md`.",
-        ),
-    ]
-    template_type: Annotated[
-        str,
-        Field(
-            title="Template Type",
-            description="Type of the template. E.g., `glyph`.",
-        ),
-    ]
-    template_hash_algorithm: Annotated[
-        str,
-        Field(
-            title="Template Hash Algorithm",
-            description="Hash algorithm used for the template. E.g., `sha256`.",
         ),
     ]
     version: Annotated[
@@ -70,19 +40,11 @@ class ManifestMcpResponse(BaseModel):
             description="Hash value of the template file, excluding the templates front-matter `template_hash` field.",
         ),
     ]
-    registry_id: Annotated[
+    template_hash_algorithm: Annotated[
         str,
         Field(
-            title="Registry ID",
-            description="Unique identifier for the registry.",
-        ),
-    ]
-
-    canonical_mode: Annotated[
-        CanonicalMode,
-        Field(
-            title="Canonical Mode",
-            description="Information about the canonical executor mode for this template.",
+            title="Template Hash Algorithm",
+            description="Hash algorithm used for the template. E.g., `sha256`.",
         ),
     ]
     status: Annotated[
@@ -99,13 +61,36 @@ class ManifestMcpResponse(BaseModel):
             description="Indicates if the template requires a field being for execution.",
         ),
     ]
-    installed_at: Annotated[
+
+    template_id: Annotated[
         str,
         Field(
-            title="Installed At",
-            description="The date and time when the template was installed.",
+            title="Template ID",
+            description="Unique identifier for the template.",
         ),
     ]
+
+
+class RegistryInfo(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    registry_id: Annotated[
+        str,
+        Field(
+            title="Registry ID",
+            description="Unique identifier for the registry.",
+        ),
+    ]
+    registry_file: Annotated[
+        str,
+        Field(
+            title="Registry File",
+            description="Name of the registry file associated with the template. E.g., `registry.json`.",
+        ),
+    ]
+
+
+class InstructionsInfo(BaseModel):
+    model_config = ConfigDict(extra="allow")
     instructions_file: Annotated[
         str,
         Field(
@@ -113,11 +98,83 @@ class ManifestMcpResponse(BaseModel):
             description="Name of the instructions file for the template. E.g., `instructions.md`.",
         ),
     ]
-    template_id: Annotated[
+
+
+class CanonicalMode(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    version: Annotated[
         str,
         Field(
-            title="Template ID",
-            description="Unique identifier for the template.",
+            title="Executor Mode Version",
+            description="The version of the executor mode used by the template.",
+        ),
+    ]
+    executor_mode: Annotated[
+        str,
+        Field(
+            title="Executor Mode",
+            description="The name of the executor mode used by the template.",
+        ),
+    ]
+
+
+class ManifestMcpResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    name: Annotated[
+        str,
+        Field(
+            title="Manifest Name",
+            description="Name of the manifest.",
+        ),
+    ]
+    version: Annotated[
+        str,
+        Field(
+            title="Manifest Version",
+            description="Version of the manifest.",
+        ),
+    ]
+    description: Annotated[
+        str,
+        Field(
+            title="Manifest Description",
+            description="Description of the manifest.",
+        ),
+    ]
+    template_info: Annotated[
+        TemplateInfo,
+        Field(
+            title="Template Information",
+            description="Information about the template associated with the manifest.",
+        ),
+    ]
+    registry_info: Annotated[
+        RegistryInfo,
+        Field(
+            title="Registry Information",
+            description="Information about the registry associated with the template.",
+        ),
+    ]
+    instructions_info: Annotated[
+        InstructionsInfo,
+        Field(
+            title="Instructions Information",
+            description="Information about the instructions associated with the template.",
+        ),
+    ]
+    installed_at: Annotated[
+        str,
+        Field(
+            title="Installed At",
+            description="Timestamp indicating when the template was installed.",
+        ),
+    ]
+
+    canonical_mode: Annotated[
+        CanonicalMode,
+        Field(
+            title="Canonical Mode",
+            description="Information about the canonical executor mode for this template.",
         ),
     ]
 
@@ -130,39 +187,4 @@ class ManifestMcpResponse(BaseModel):
 
 
 class ManifestResponse(ManifestMcpResponse):
-    # Optional fields that may be added dynamically by the API
-    template_api_path: Annotated[
-        Optional[str],
-        Field(
-            title="Template API Path",
-            description="The API path to retrieve the template content.",
-        ),
-    ] = None
-    instructions_api_path: Annotated[
-        Optional[str],
-        Field(
-            title="Instructions API Path",
-            description="The API path to retrieve the template instructions.",
-        ),
-    ] = None
-    registry_api_path: Annotated[
-        Optional[str],
-        Field(
-            title="Registry API Path",
-            description="The API path to retrieve the template registry.",
-        ),
-    ] = None
-    manifest_api_path: Annotated[
-        Optional[str],
-        Field(
-            title="Manifest API Path",
-            description="The API path to retrieve the template manifest.",
-        ),
-    ] = None
-    executor_mode_api_path: Annotated[
-        Optional[str],
-        Field(
-            title="Executor Mode API Path",
-            description="The API path to retrieve the executor mode information.",
-        ),
-    ] = None
+    model_config = ConfigDict(extra="allow")

@@ -1,19 +1,28 @@
 {
-    "registry_file": "registry.json",
-    "template_file": "template.md",
-    "template_type": "sigil",
-    "template_hash_algorithm": "sha256",
-    "version": "2.10",
-    "hash": "aaf4528c147b3f95243336a42026fa2cb97d1eeec38e8373fd7dacb2e9bafc28",
-    "template_hash": "aaf4528c147b3f95243336a42026fa2cb97d1eeec38e8373fd7dacb2e9bafc28",
-    "registry_id": "TEMPLATE-SIGIL-V2.10-REGISTRY",
+    "name": "template_manifest_sigil",
+    "version": "0.1.0",
+    "description": "manifest for version 2.10 for template type sigil",
+    "template_info": {
+        "template_type": "sigil",
+        "template_file": "template.md",
+        "version": "2.10",
+        "hash": "aaf4528c147b3f95243336a42026fa2cb97d1eeec38e8373fd7dacb2e9bafc28",
+        "template_hash": "aaf4528c147b3f95243336a42026fa2cb97d1eeec38e8373fd7dacb2e9bafc28",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-SIGIL-V2.10"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-SIGIL-V2.10-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-09T18:26:21.536187-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"
-    },
-    "status": "available",
-    "requires_field_being": true,
-    "installed_at": "2026-02-01T15:29:46.200177-05:00",
-    "instructions_file": "instructions.md",
-    "template_id": "TEMPLATE-SIGIL-V2.10"
+    }
 }

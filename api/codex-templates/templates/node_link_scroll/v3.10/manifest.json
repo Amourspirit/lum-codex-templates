@@ -1,19 +1,28 @@
 {
-    "registry_file": "registry.json",
-    "template_file": "template.md",
-    "template_type": "node_link_scroll",
-    "template_hash_algorithm": "sha256",
-    "version": "3.10",
-    "hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
-    "template_hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
-    "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
+    "name": "template_manifest_node_link_scroll",
+    "version": "0.1.0",
+    "description": "manifest for version 3.10 for template type node_link_scroll",
+    "template_info": {
+        "template_type": "node_link_scroll",
+        "template_file": "template.md",
+        "version": "3.10",
+        "hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
+        "template_hash": "b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-09T18:26:21.178393-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"
-    },
-    "status": "available",
-    "requires_field_being": true,
-    "installed_at": "2026-02-01T15:29:45.402986-05:00",
-    "instructions_file": "instructions.md",
-    "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.10"
+    }
 }
