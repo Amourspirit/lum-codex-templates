@@ -597,21 +597,21 @@ The return version will have a prefix of 'v', e.g., 'v1.0'.""",
 
         return fn_versions.get_available_template_types()
 
-    # endregion Tools
-
-    # region Resources
-    @mcp.resource(
-        "manifest://manifest/{template_type}/{?version}",
+    @mcp.tool(
         name="get_codex_template_manifest",
-        title="Template Manifest",
-        mime_type="application/json",
+        title="Codex Template Manifest",
         tags=set(["codex-template"]),
         meta={"response_content_mime_type": "application/json"},
-        annotations={"readOnlyHint": True, "idempotentHint": True},
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "destructiveHint": False,
+        },
+        description="Use this tool to retrieve the manifest for a specific codex template type and version.",
     )
-    async def manifest(
-        template_type: str,
-        version: str = "latest",
+    async def get_codex_template_manifest(
+        input_type: ArgTemplateType,
+        input_ver: ArgTemplateVersionOptional,
         ctx: Context = CurrentContext(),
     ) -> ManifestMcpResponse:
         """
@@ -635,25 +635,33 @@ The return version will have a prefix of 'v', e.g., 'v1.0'.""",
                 detail=f"Authentication failed: {str(e)}",
             )
 
-        if not version or version == "latest":
+        typ = input_type.type.strip().lower()
+        if not typ:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Template type is required.",
+            )
+
+        if not input_ver.version or input_ver.version == "latest":
+            logger.debug("Fetching latest version for template type: {typ}", typ=typ)
             try:
-                ver = _get_latest_template_version(template_type=template_type)
+                ver = _get_latest_template_version(template_type=typ)
             except ValueError as e:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
                 )
         else:
-            ver = version
+            ver = input_ver.version.lower()
 
         result = await fn_template.get_template_manifest(
-            template_type=template_type,
+            template_type=typ,
             version=ver,
             app_root_url="",
             server_mode_kind=ServerModeKind.MCP,
         )
         return ManifestMcpResponse.from_manifest_response(result)
 
-    # endregion Resources
+        # endregion Tools
 
     # region Prompts
     # Prompt returning a specific message type

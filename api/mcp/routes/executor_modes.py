@@ -85,6 +85,7 @@ async def _get_template_cbib_internal(input: ArgTemplateVersion) -> CbibResponse
 
 
 def register_routes(mcp: FastMCP):
+    # region Resources
     @mcp.resource(
         "executor-mode://executor_mode/{version}",
         title="Get Template Executor Mode (CBIB) by Version",
@@ -93,7 +94,7 @@ def register_routes(mcp: FastMCP):
         tags=set(["codex-template", "executor-modes"]),
         annotations={"readOnlyHint": True, "idempotentHint": True},
     )
-    async def template_executor_mode(
+    async def template_executor_mode_resource(
         version: str, ctx: Context = CurrentContext()
     ) -> CbibResponse:
         return await _get_template_cbib_internal(ArgTemplateVersion(version=version))
@@ -106,7 +107,7 @@ def register_routes(mcp: FastMCP):
         description="Use this executor_mode resource when the for applying default executor mode to codex templates.",
         annotations={"readOnlyHint": True, "idempotentHint": True},
     )
-    async def default_template_executor_mode(
+    async def default_template_executor_mode_resource(
         ctx: Context = CurrentContext(),
     ) -> CbibResponse:
         default_version = _SETTINGS.template_cbib_api.version
@@ -120,3 +121,42 @@ def register_routes(mcp: FastMCP):
         version_input = ArgTemplateVersion(version=ver)
         response = await _get_template_cbib_internal(version_input)
         return response
+
+    # endregion Resources
+
+    # region Tools
+    @mcp.tool(
+        name="get_canonical_executor_mode",
+        title="Get Template Executor Mode (CBIB) by Version",
+        description="Use this tool when asked to retrieve the Canonical Executor Mode (CBIB) for a specific executor mode version that is used in Codex templates.",
+        tags=set(["codex-template", "executor-modes"]),
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+    )
+    async def template_executor_mode_tool(
+        version: str, ctx: Context = CurrentContext()
+    ) -> CbibResponse:
+        return await _get_template_cbib_internal(ArgTemplateVersion(version=version))
+
+    @mcp.tool(
+        name="get_default_canonical_executor_mode",
+        title="Get Template Executor Mode (CBIB) by Version",
+        description="Use this tool when asked to retrieve the default Canonical Executor Mode (CBIB) that is used in Codex templates.",
+        tags=set(["codex-template", "executor-modes"]),
+        annotations={"readOnlyHint": True, "idempotentHint": True},
+    )
+    async def get_default_template_executor_mode_tool(
+        ctx: Context = CurrentContext(),
+    ) -> CbibResponse:
+        default_version = _SETTINGS.template_cbib_api.version
+        v_result = _validate_version_str(f"v{default_version}")
+        if not Result.is_success(v_result):
+            raise ResourceError(str(v_result.error))
+        ver = v_result.data
+
+        logger.debug("resource://default_cbib: Default CBIB version: {v}", v=ver)
+        # get the default CBIB  from get_template_cbib
+        version_input = ArgTemplateVersion(version=ver)
+        response = await _get_template_cbib_internal(version_input)
+        return response
+
+    # endregion Tools
