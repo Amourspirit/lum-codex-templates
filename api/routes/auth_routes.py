@@ -18,7 +18,7 @@ router = APIRouter(tags=["Authorization", "Authentication"])
 
 
 # region Login/Logout Routes
-@router.get("/login")
+@router.get("/login", include_in_schema=False)
 def login(request: Request):
     """
     Redirects to Descope for auth, BUT skips if already logged in.
@@ -61,7 +61,7 @@ def login(request: Request):
     return response
 
 
-@router.get("/logout")
+@router.get("/logout", include_in_schema=False)
 def logout(request: Request):
     """
     Logs the user out by:
@@ -91,7 +91,7 @@ def logout(request: Request):
     return response
 
 
-@router.get("/dashboard")
+@router.get("/dashboard", include_in_schema=False)
 def dashboard(session_user: DescopeSession = Depends(get_descope_session)):
     return {
         "message": "Welcome to the secret dashboard",
@@ -100,7 +100,7 @@ def dashboard(session_user: DescopeSession = Depends(get_descope_session)):
     }
 
 
-@router.get("/callback")
+@router.get("/callback", include_in_schema=False)
 async def callback(code: str, state: str | None, request: Request):
     """
     2. Descope redirects the user back here with a 'code'.

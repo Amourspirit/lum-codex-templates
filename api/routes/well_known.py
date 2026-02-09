@@ -9,8 +9,10 @@ router = APIRouter(tags=["Authorization", "Authentication"])
 # ============================================================================
 
 
-@router.get("/.well-known/oauth-protected-resource")
-@router.get("/.well-known/oauth-protected-resource/{path:path}")
+@router.get("/.well-known/oauth-protected-resource", include_in_schema=False)
+@router.get(
+    "/.well-known/oauth-protected-resource/{path:path}", include_in_schema=False
+)
 async def oauth_protected_resource(path: str = ""):
     """OAuth 2.0 Protected Resource Metadata (RFC 8707)."""
     return {
@@ -21,7 +23,7 @@ async def oauth_protected_resource(path: str = ""):
     }
 
 
-@router.get("/.well-known/oauth-authorization-server")
+@router.get("/.well-known/oauth-authorization-server", include_in_schema=False)
 async def oauth_authorization_server():
     """OAuth 2.0 Authorization Server Metadata (RFC 8414)."""
     return {
@@ -36,7 +38,7 @@ async def oauth_authorization_server():
     }
 
 
-@router.get("/.well-known/openid-configuration")
+@router.get("/.well-known/openid-configuration", include_in_schema=False)
 async def openid_configuration():
     """OpenID Connect Discovery endpoint."""
     return {
