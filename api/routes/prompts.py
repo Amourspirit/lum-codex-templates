@@ -30,13 +30,13 @@ def _get_latest_template_version(template_type: str) -> str:
 
 # region Template Prompts
 @router.get(
-    "/prompt/{template_type}/{artifact_name}",
+    "/upgrade_template/{template_type}/{artifact_name}",
     response_class=MarkdownResponse,
     operation_id="prompt_template_upgrade",
     description="Retrieve a structured prompt for upgrading an artifact to the latest version of a specified template type. The prompt includes instructions, template content, and registry information to guide the upgrade process.",
     summary="Retrieve a structured prompt for upgrading an artifact to the latest template version",
 )
-async def get_template_prompt(
+async def get_upgrade_template_prompt(
     template_type: str,
     artifact_name: str,
     request: Request,
