@@ -1,3 +1,5 @@
+from os import system
+
 from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import JSONResponse
@@ -661,7 +663,7 @@ async def upgrade_to_template(
 # region Template Prompts
 @router.get(
     "/prompt/{template_type}/{artifact_name}",
-    response_class=JSONResponse,
+    response_class=MarkdownResponse,
     operation_id="prompt_template_upgrade",
     description="Retrieve a structured prompt for upgrading an artifact to the latest version of a specified template type. The prompt includes instructions, template content, and registry information to guide the upgrade process.",
     summary="Retrieve a structured prompt for upgrading an artifact to the latest template version",
@@ -709,33 +711,32 @@ async def get_template_prompt(
         response.headers["X-Artifact-Name"] = artifact_name
 
     system_content = (
-        "You are an assistant that can:  \n"
+        "## System Instructions  \n\n"
+        "**You are an assistant that can:**  \n"
         "- Call tools (e.g. `get_codex_template_instructions`) to perform active queries.\n"
         "- Load resources (URIs starting with `executor-mode://`) to read static documentation.\n"
         "\n"
-        "Available tools:  \n"
-        "  1. get_codex_template(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)\n"
+        "**Available tools:**  \n"
+        "  1. **get_codex_template(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)**\n"
         "    - Use this when you need to get the full template content for a specific type and version.\n"
-        "  2. get_codex_template_instructions(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional, input_artifact_name: ArgArtifactNameOptional)\n"
+        "  2. **get_codex_template_instructions(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional, input_artifact_name: ArgArtifactNameOptional)**\n"
         "    - Use this when you need to get the instructions on how to apply templates.\n"
-        "  3. get_codex_template_registry(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)\n"
+        "  3. **get_codex_template_registry(input_type: ArgTemplateType, input_ver: ArgTemplateVersionOptional)**\n"
         "    - Use this when you need to get the registry for the template. This registry determines how the metadata in the template is structured and the rules to apply.\n"
-        "  4. verify_codex_template_artifact(artifact_name: str, template_content: str)\n"
+        "  4. **verify_codex_template_artifact(artifact_name: str, template_content: str)**\n"
         "    - Use this to verify the metadata fields of a template artifact against the registered schema.\n"
         "    - Input `template_content` should include the full markdown content with frontmatter.\n"
-        "  5. finalize_codex_template_artifact(artifact_name: str, template_content: str)\n"
+        "  5. **finalize_codex_template_artifact(artifact_name: str, template_content: str)**\n"
         "    - Use this to finalize an artifact submission by validating and cleaning its metadata.\n"
         "    - Input `template_content` should include the full markdown content with frontmatter.\n"
         "\n\n"
-        "Available resources:  \n"
-        "  1. executor-mode://default_executor_mode\n"
+        "## Available resources:  \n"
+        "  **1. executor-mode://default_executor_mode**\n"
         "    - Executor mode used when applying templates.\n"
-    )
-    system_msg = PromptMessage(
-        role="assistant", content=TextContent(type="text", text=system_content)
     )
 
     user_content = (
+        "## User Instructions  \n\n"
         f"Upgrade the artifact named '{artifact_name}' to the latest template of type `{tt}` and version '{latest_version}'.  \n"
         f'  1. Call tool `get_codex_template({{"input_type":{{"type":"{tt}"}},"input_ver":{{"version":"{latest_version}"}}}})` to get the full template content.\n'
         "    - This is the target template to upgrade to.\n"
@@ -753,11 +754,7 @@ async def get_template_prompt(
         "6. Provide the finalized artifact as the output."
     )
 
-    user_msg = PromptMessage(
-        role="user", content=TextContent(type="text", text=user_content)
-    )
-
-    return [system_msg, user_msg]
+    return f"{system_content}\n\n{user_content}"
 
 
 # endregion Template Prompts
