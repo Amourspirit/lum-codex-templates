@@ -1,5 +1,5 @@
 from typing import Annotated, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class VerifyArtifactResponse(BaseModel):
@@ -98,6 +98,8 @@ class VerifyArtifactResponse(BaseModel):
 
 
 class VerifyArtifactMcpResponse(VerifyArtifactResponse):
+    model_config = ConfigDict(extra="allow")
+
     @staticmethod
     def from_verify_artifact_response(
         response: VerifyArtifactResponse,

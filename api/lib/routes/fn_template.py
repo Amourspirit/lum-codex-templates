@@ -1,4 +1,5 @@
 import json
+from typing import cast
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
@@ -53,8 +54,8 @@ from api.lib.exceptions import (
     VersionNoneError,
 )
 from api.lib.routes import api_path as api_path_utils
+from api.lib.routes import mcp_path as mcp_path_utils
 from . import fn_versions
-from urllib.parse import quote
 
 _CONFIG = Config()
 _SETTINGS = PkgConfig()
@@ -133,6 +134,33 @@ def _get_template_manifest(
             app_root_url=app_root_url,
         )
         json_content["canonical_mode"]["api_path"] = api_path
+
+    if server_mode_kind == ServerModeKind.MCP:
+        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+            template_type=template_type,
+            version=ver,
+            artifact_name=artifact_name,
+        )
+        json_content["template_info"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
+            mcp_paths["template_tool"]
+        )
+        json_content["instructions_info"]["mcp_tool_call_info"] = (
+            mcp_path_utils.to_plain(mcp_paths["instructions_tool"])
+        )
+        json_content["registry_info"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
+            mcp_paths["registry_tool"]
+        )
+        json_content["mcp_tool_call_info"] = mcp_path_utils.to_plain(
+            mcp_paths["manifest_tool"]
+        )
+        c_result = _validate_version_str(json_content["canonical_mode"]["version"])
+        if not Result.is_success(c_result):
+            raise HTTPException(status_code=400, detail=str(c_result.error))
+        c_ver = c_result.data
+        mcp_tool = mcp_path_utils.get_mcp_executor_mode_tool(version=c_ver)
+        json_content["canonical_mode"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
+            mcp_tool
+        )
     return json_content
 
 
@@ -178,21 +206,42 @@ async def get_template(
         )
     fm = FrontMatterMeta(file_path=path)
 
-    api_paths = api_path_utils.get_api_paths_template(
-        template_type=template_type,
-        version=ver,
-        app_root_url=app_root_url,
-        artifact_name=artifact_name,
-    )
-
-    if fm.has_field("template_registry"):
-        fm.frontmatter["template_registry"]["api_path"] = api_paths["registry_api_path"]
-        fm.recompute_sha256()
-
     if not fm.has_field("instruction_info"):
         fm.set_field("instruction_info", {})
     fm.frontmatter["instruction_info"]["id"] = "instructions"
-    fm.frontmatter["instruction_info"]["api_path"] = api_paths["instructions_api_path"]
+
+    if server_mode_kind == ServerModeKind.API:
+        api_paths = api_path_utils.get_api_paths_template(
+            template_type=template_type,
+            version=ver,
+            app_root_url=app_root_url,
+            artifact_name=artifact_name,
+        )
+
+        if fm.has_field("template_registry"):
+            fm.frontmatter["template_registry"]["api_path"] = api_paths[
+                "registry_api_path"
+            ]
+
+        fm.frontmatter["instruction_info"]["api_path"] = api_paths[
+            "instructions_api_path"
+        ]
+
+    if server_mode_kind == ServerModeKind.MCP:
+        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+            template_type=template_type,
+            version=ver,
+            artifact_name=artifact_name,
+        )
+        if fm.has_field("template_registry"):
+            fm.frontmatter["template_registry"]["mcp_tool_call_info"] = (
+                mcp_path_utils.to_plain(mcp_paths["registry_tool"])
+            )
+
+        fm.frontmatter["instruction_info"]["mcp_tool_call_info"] = (
+            mcp_path_utils.to_plain(mcp_paths["instructions_tool"])
+        )
+    fm.recompute_sha256()
     text = fm.get_template_text()
     try:
         if monad_name:
@@ -254,10 +303,20 @@ async def get_template_instructions(
     else:
         has_artifact_name = True
 
+    mcp_paths = cast(mcp_path_utils.McpPaths, None)
+
+    if server_mode_kind == ServerModeKind.MCP:
+        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+            template_type=template_type,
+            version=ver,
+            artifact_name=artifact_name,
+        )
+
     # process Jinja2 template
     cbib_ver = _SETTINGS.template_cbib_api.version
 
     cem_api_path = None
+    link_block = ""
     if server_mode_kind == ServerModeKind.API:
         cem_api_path = api_path_utils.get_api_path_executor_mode(
             version=fm.frontmatter["canonical_executor_mode"]["version"],
@@ -265,11 +324,26 @@ async def get_template_instructions(
         )
         link_block = f"""📘 **API Definition:**  
 [`{_API_RELATIVE_URL}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver}`]({cem_api_path})"""
-    else:
+
+    if server_mode_kind == ServerModeKind.MCP:
+        c_ver = _validate_version_str(cbib_ver)
+        if not Result.is_success(c_ver):
+            raise HTTPException(status_code=400, detail=str(c_ver.error))
+
+        tool = mcp_path_utils.get_mcp_executor_mode_tool(c_ver.data)
+        tool_dict = mcp_path_utils.to_plain(tool)
+        tool_json = json.dumps(tool_dict, indent=2)
         link_block = f"""📘 **MCP Definition:**
 
-- Resource Name: `template_executor_mode`
-- Resource URI: `executor-mode://executor_mode/{cbib_ver}`"""
+- MCP Tool Call Name: `{tool["tool_name"]}`  
+- MCP Tool Call JSON Info (args):
+
+```json
+{tool_json}
+```
+"""
+        tool = None
+        tool_dict = None
 
     if artifact_name:
         template_scope_block = (
@@ -291,12 +365,19 @@ async def get_template_instructions(
         if server_mode_kind == ServerModeKind.API and cem_api_path:
             fm.frontmatter["canonical_executor_mode"]["api_path"] = cem_api_path
         elif server_mode_kind == ServerModeKind.MCP:
-            fm.frontmatter["canonical_executor_mode"]["resource_uri"] = (
-                f"executor-mode://executor_mode/{cbib_ver}"
+            c_result = _validate_version_str(
+                fm.frontmatter["canonical_executor_mode"]["version"]
             )
-            fm.frontmatter["canonical_executor_mode"]["resource_name"] = (
-                "template_executor_mode"
-            )
+            if Result.is_success(c_result):
+                mcp_tool = mcp_path_utils.get_mcp_executor_mode_tool(
+                    version=c_result.data
+                )
+                fm.frontmatter["canonical_executor_mode"]["mcp_tool_call_info"] = (
+                    mcp_path_utils.to_plain(mcp_tool)
+                )
+            # fm.frontmatter["canonical_executor_mode"]["resource_name"] = (
+            #     "template_executor_mode"
+            # )
 
     api_paths = api_path_utils.get_api_paths_template(
         template_type=template_type,
@@ -311,15 +392,17 @@ async def get_template_instructions(
                 "registry_api_path"
             ]
         elif server_mode_kind == ServerModeKind.MCP:
-            fm.frontmatter["template_registry"]["mcp_tool_name"] = (
-                "get_template_registry"
+            fm.frontmatter["template_registry"]["mcp_tool_call_info"] = (
+                mcp_path_utils.to_plain(mcp_paths["registry_tool"])
             )
 
     if fm.has_field("template_info"):
         if server_mode_kind == ServerModeKind.API:
             fm.frontmatter["template_info"]["api_path"] = api_paths["template_api_path"]
         elif server_mode_kind == ServerModeKind.MCP:
-            fm.frontmatter["template_info"]["mcp_tool_name"] = "get_template"
+            fm.frontmatter["template_info"]["mcp_tool_call_info"] = (
+                mcp_path_utils.to_plain(mcp_paths["template_tool"])
+            )
 
     text = fm.get_template_text()
     if has_artifact_name:
@@ -536,6 +619,23 @@ async def verify_mcp_artifact(
 ) -> VerifyArtifactMcpResponse:
     artifact_response = _verify_artifact(submission)
     default_result = artifact_response.model_dump()
+    mcp_paths = mcp_path_utils.get_mcp_paths_template(
+        template_type=artifact_response.template_type,
+        version=artifact_response.template_version,
+        artifact_name=artifact_response.template_id,
+    )
+    default_result["template_mcp_tool_call_info"] = mcp_path_utils.to_plain(
+        mcp_paths["template_tool"]
+    )
+    default_result["registry_mcp_tool_call_info"] = mcp_path_utils.to_plain(
+        mcp_paths["registry_tool"]
+    )
+    default_result["manifest_mcp_tool_call_info"] = mcp_path_utils.to_plain(
+        mcp_paths["manifest_tool"]
+    )
+    default_result["instructions_mcp_tool_call_info"] = mcp_path_utils.to_plain(
+        mcp_paths["instructions_tool"]
+    )
     return VerifyArtifactMcpResponse(**default_result)
 
 
