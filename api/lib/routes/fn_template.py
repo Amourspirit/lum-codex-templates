@@ -47,15 +47,14 @@ from src.config.pkg_config import PkgConfig
 from api.config import Config
 from api.lib.kind import ServerModeKind
 from api.lib.exceptions import (
-    VersionError,
     VersionLatestError,
     VersionEmptyError,
-    VersionFormatError,
     VersionNoneError,
 )
 from api.lib.routes import api_path as api_path_utils
 from api.lib.routes import mcp_path as mcp_path_utils
 from . import fn_versions
+from .mcp_path import validate_version_str
 
 _CONFIG = Config()
 _SETTINGS = PkgConfig()
@@ -63,28 +62,6 @@ _SETTINGS = PkgConfig()
 router = APIRouter(prefix=f"{_CONFIG.api_v1_prefix}/templates", tags=["Templates"])
 _API_RELATIVE_URL = _CONFIG.api_v1_prefix
 _TEMPLATE_DIR = _SETTINGS.config_cache.get_api_templates_path()
-
-
-def _validate_version_str(
-    version: str | None,
-) -> Result[str, None] | Result[None, VersionError]:
-    if version is None:
-        return Result(None, VersionNoneError("Version cannot be None."))
-    if not version:
-        return Result(None, VersionEmptyError("Version cannot be empty."))
-    v = version.strip().lower()
-    if v == "latest":
-        return Result(None, VersionLatestError("Version 'latest' is not allowed here."))
-    v = v.lstrip("v")
-    if not v:
-        return Result(None, VersionEmptyError("Version cannot be empty."))
-    if not v.replace(".", "").isdigit():
-        return Result(None, VersionFormatError("Invalid version format."))
-    if v.isdigit():
-        v = f"{v}.0"
-    if not v.startswith("v"):
-        v = "v" + v
-    return Result(v, None)
 
 
 def _get_template_manifest(
@@ -100,7 +77,7 @@ def _get_template_manifest(
         template_type=template_type,
         version=version,
     )
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         raise HTTPException(status_code=400, detail=str(v_result.error))
     ver = v_result.data
@@ -125,7 +102,7 @@ def _get_template_manifest(
         json_content["api_path"] = api_paths["manifest_api_path"]
 
         # http://localhost:8000/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE?version=v1.0
-        c_result = _validate_version_str(json_content["canonical_mode"]["version"])
+        c_result = validate_version_str(json_content["canonical_mode"]["version"])
         if not Result.is_success(c_result):
             raise HTTPException(status_code=400, detail=str(c_result.error))
         c_ver = c_result.data
@@ -136,36 +113,29 @@ def _get_template_manifest(
         json_content["canonical_mode"]["api_path"] = api_path
 
     if server_mode_kind == ServerModeKind.MCP:
-        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+        mcp_rpcs = mcp_path_utils.get_mcp_tool_call_rpc(
             template_type=template_type,
             version=ver,
             artifact_name=artifact_name,
         )
-        json_content["template_info"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
-            mcp_paths["template_tool"]
-        )
-        json_content["instructions_info"]["mcp_tool_call_info"] = (
-            mcp_path_utils.to_plain(mcp_paths["instructions_tool"])
-        )
-        json_content["registry_info"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
-            mcp_paths["registry_tool"]
-        )
-        json_content["mcp_tool_call_info"] = mcp_path_utils.to_plain(
-            mcp_paths["manifest_tool"]
-        )
-        c_result = _validate_version_str(json_content["canonical_mode"]["version"])
-        if not Result.is_success(c_result):
-            raise HTTPException(status_code=400, detail=str(c_result.error))
-        c_ver = c_result.data
-        mcp_tool = mcp_path_utils.get_mcp_executor_mode_tool(version=c_ver)
-        json_content["canonical_mode"]["mcp_tool_call_info"] = mcp_path_utils.to_plain(
-            mcp_tool
+        json_content["template_info"]["jsonrpc_call"] = mcp_rpcs["template_tool"]
+
+        json_content["instructions_info"]["jsonrpc_call"] = mcp_rpcs[
+            "instructions_tool"
+        ]
+        json_content["registry_info"]["jsonrpc_call"] = mcp_rpcs["registry_tool"]
+
+        json_content["jsonrpc_call"] = mcp_rpcs["manifest_tool"]
+        json_content["canonical_mode"]["jsonrpc_call"] = (
+            mcp_path_utils.get_mcp_executor_mode_rpc(
+                version=json_content["canonical_mode"]["version"]
+            )
         )
     return json_content
 
 
 def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error
@@ -189,7 +159,7 @@ async def get_template(
     artifact_name: str | None = None,
 ) -> TemplateResponse:
     template_type = template_type.strip().lower()
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error
@@ -228,19 +198,19 @@ async def get_template(
         ]
 
     if server_mode_kind == ServerModeKind.MCP:
-        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+        mcp_rpcs = mcp_path_utils.get_mcp_tool_call_rpc(
             template_type=template_type,
             version=ver,
             artifact_name=artifact_name,
         )
         if fm.has_field("template_registry"):
-            fm.frontmatter["template_registry"]["mcp_tool_call_info"] = (
-                mcp_path_utils.to_plain(mcp_paths["registry_tool"])
-            )
+            fm.frontmatter["template_registry"]["jsonrpc_call"] = mcp_rpcs[
+                "registry_tool"
+            ]
 
-        fm.frontmatter["instruction_info"]["mcp_tool_call_info"] = (
-            mcp_path_utils.to_plain(mcp_paths["instructions_tool"])
-        )
+        fm.frontmatter["instruction_info"]["jsonrpc_call"] = mcp_rpcs[
+            "instructions_tool"
+        ]
     fm.recompute_sha256()
     text = fm.get_template_text()
     try:
@@ -280,7 +250,7 @@ async def get_template_instructions(
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateInstructionsResponse:
     template_type = template_type.strip().lower()
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error
@@ -303,10 +273,10 @@ async def get_template_instructions(
     else:
         has_artifact_name = True
 
-    mcp_paths = cast(mcp_path_utils.McpPaths, None)
+    mcp_rpcs = cast(mcp_path_utils.McpPaths, None)
 
     if server_mode_kind == ServerModeKind.MCP:
-        mcp_paths = mcp_path_utils.get_mcp_paths_template(
+        mcp_rpcs = mcp_path_utils.get_mcp_tool_call_rpc(
             template_type=template_type,
             version=ver,
             artifact_name=artifact_name,
@@ -326,24 +296,19 @@ async def get_template_instructions(
 [`{_API_RELATIVE_URL}/executor_modes/CANONICAL-EXECUTOR-MODE-V{cbib_ver}`]({cem_api_path})"""
 
     if server_mode_kind == ServerModeKind.MCP:
-        c_ver = _validate_version_str(cbib_ver)
-        if not Result.is_success(c_ver):
-            raise HTTPException(status_code=400, detail=str(c_ver.error))
-
-        tool = mcp_path_utils.get_mcp_executor_mode_tool(c_ver.data)
-        tool_dict = mcp_path_utils.to_plain(tool)
-        tool_json = json.dumps(tool_dict, indent=2)
+        exec_mode_rpc = mcp_path_utils.get_mcp_executor_mode_rpc(cbib_ver)
+        rpc_json = json.dumps(exec_mode_rpc, indent=2)
         link_block = f"""📘 **MCP Definition:**
 
-- MCP Tool Call Name: `{tool["tool_name"]}`  
-- MCP Tool Call JSON Info (args):
+- MCP Tool Call Name: `{exec_mode_rpc["params"]["name"]}`  
+- MCP `jsonrpc` Tool Call Info (args):
 
 ```json
-{tool_json}
+{rpc_json}
 ```
 """
-        tool = None
-        tool_dict = None
+        exec_mode_rpc = None
+        rpc_json = None
 
     if artifact_name:
         template_scope_block = (
@@ -365,16 +330,10 @@ async def get_template_instructions(
         if server_mode_kind == ServerModeKind.API and cem_api_path:
             fm.frontmatter["canonical_executor_mode"]["api_path"] = cem_api_path
         elif server_mode_kind == ServerModeKind.MCP:
-            c_result = _validate_version_str(
-                fm.frontmatter["canonical_executor_mode"]["version"]
+            mcp_tool = mcp_path_utils.get_mcp_executor_mode_rpc(
+                version=fm.frontmatter["canonical_executor_mode"]["version"]
             )
-            if Result.is_success(c_result):
-                mcp_tool = mcp_path_utils.get_mcp_executor_mode_tool(
-                    version=c_result.data
-                )
-                fm.frontmatter["canonical_executor_mode"]["mcp_tool_call_info"] = (
-                    mcp_path_utils.to_plain(mcp_tool)
-                )
+            fm.frontmatter["canonical_executor_mode"]["jsonrpc_call"] = mcp_tool
             # fm.frontmatter["canonical_executor_mode"]["resource_name"] = (
             #     "template_executor_mode"
             # )
@@ -392,17 +351,15 @@ async def get_template_instructions(
                 "registry_api_path"
             ]
         elif server_mode_kind == ServerModeKind.MCP:
-            fm.frontmatter["template_registry"]["mcp_tool_call_info"] = (
-                mcp_path_utils.to_plain(mcp_paths["registry_tool"])
-            )
+            fm.frontmatter["template_registry"]["jsonrpc_call"] = mcp_rpcs[
+                "registry_tool"
+            ]
 
     if fm.has_field("template_info"):
         if server_mode_kind == ServerModeKind.API:
             fm.frontmatter["template_info"]["api_path"] = api_paths["template_api_path"]
         elif server_mode_kind == ServerModeKind.MCP:
-            fm.frontmatter["template_info"]["mcp_tool_call_info"] = (
-                mcp_path_utils.to_plain(mcp_paths["template_tool"])
-            )
+            fm.frontmatter["template_info"]["jsonrpc_call"] = mcp_rpcs["template_tool"]
 
     text = fm.get_template_text()
     if has_artifact_name:
@@ -447,7 +404,7 @@ async def get_template_status(
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateStatusResponse:
     template_type = template_type.strip().lower()
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error
@@ -479,7 +436,7 @@ async def get_template_manifest(
     artifact_name: str | None = None,
 ) -> ManifestResponse:
     template_type = template_type.strip().lower()
-    v_result = _validate_version_str(version)
+    v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error
@@ -619,23 +576,15 @@ async def verify_mcp_artifact(
 ) -> VerifyArtifactMcpResponse:
     artifact_response = _verify_artifact(submission)
     default_result = artifact_response.model_dump()
-    mcp_paths = mcp_path_utils.get_mcp_paths_template(
+    mcp_rpcs = mcp_path_utils.get_mcp_tool_call_rpc(
         template_type=artifact_response.template_type,
         version=artifact_response.template_version,
-        artifact_name=artifact_response.template_id,
+        artifact_name=submission.artifact_name,
     )
-    default_result["template_mcp_tool_call_info"] = mcp_path_utils.to_plain(
-        mcp_paths["template_tool"]
-    )
-    default_result["registry_mcp_tool_call_info"] = mcp_path_utils.to_plain(
-        mcp_paths["registry_tool"]
-    )
-    default_result["manifest_mcp_tool_call_info"] = mcp_path_utils.to_plain(
-        mcp_paths["manifest_tool"]
-    )
-    default_result["instructions_mcp_tool_call_info"] = mcp_path_utils.to_plain(
-        mcp_paths["instructions_tool"]
-    )
+    default_result["template_jsonrpc_call"] = mcp_rpcs["template_tool"]
+    default_result["registry_jsonrpc_call"] = mcp_rpcs["registry_tool"]
+    default_result["manifest_jsonrpc_call"] = mcp_rpcs["manifest_tool"]
+    default_result["instructions_jsonrpc_call"] = mcp_rpcs["instructions_tool"]
     return VerifyArtifactMcpResponse(**default_result)
 
 
@@ -743,7 +692,7 @@ def _upgrade_to_template(
             detail=f"Error parsing template contents: {e}",
         )
 
-    v_result = _validate_version_str(submission.new_version)
+    v_result = validate_version_str(submission.new_version)
     if Result.is_failure(v_result):
         if isinstance(
             v_result.error, (VersionLatestError, VersionNoneError, VersionEmptyError)
@@ -768,7 +717,7 @@ def _upgrade_to_template(
                 submission.new_version = latest_version_for_template
                 upgrade_fm.template_version = latest_version_for_template
 
-    v_result = _validate_version_str(submission.new_version)
+    v_result = validate_version_str(submission.new_version)
     if not Result.is_success(v_result):
         logger.error(
             "Version validation failed: {v_result_error}", v_result_error=v_result.error

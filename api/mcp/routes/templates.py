@@ -134,6 +134,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
     async def get_template(
         input_type: ArgTemplateType,
         input_ver: ArgTemplateVersionOptional,
+        input_artifact_name: ArgArtifactNameOptional,
         ctx: Context = CurrentContext(),
     ) -> TemplateResponse:
         """
@@ -143,6 +144,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
             template_type (str): type of the template to retrieve.
             version (str, optional): version of the template to retrieve.
                 If not provided, the latest version for the template type will be used.
+            input_artifact_name (ArgArtifactNameOptional): Optional artifact name to include in the instructions.
 
         Raises:
             Exception: on errors such as authentication failure or insufficient permissions.
@@ -183,11 +185,15 @@ The template consists of Frontmatter metadata and markdown content that contain 
         else:
             ver = input_ver.version.lower()
 
+        artifact_name = None
+        if input_artifact_name.name:
+            artifact_name = input_artifact_name.name
         return await fn_template.get_template(
             template_type=typ,
             version=ver,
             app_root_url=app_root_url,
             monad_name=monad_name,
+            artifact_name=artifact_name,
             server_mode_kind=ServerModeKind.MCP,
         )
 
@@ -219,7 +225,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
             input_type (ArgTemplateType): type of the template to retrieve.
             input_ver (ArgTemplateVersionOptional): version of the template to retrieve.
                 If not provided, the latest version for the template type will be used.
-            ctx (Context): The FastMCP context object containing request information. Automatically provided.
+            input_artifact_name (ArgArtifactNameOptional): Optional artifact name to include in the instructions.
         Returns:
             TemplateInstructionsResponse: The processed template instructions.
         Raises:
@@ -287,7 +293,6 @@ The response includes the template registry data, which determines the structure
         Args:
             input_type (ArgTemplateType): The category or type of the template registry to retrieve.
             input_ver (ArgTemplateVersionOptional): The specific version of the template registry.
-            ctx (Context): The FastMCP context object containing request information. Automatically provided.
 
         Returns:
             dict: The template registry, which may be pre-processed based on the user's monad context.
@@ -616,6 +621,7 @@ The return version will have a prefix of 'v', e.g., 'v1.0'.""",
     async def get_codex_template_manifest(
         input_type: ArgTemplateType,
         input_ver: ArgTemplateVersionOptional,
+        input_artifact_name: ArgArtifactNameOptional,
         ctx: Context = CurrentContext(),
     ) -> ManifestMcpResponse:
         """
@@ -657,10 +663,15 @@ The return version will have a prefix of 'v', e.g., 'v1.0'.""",
         else:
             ver = input_ver.version.lower()
 
+        artifact_name = None
+        if input_artifact_name.name:
+            artifact_name = input_artifact_name.name
+
         result = await fn_template.get_template_manifest(
             template_type=typ,
             version=ver,
             app_root_url="",
+            artifact_name=artifact_name,
             server_mode_kind=ServerModeKind.MCP,
         )
         return ManifestMcpResponse.from_manifest_response(result)

@@ -20,7 +20,6 @@ from api.routes import privacy_terms
 from api.routes import templates
 from api.routes import well_known
 from api.routes import auth_routes
-from api.routes import env_check
 from api.routes import doc_routes
 from api.routes import prompts
 from src.config.pkg_config import PkgConfig
@@ -122,7 +121,14 @@ app.include_router(
     auth_routes.router
 )  # Include authentication routes (login/logout/callback)
 if auth_settings.is_development:
+    from api.routes import env_check
+
     app.include_router(env_check.router)  # Include env_check route only in development
+    from api.routes import bruno_proxy
+
+    app.include_router(
+        bruno_proxy.router
+    )  # Include Bruno MCP proxy route only in development
 # app.include_router(login.router)
 # app.state.limiter = limiter
 # app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
@@ -147,12 +153,17 @@ async def mcp_auth_middleware(request: Request, call_next):
         "mcp_auth_middleware() Start processing request: {path}", path=request.url.path
     )
 
-    allow_path_prefixes = (
+    prefixes = [
         "/ping",
-        "/env_check",
         "/.well-known/oauth-protected-resource",
         "/.well-known/",
-    )
+    ]
+    if auth_settings.is_development:
+        prefixes.append("/env_check")
+        prefixes.append("/bruno/tools/call")
+        prefixes.append("/bruno/tools/call/markdown")
+
+    allow_path_prefixes = tuple(prefixes)  # Convert to tuple for startswith() check
 
     if request.url.path == ("/"):
         logger.debug("mcp_auth_middleware() Skipping auth root path")
