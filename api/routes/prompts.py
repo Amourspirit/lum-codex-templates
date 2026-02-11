@@ -91,6 +91,7 @@ async def get_upgrade_template_prompt(
     executor_mode_tool = mcp_path.get_mcp_executor_mode_rpc()
 
     template_content_placeholder = "< template_content_with_frontmatter >"
+
     verify_tool = mcp_path.get_mcp_verify_template_rpc(
         artifact_name=artifact_name, template_content=template_content_placeholder
     )
@@ -103,111 +104,116 @@ async def get_upgrade_template_prompt(
     registry_tool_json = json.dumps(registry_tool, indent=2)
     # manifest_tool_json = json.dumps(manifest_tool, indent=2)
     verify_tool_json = json.dumps(verify_tool, indent=2)
+    verify_tool_json = verify_tool_json.replace(
+        f'template_content": "{template_content_placeholder}"',
+        f'template_content": "{template_content_placeholder}" // Must include YAML + body',
+    )
+
     finalize_tool_json = json.dumps(finalize_tool, indent=2)
+    finalize_tool_json = finalize_tool_json.replace(
+        f'template_content": "{template_content_placeholder}"',
+        f'template_content": "{template_content_placeholder}" // Must include YAML + body',
+    )
+
     executor_mode_tool_json = json.dumps(executor_mode_tool, indent=2)
 
+    ver = latest_version if latest_version.startswith("v") else f"v{latest_version}"
+
     system_content = (
-        "## System Instructions  \n\n"
+        "## ⬒ System Instructions  \n\n"
         "**You are an assistant that can:**\n"
         "\n"
         f"- Call tools (e.g. `{template_tool['params']['name']}`) to perform active queries.\n"
         "\n"
-        "### Available tools:\n\n"
-        f"#### **{template_tool['params']['name']}**\n"
+        "---\n"
+        "\n"
+        "### 🧷 Artifact Under Upgrade\n\n"
+        f"- `artifact_name`: **{artifact_name}**\n"
+        f"- `template_type`: **{template_type}**\n"
+        f"- `template_version`: `{ver}`\n"
+        "\n"
+        "---\n"
+        "\n"
+        "## ⬒ Tool Reference\n\n"
+        f"### **{template_tool['params']['name']}**\n"
         "\n"
         "Use this when you need to get the full template content for a specific type and version.\n"
-        "\n"
-        f"##### **jsonrpc** format for calling tool **{template_tool['params']['name']}**\n"
         "\n"
         "```json\n"
         f"{template_tool_json}\n"
         "```\n"
         "\n"
-        f"#### **{instructions_tool['params']['name']}**\n"
+        f"### **{instructions_tool['params']['name']}**\n"
         "\n"
         "Use this when you need to get the instructions on how to apply templates.\n"
-        "\n"
-        f"##### **jsonrpc** format for calling tool **{instructions_tool['params']['name']}**\n"
         "\n"
         "```json\n"
         f"{instructions_tool_json}\n"
         "```\n"
         "\n"
-        f"#### **{registry_tool['params']['name']}**\n"
+        f"### **{registry_tool['params']['name']}**\n"
         "\n"
         "Use this when you need to get the registry for the template.\n"
         "This registry determines how the metadata in the template is structured and the rules to apply.\n"
-        "\n"
-        f"##### **jsonrpc** format for calling tool **{registry_tool['params']['name']}**\n"
         "\n"
         "```json\n"
         f"{registry_tool_json}\n"
         "```\n"
         "\n"
-        # f"#### **{manifest_tool['params']['name']}**\n"
-        # "\n"
-        # "Use this tool when asked to retrieve the Canonical Executor Mode (CBIB) that is used in Codex templates.\n"
-        # "\n"
-        # f"##### **jsonrpc** format for calling tool **{manifest_tool['params']['name']}**\n"
-        # "\n"
-        # "```json\n"
-        # f"{manifest_tool_json}\n"
-        # "```\n"
-        # "\n"
-        f"#### **{executor_mode_tool['params']['name']}**\n"
+        f"### **{executor_mode_tool['params']['name']}**\n"
         "\n"
         "Use this tool when retrieving the Executor Mode (CBIB) that is used in Codex templates.\n"
-        "\n"
-        f"##### **jsonrpc** format for calling tool **{executor_mode_tool['params']['name']}**\n"
         "\n"
         "```json\n"
         f"{executor_mode_tool_json}\n"
         "```\n"
         "\n"
-        f"#### **{verify_tool['params']['name']}**\n"
+        f"### **{verify_tool['params']['name']}**\n"
         "\n"
         "Use this to verify the metadata fields of a template artifact against the registered schema.\n"
         f"Replace `{template_content_placeholder}` of **jsonrpc** with the actual **json encoded** template markdown content including frontmatter.\n"
-        "\n"
-        f"##### **jsonrpc** format for calling tool **{verify_tool['params']['name']}**\n"
         "\n"
         "```json\n"
         f"{verify_tool_json}\n"
         "```\n"
         "\n"
-        f"#### **{finalize_tool['params']['name']}**\n"
+        f"### **{finalize_tool['params']['name']}**\n"
         "\n"
         "Use this to finalize an artifact submission by adding any necessary metadata or performing final validation steps.\n"
         f"Replace `{template_content_placeholder}` of **jsonrpc** with the actual **json encoded** template markdown content including frontmatter.\n"
         "\n"
-        f"##### **jsonrpc** format for calling tool **{finalize_tool['params']['name']}**\n"
-        "\n"
         "```json\n"
         f"{finalize_tool_json}\n"
         "```\n"
-        "\n"
     )
 
     user_content = (
-        "## User Instructions\n\n"
-        f"Upgrade the artifact named '{artifact_name}' to the latest template of type `{tt}` of version `{latest_version}`.  \n"
-        f"  1. Call tool `{template_tool['params']['name']}` to get the full template content.\n"
-        "    - This is the target template apply upgrade.\n"
-        f"  2. Call tool `{executor_mode_tool['params']['name']}` to understand the executor mode to apply the template.\n"
-        f"  3. Call tool `{registry_tool['params']['name']}` to get the template registry.\n"
-        "    - Use this registry to understand the structure and rules for the template metadata.\n"
-        f"  4. Call tool `{instructions_tool['params']['name']}` to get the instructions for applying the template.\n"
-        "    - Use these instructions to guide the upgrade process.\n"
         "\n"
-        "Proceed to upgrade the artifact by applying the template according to the instructions and registry rules.\n"
-        "Now that the the upgrade is complete, it is time to verify and finalize the upgraded artifact.\n"
+        "---\n"
         "\n"
-        f"4. Pass the upgraded template content, including the full markdown content with frontmatter, to `{verify_tool['params']['name']}` tool to verify the metadata fields.\n"
-        f"5. Next, pass the verified template content to `{finalize_tool['params']['name']}` tool to finalize the artifact submission.\n"
-        "6. Provide the finalized artifact as the output."
+        "## ⬒ Upgrade Sequence Instructions\n\n"
+        f"The purpose of this workflow is to upgrade the artifact **{artifact_name}** to template version `{latest_version}`, using canonical execution rules.\n"
+        "\n"
+        "Follow this 6-step sequence exactly:\n"
+        "\n"
+        f"1. **Call** `{template_tool['params']['name']}` to retrieve the canonical target template.\n"
+        f"2. **Call** `{executor_mode_tool['params']['name']}` to confirm execution policy.\n"
+        f"3. **Call** `{registry_tool['params']['name']}` to retrieve the metadata validation schema.\n"
+        f"4. **Call** `{instructions_tool['params']['name']}` to retrieve rendering directives and strict mode rules.\n"
+        f"5. **Apply** the upgrade: Render the existing artifact into the new template version, replacing any conditionals or outdated fields.\n"
+        f"6. **Verify** using `{verify_tool['params']['name']}`, then **finalize** with `{finalize_tool['params']['name']}`.\n"
+        "\n"
+        "> ⚠ If any tool fails (e.g. 401, registry mismatch, unresolved placeholders), return the failure output directly. Do not attempt speculative completion.\n"
+        "\n"
+        "---\n"
+        "\n"
+        "## ⬒ Template to Upgrade\n\n"
+        "```md\n"
+        "< Paste full artifact markdown content here >\n"
+        "```\n"
     )
 
-    return f"{system_content}\n\n{user_content}"
+    return f"{system_content}{user_content}"
 
 
 # endregion Template Prompts
