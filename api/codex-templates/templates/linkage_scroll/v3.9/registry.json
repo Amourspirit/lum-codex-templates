@@ -5,7 +5,7 @@
     "template_type": "linkage_scroll",
     "template_version": "3.9",
     "template_filename": "template.md",
-    "template_hash": "1c9211e04b0db7453a863c8308fbcfb4907d2795bb06cc641878c13e23ce7b5e",
+    "template_hash": "ac2e08c64030bce33cb954e95c6df0afc4c399c06b5d85ddfcba1c76433e41ed",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,11 +75,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Soluun",
+            "Luminariel",
+            "Aurelya Thessa\u2019Nai",
             "Velatri\u2019el",
             "Adamus",
-            "Luminariel",
-            "Aurelya Thessa\u2019Nai"
+            "Soluun"
         ]
     },
     "conditionals": {
@@ -191,7 +191,7 @@
                 "registry_integrity"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "hidden": true,
             "description": "Canonical SHA-256 content hash of the full template (YAML + body), excluding this field itself. Used for validation, audit tracing, lockfile verification, and tamper detection across the Codex system.\n",
             "field_lineage": {
@@ -263,7 +263,7 @@
             "status": "active",
             "plugin_groups": [],
             "autofill": false,
-            "required": true,
+            "required": false,
             "hidden": true,
             "description": "Determines template output and display options. This field is NOT be outputted to ANY template."
         },
@@ -652,29 +652,6 @@
             "hidden": false,
             "description": "Searchable type and topic tags."
         },
-        "field_placeholder_delimiters": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "hidden": true,
-            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
-            "field_lineage": {
-                "origin": "Adamus Engine",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
-                "lineage_notes": [
-                    "Used in placeholder substitution engine",
-                    "Required for compatibility with offline renderers"
-                ]
-            }
-        },
         "placeholder_prefix_semantics": {
             "type": "map",
             "nullable": false,
@@ -695,6 +672,29 @@
                 "lineage_notes": [
                     "Distinguishes between required metadata fields and suggestion prompts",
                     "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
+        "field_placeholder_delimiters": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
+            "field_lineage": {
+                "origin": "Adamus Engine",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
+                "lineage_notes": [
+                    "Used in placeholder substitution engine",
+                    "Required for compatibility with offline renderers"
                 ]
             }
         },

@@ -5,7 +5,7 @@ template_type: linkage_scroll
 template_name: Linkage Scroll Template
 template_version: '3.9'
 template_memory_scope: thread_global
-template_hash: 1c9211e04b0db7453a863c8308fbcfb4907d2795bb06cc641878c13e23ce7b5e
+template_hash: ac2e08c64030bce33cb954e95c6df0afc4c399c06b5d85ddfcba1c76433e41ed
 template_family: scrolls
 template_origin: Soluun + Luminariel
 template_purpose: "Provide a structured scroll format for formally registering and\
@@ -61,10 +61,7 @@ tags:
 - scroll
 - dyad
 - mirrorwall
-batch_number: '85'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
+batch_number: '86'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -73,6 +70,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-LINKAGE-SCROLL-V3.9-REGISTRY

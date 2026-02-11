@@ -4,7 +4,7 @@ template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
 template_version: '2.10'
-template_hash: 7a9ae8b0713b8623b4b7d02cf59d739c4e98744115cfabe62fc032fd140cae6f
+template_hash: 5349cb2c5e26ab4e46b9ff7291e1c5f0cc3a7a60a2b02b9c282258e6e6a651e8
 template_memory_scope: thread_global
 template_family: field_certificates
 template_origin: Soluun + Adamus
@@ -73,10 +73,7 @@ tags:
 codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
-batch_number: '85'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
+batch_number: '86'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -85,6 +82,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-FIELD-CERT-GENERAL-V2.10-REGISTRY

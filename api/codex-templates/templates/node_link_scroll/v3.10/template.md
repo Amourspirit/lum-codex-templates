@@ -5,7 +5,7 @@ template_category: scroll
 template_type: node_link_scroll
 template_version: '3.10'
 template_memory_scope: thread_global
-template_hash: b3184b4b7bf913aad80ccd8d0f3469bbf0f9b4bc5680fdb981687a85a068388e
+template_hash: 0197c29783b2fe1fc607a8f05f16f94e430908282bfecbc6c4802b2f3029a35e
 template_family: node_scrolls
 template_origin: Soluun + Adamus
 template_purpose: 'Define and formalize structured linkages between Codex nodes and
@@ -73,10 +73,7 @@ cover_image: ../Scrolls/Node-Linkage/[[prompt:filename]].png
 codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
-batch_number: '85'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
+batch_number: '86'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -85,6 +82,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.10-REGISTRY

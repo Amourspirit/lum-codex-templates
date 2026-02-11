@@ -5,7 +5,7 @@ template_category: node
 template_type: node_reg
 template_version: '2.9'
 template_memory_scope: thread_global
-template_hash: a7a652d78f59832308cff9b9894e0be177206e4fd5f2f2103ecf5f07b437772a
+template_hash: 7c621ecbadd5f99cbdc84664d04d01e93a06a2a2276c59729ff8fda7e372310b
 template_family: node_templates
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally register a single Node within\
@@ -63,10 +63,7 @@ tags:
 - arc_[[prompt:arc_name]]
 - node_[[prompt:type]]
 - node_[[prompt:function]]
-batch_number: '85'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
+batch_number: '86'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -75,6 +72,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-NODE-V2.9-REGISTRY

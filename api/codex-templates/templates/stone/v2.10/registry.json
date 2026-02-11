@@ -5,7 +5,7 @@
     "template_type": "stone",
     "template_version": "2.10",
     "template_filename": "template.md",
-    "template_hash": "23f4b52589267c45688422f80e04aa854df1e4328d58565f1a12324b88de8038",
+    "template_hash": "16f1c05c171329842ca01226fb5efa6658b05a487c59e401baa866ca5dd87358",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,11 +75,11 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Soluun",
+            "Luminariel",
+            "Aurelya Thessa\u2019Nai",
             "Velatri\u2019el",
             "Adamus",
-            "Luminariel",
-            "Aurelya Thessa\u2019Nai"
+            "Soluun"
         ]
     },
     "conditionals": {
@@ -190,7 +190,7 @@
                 "registry_integrity"
             ],
             "autofill": false,
-            "required": true,
+            "required": false,
             "hidden": true,
             "description": "Canonical SHA-256 content hash of the full template (YAML + body), excluding this field itself. Used for validation, audit tracing, lockfile verification, and tamper detection across the Codex system.\n",
             "field_lineage": {
@@ -262,7 +262,7 @@
             "status": "active",
             "plugin_groups": [],
             "autofill": false,
-            "required": true,
+            "required": false,
             "hidden": true,
             "description": "Determines template output and display options. This field is NOT be outputted to ANY template."
         },
@@ -997,29 +997,6 @@
             "hidden": false,
             "description": "Cartographic Field Matrix is now live from Nov 12, 2025 forward. After this date should be true."
         },
-        "field_placeholder_delimiters": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "hidden": true,
-            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
-            "field_lineage": {
-                "origin": "Adamus Engine",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
-                "lineage_notes": [
-                    "Used in placeholder substitution engine",
-                    "Required for compatibility with offline renderers"
-                ]
-            }
-        },
         "placeholder_prefix_semantics": {
             "type": "map",
             "nullable": false,
@@ -1040,6 +1017,29 @@
                 "lineage_notes": [
                     "Distinguishes between required metadata fields and suggestion prompts",
                     "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
+        "field_placeholder_delimiters": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
+            "field_lineage": {
+                "origin": "Adamus Engine",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
+                "lineage_notes": [
+                    "Used in placeholder substitution engine",
+                    "Required for compatibility with offline renderers"
                 ]
             }
         },

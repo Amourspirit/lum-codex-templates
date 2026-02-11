@@ -97,7 +97,6 @@ template_meta:
     - template_memory_scope
     - template_name
     - template_origin
-    - template_output_mode
     - template_strict_integrity
     - template_type
     - template_version
@@ -116,4 +115,7 @@ template_meta:
     - template_purpose
   optional_fields:
     - placeholder_examples
+    - template_hash
+    - template_output_mode
+    - template_purpose
     - upnote_categories

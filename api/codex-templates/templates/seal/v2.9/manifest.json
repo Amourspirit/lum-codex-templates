@@ -6,8 +6,8 @@
         "template_type": "seal",
         "template_file": "template.md",
         "version": "2.9",
-        "hash": "98ad3a343969465ff72cb2b48ac11c09c43531d1481d23dd5cc07ba19928f481",
-        "template_hash": "98ad3a343969465ff72cb2b48ac11c09c43531d1481d23dd5cc07ba19928f481",
+        "hash": "932e22c3fe29d6d75c00db2250fbba8a9fdefe9e6e794ce472ba3134458869b7",
+        "template_hash": "932e22c3fe29d6d75c00db2250fbba8a9fdefe9e6e794ce472ba3134458869b7",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-09T18:26:21.409619-05:00",
+    "installed_at": "2026-02-11T00:14:25.236335-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

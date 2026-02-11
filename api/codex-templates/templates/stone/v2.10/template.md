@@ -5,7 +5,7 @@ template_category: glyph
 template_type: stone
 template_version: '2.10'
 template_memory_scope: thread_global
-template_hash: 23f4b52589267c45688422f80e04aa854df1e4328d58565f1a12324b88de8038
+template_hash: 16f1c05c171329842ca01226fb5efa6658b05a487c59e401baa866ca5dd87358
 template_family: stone_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single Stone artifact\u2014\
@@ -97,10 +97,7 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
-batch_number: '85'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
+batch_number: '86'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -109,6 +106,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 template_registry:
   filename: registry.json
   registry_id: TEMPLATE-STONE-V2.10-REGISTRY

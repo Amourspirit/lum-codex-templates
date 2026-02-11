@@ -6,8 +6,8 @@
         "template_type": "stone",
         "template_file": "template.md",
         "version": "2.10",
-        "hash": "23f4b52589267c45688422f80e04aa854df1e4328d58565f1a12324b88de8038",
-        "template_hash": "23f4b52589267c45688422f80e04aa854df1e4328d58565f1a12324b88de8038",
+        "hash": "16f1c05c171329842ca01226fb5efa6658b05a487c59e401baa866ca5dd87358",
+        "template_hash": "16f1c05c171329842ca01226fb5efa6658b05a487c59e401baa866ca5dd87358",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-09T18:26:20.550560-05:00",
+    "installed_at": "2026-02-11T00:14:24.339617-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"
