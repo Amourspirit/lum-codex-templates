@@ -1,7 +1,7 @@
 import uuid
 from collections import defaultdict
 
-# from urllib.parse import quote
+from src.config.pkg_config import PkgConfig
 from ..util.result import Result
 from api.lib.exceptions import (
     VersionError,
@@ -10,6 +10,9 @@ from api.lib.exceptions import (
     VersionFormatError,
     VersionNoneError,
 )
+
+
+_SETTINGS = PkgConfig()
 
 
 def validate_version_str(
@@ -299,10 +302,11 @@ def to_plain(obj) -> dict | list | str:
     return obj
 
 
-def get_mcp_executor_mode_tool(version: str) -> McpTool:
+def get_mcp_executor_mode_tool(version: str | None = None) -> McpTool:
     """Create an MCP tool invocation for fetching the canonical executor mode by version.
     Args:
-        version (str): API version string to request (e.g., "v1.0").
+        version (str, optional): API version string to request (e.g., "v1.0").
+                If not provided, the latest version from settings will be used.
     Returns:
         McpTool: Tool configuration targeting "get_canonical_executor_mode" with
         nested arguments containing the version.
@@ -312,6 +316,9 @@ def get_mcp_executor_mode_tool(version: str) -> McpTool:
     # {
     #   "version": "v1.0"
     # }
+    if not version:
+        version = _SETTINGS.template_cbib_api.version
+
     v_result = validate_version_str(version)
     if not Result.is_success(v_result):
         raise v_result.error
@@ -320,13 +327,14 @@ def get_mcp_executor_mode_tool(version: str) -> McpTool:
     return McpTool(tool_name="get_canonical_executor_mode", tool_args=[input])
 
 
-def get_mcp_executor_mode_rpc(version: str) -> dict:
+def get_mcp_executor_mode_rpc(version: str | None = None) -> dict:
     """
     Generate a JSON-RPC 2.0 request payload to retrieve the canonical executor mode for a given version.
     This function creates a structured RPC call that invokes the 'get_canonical_executor_mode' tool
     with the provided version string. The version is first validated before being included in the request.
     Args:
-        version (str): The version string to validate and retrieve executor mode for.
+        version (str, optional): The version string to validate and retrieve executor mode for.
+                If not provided, the latest version from settings will be used.
     Returns:
         dict: A dictionary containing the JSON-RPC 2.0 request with the following structure:
             {
@@ -340,6 +348,9 @@ def get_mcp_executor_mode_rpc(version: str) -> dict:
         >>> result["template_tool"]["method"]
         'tools/call'
     """
+
+    if not version:
+        version = _SETTINGS.template_cbib_api.version
 
     # http://localhost:8000/api/v1/executor_modes/CANONICAL-EXECUTOR-MODE?version=v1.0
 
@@ -357,6 +368,89 @@ def get_mcp_executor_mode_rpc(version: str) -> dict:
             "name": "get_canonical_executor_mode",
             "arguments": {
                 "version": ver,
+            },
+        },
+    }
+
+
+def get_mcp_verify_template_rpc(artifact_name: str, template_content: str = "") -> dict:
+    """
+    Generate a JSON-RPC 2.0 request for verifying a Codex template artifact.
+    This function constructs a method call to the MCP (Model Context Protocol)
+    'verify_codex_template_artifact' tool with the provided artifact details.
+    Args:
+        artifact_name (str): The name of the template artifact to be verified.
+        template_content (str, optional): The content of the template including frontmatter.
+            Defaults to a placeholder string "<template_content_with_frontmatter>" if not provided.
+    Returns:
+        dict: A JSON-RPC 2.0 formatted request dictionary containing:
+            - jsonrpc (str): Protocol version "2.0"
+            - id (str): Unique UUID for tracking the request
+            - method (str): The RPC method name "tools/call"
+            - params (dict): Contains the tool name and arguments for verification
+    Example:
+        >>> request = get_mcp_verify_template_rpc("my_template", "# Template\\nContent here")
+        >>> request['method']
+        'tools/call'
+    """
+
+    # generate a uuid
+    call_id = str(uuid.uuid4())
+    if not template_content:
+        template_content = "< template_content_with_frontmatter >"
+    return {
+        "jsonrpc": "2.0",
+        "id": call_id,
+        "method": "tools/call",
+        "params": {
+            "name": "verify_codex_template_artifact",
+            "arguments": {
+                "submission": {
+                    "artifact_name": artifact_name,
+                    "template_content": template_content,
+                }
+            },
+        },
+    }
+
+
+def get_mcp_finalize_template_rpc(
+    artifact_name: str, template_content: str = ""
+) -> dict:
+    """
+    Generate a JSON-RPC 2.0 request for finalizing a Codex template artifact.
+    This function constructs a method call to the MCP (Model Context Protocol)
+    'finalize_codex_template_artifact' tool with the provided artifact details.
+    Args:
+        artifact_name (str): The name of the template artifact to be finalized.
+        template_content (str, optional): The content of the template including frontmatter.
+            Defaults to a placeholder string "<template_content_with_frontmatter>" if not provided.
+    Returns:
+        dict: A JSON-RPC 2.0 formatted request dictionary containing:
+            - jsonrpc (str): Protocol version "2.0"
+            - id (str): Unique UUID for tracking the request
+            - method (str): The RPC method name "tools/call"
+            - params (dict): Contains the tool name and arguments for verification
+    Example:
+        >>> request = get_mcp_finalize_template_rpc("my_template", "# Template\\nContent here")
+        >>> request['method']
+        'tools/call'
+    """
+    # generate a uuid
+    call_id = str(uuid.uuid4())
+    if not template_content:
+        template_content = "< template_content_with_frontmatter >"
+    return {
+        "jsonrpc": "2.0",
+        "id": call_id,
+        "method": "tools/call",
+        "params": {
+            "name": "finalize_codex_template_artifact",
+            "arguments": {
+                "submission": {
+                    "artifact_name": artifact_name,
+                    "template_content": template_content,
+                }
             },
         },
     }

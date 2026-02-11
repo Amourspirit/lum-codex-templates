@@ -31,9 +31,12 @@ def register_doc_routes(app: FastAPI):
             The OpenAPI specification describing the registered API routes.
         """
 
-        return get_openapi(
+        data = get_openapi(
             title="Codex Templates API", version="1.0.0", routes=app.routes
         )
+        if not data.get("security"):
+            data["security"] = [{"bearerAuth": []}]
+        return data
 
     @app.get(
         "/docs",
