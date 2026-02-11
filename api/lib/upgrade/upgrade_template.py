@@ -1,5 +1,4 @@
 from typing import Any
-from src import template
 from src.template.front_mater_meta import FrontMatterMeta
 
 
@@ -43,6 +42,10 @@ class UpgradeTemplate:
         for field in fields:
             value = self._template_fm.get_field(field)
             new_fm.set_field(field, value)
+
+        new_fm.template_version = self._template_fm.template_version.lstrip("v")
+        new_fm.template_id = self._template_fm.template_id
+        new_fm.recompute_sha256()
 
         return {
             "frontmatter": new_fm,

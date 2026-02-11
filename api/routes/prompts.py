@@ -1,6 +1,6 @@
 import json
 from loguru import logger
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Query
 from ..models.descope.descope_session import DescopeSession
 from ..responses.markdown_response import MarkdownResponse
 from ..lib.descope.session import get_descope_session
@@ -43,6 +43,10 @@ async def get_upgrade_template_prompt(
     artifact_name: str,
     request: Request,
     response: Response,
+    attached_img_name: str | None = Query(
+        default=None,
+        description="Optional name such as `Glyph` or `Sigil` of an attached image to be included in the prompt.",
+    ),
     session: DescopeSession = Depends(get_descope_session),
 ):
 
@@ -207,6 +211,17 @@ async def get_upgrade_template_prompt(
         "\n"
         "---\n"
         "\n"
+    )
+    if attached_img_name:
+        user_content += (
+            "## 🖼️ Attached Image Information\n\n"
+            f"- `{attached_img_name}` is included and should be referenced in the upgraded template as needed to aid getting field information.\n"
+            "\n"
+            "---\n"
+            "\n"
+        )
+
+    user_content += (
         "## ⬒ Template to Upgrade\n\n"
         "```md\n"
         "< Paste full artifact markdown content here >\n"

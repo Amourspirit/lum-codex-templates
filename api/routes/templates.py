@@ -645,7 +645,7 @@ async def finalize_artifact(
             response object.
     """
     if session:
-        if not session.scopes.intersection(_TEMPLATE_SCOPE.write_scopes):
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.get_rw_scopes()):
             logger.error("Insufficient scope to finalize artifact.")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -706,7 +706,7 @@ async def upgrade_to_template(
         HTTPException (500): If there is an error applying the upgrade or constructing the final response object.
     """
     if session:
-        if not session.scopes.intersection(_TEMPLATE_SCOPE.write_scopes):
+        if not session.scopes.intersection(_TEMPLATE_SCOPE.get_rw_scopes()):
             logger.error("Insufficient scope to upgrade artifact.")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

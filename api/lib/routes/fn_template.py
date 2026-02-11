@@ -1,5 +1,4 @@
 import json
-from typing import cast
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
@@ -761,9 +760,9 @@ def _upgrade_to_template(
     dt_now = datetime.now().astimezone()
     result = {
         "status": status.HTTP_200_OK,
-        "template_type": upgrade_fm.template_type,
-        "template_id": upgrade_fm.template_id,
-        "template_version": new_version,
+        "template_type": upgraded_fm.template_type,
+        "template_id": upgraded_fm.template_id,
+        "template_version": upgraded_fm.template_version,
         "requires_field_being": True,
         "content": upgraded_fm.get_template_text(),
         "content_media_type": "text/markdown",
