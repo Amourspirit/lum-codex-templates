@@ -44,8 +44,9 @@ class UpgradeTemplate:
             new_fm.set_field(field, value)
 
         new_fm.template_version = self._template_fm.template_version.lstrip("v")
-        new_fm.template_id = self._template_fm.template_id
-        new_fm.recompute_sha256()
+        if self._upgrade_fm.template_id:
+            new_fm.template_id = self._template_fm.template_id
+        # new_fm.template_id = self._template_fm.template_id
 
         return {
             "frontmatter": new_fm,

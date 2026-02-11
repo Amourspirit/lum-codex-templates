@@ -761,7 +761,7 @@ def _upgrade_to_template(
     result = {
         "status": status.HTTP_200_OK,
         "template_type": upgraded_fm.template_type,
-        "template_id": upgraded_fm.template_id,
+        "template_id": template_fm.template_id,
         "template_version": upgraded_fm.template_version,
         "requires_field_being": True,
         "content": upgraded_fm.get_template_text(),
@@ -804,17 +804,19 @@ async def upgrade_to_api_template(
             app_root_url,
             server_mode_kind=server_mode_kind,
         )
+        try:
+            mcp_result["template_api_path"] = manifest["template_info"]["api_path"]
+            mcp_result["registry_api_path"] = manifest["registry_info"]["api_path"]
+            mcp_result["instructions_api_path"] = manifest["instructions_info"][
+                "api_path"
+            ]
+            mcp_result["manifest_api_path"] = manifest["api_path"]
+            mcp_result["executor_mode_api_path"] = manifest["canonical_mode"][
+                "api_path"
+            ]
+        except KeyError as e:
+            logger.warning("Missing expected API path in manifest: {error}", error=e)
 
-        manifest_fields = {
-            "template_api_path",
-            "registry_api_path",
-            "manifest_api_path",
-            "instructions_api_path",
-            "executor_mode_api_path",
-        }
-        for field in manifest_fields:
-            if field in manifest:
-                mcp_result[field] = manifest[field]
         upgrade_result = UpgradeArtifactApiResponse(**mcp_result)
     except ValidationError as e:
         logger.error("Error in UpgradeArtifactApiResponse: {error}", error=e)

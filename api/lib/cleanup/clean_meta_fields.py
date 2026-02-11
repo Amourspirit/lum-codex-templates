@@ -33,4 +33,6 @@ class CleanMetaFields:
         for field in hidden_fields:
             if fm.has_field(field):
                 fm.remove_field(field)
+        if not fm.template_id:
+            fm.template_id = self._registry.get("template_id", "")
         return fm
