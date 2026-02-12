@@ -4,6 +4,7 @@ from fastmcp import FastMCP
 from api.mcp.routes import templates as mcp_templates
 from api.mcp.routes import executor_modes as mcp_executor_modes
 from api.mcp.routes import privacy_terms as mcp_privacy_terms
+from api.mcp.routes import ping as mcp_ping
 from api.lib.descope.auth_config import get_settings
 
 _SETTINGS = get_settings()
@@ -25,5 +26,7 @@ def init_mcp(auth: Any = None) -> FastMCP:
         mcp_templates.register_routes(mcp)
         mcp_executor_modes.register_routes(mcp)
         mcp_privacy_terms.register_routes(mcp)
+        mcp_ping.register_routes(mcp)
+        logger.debug("Registered MCP routes")
 
     return mcp
