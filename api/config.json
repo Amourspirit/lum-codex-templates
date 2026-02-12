@@ -1,5 +1,5 @@
 {
   "current_api_prefix": "/api/v1",
   "api_v1_prefix": "/api/v1",
-  "templates_mcp_path": "/"
+  "templates_mcp_path": "/templates/mcp"
 }

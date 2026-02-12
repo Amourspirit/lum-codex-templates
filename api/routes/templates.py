@@ -21,6 +21,7 @@ from ..lib.user.user_info import get_user_monad_name
 from ..lib.descope.session import get_descope_session
 from ..lib.env import env_info
 from ..lib.routes import fn_versions
+from ..lib.util.url_helper import encode_url_component
 
 _TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
@@ -131,7 +132,7 @@ async def get_template(
         artifact_name = artifact_name.strip()
 
     if artifact_name:
-        response.headers["X-Artifact-Name"] = artifact_name
+        response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
     result = await fn_template.get_template(
         template_type=template_type,
@@ -221,7 +222,7 @@ async def get_template_instructions(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     if artifact_name:
-        response.headers["X-Artifact-Name"] = artifact_name
+        response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
     result = await fn_template.get_template_instructions(
         template_type=template_type,
@@ -303,7 +304,7 @@ async def get_template_manifest(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     if artifact_name:
-        response.headers["X-Artifact-Name"] = artifact_name
+        response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
     return await fn_template.get_template_manifest(
         template_type=template_type,
@@ -388,7 +389,7 @@ async def get_template_registry(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     if artifact_name:
-        response.headers["X-Artifact-Name"] = artifact_name
+        response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
     return await fn_template.get_template_registry(
         template_type=template_type,

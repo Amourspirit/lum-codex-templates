@@ -24,9 +24,10 @@ from api.routes import doc_routes
 from api.routes import prompts
 from src.config.pkg_config import PkgConfig
 from api.mcp.servers import templates_mcp
+from api.config import cfg as app_config
 
 
-# from api.mcp.servers import echo_mcp
+_SETTINGS = PkgConfig()
 auth_settings = get_settings()
 
 bearer_optional = HTTPBearer(auto_error=False)
@@ -38,12 +39,11 @@ descope_client = DescopeClient(project_id=auth_settings.DESCOPE_PROJECT_ID)
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
-    pkg_config = PkgConfig()
     # get the default schema
     openapi_schema = get_openapi(
-        title=pkg_config.api_info.title,
-        version=pkg_config.api_info.version,
-        description=pkg_config.api_info.description,
+        title=_SETTINGS.api_info.title,
+        version=_SETTINGS.api_info.version,
+        description=_SETTINGS.api_info.description,
         routes=app.routes,
     )
     # inject servers metadata
@@ -94,6 +94,8 @@ async def lifespan(app: FastAPI):
 # Create a combined lifespan to manage the MCP session manager
 app = FastAPI(
     title="Codex Templates",
+    version=_SETTINGS.api_info.version,
+    description="API for retrieving and applying Codex templates.",
     openapi_url=None,  # where schema is served
     docs_url=None,  # Swagger UI path
     redoc_url=None,  # ReDoc path
@@ -176,7 +178,7 @@ async def mcp_auth_middleware(request: Request, call_next):
         )
         return await call_next(request)
 
-    if request.url.path.startswith("/templates/mcp"):
+    if request.url.path.startswith(app_config.templates_mcp_path):
         logger.debug("mcp_auth_middleware() Processing MCP request")
         authorization = request.headers.get("authorization")
 

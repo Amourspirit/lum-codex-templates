@@ -1,12 +1,14 @@
 import json
 from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status, Query
+from fastapi import Path as ApiPath
 from ..models.descope.descope_session import DescopeSession
 from ..responses.markdown_response import MarkdownResponse
 from ..lib.descope.session import get_descope_session
 from ..lib.env import env_info
 from ..lib.routes import fn_versions
 from ..lib.routes import mcp_path
+from ..lib.util.url_helper import encode_url_component
 
 _TEMPLATE_SCOPE = env_info.get_api_scopes("templates")
 
@@ -39,10 +41,18 @@ def _get_latest_template_version(template_type: str) -> str:
     summary="Retrieve a structured prompt for upgrading an artifact to the latest template version",
 )
 async def get_upgrade_template_prompt(
-    template_type: str,
-    artifact_name: str,
     request: Request,
     response: Response,
+    template_type: str = ApiPath(
+        ...,
+        title="Template Type",
+        description="The type of the template to upgrade to (e.g. `glyph`, `sigil`, `seal`).",
+    ),
+    artifact_name: str = ApiPath(
+        ...,
+        title="Artifact Name",
+        description="The name of the artifact to upgrade.",
+    ),
     attached_img_name: str | None = Query(
         default=None,
         description="Optional name such as `Glyph` or `Sigil` of an attached image to be included in the prompt.",
@@ -82,7 +92,8 @@ async def get_upgrade_template_prompt(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     if artifact_name:
-        response.headers["X-Artifact-Name"] = artifact_name
+        # decode URL-encoded artifact name
+        response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
     tool_rpcs = mcp_path.get_mcp_tool_call_rpc(
         template_type=tt, version=latest_version, artifact_name=artifact_name
