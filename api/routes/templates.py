@@ -601,9 +601,18 @@ async def verify_artifact(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
-    return await fn_template.verify_api_artifact(
-        submission=submission, app_root_url=app_root_url
-    )
+    try:
+        return await fn_template.verify_api_artifact(
+            submission=submission, app_root_url=app_root_url
+        )
+    except ValueError as e:
+        logger.error(f"Verification failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error during verification: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail="An unexpected error occurred during verification."
+        )
 
 
 @router.post(

@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class VerifyArtifactResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     status: Annotated[
         int,
         Field(
@@ -88,11 +89,11 @@ class VerifyArtifactResponse(BaseModel):
         ),
     ]
     rule_errors: Annotated[
-        list[str],
+        dict[str, dict[str, list[str]]],
         Field(
-            default_factory=list,
+            default_factory=dict,
             title="Rule Errors",
-            description="List of rule errors found during verification.",
+            description="Dictionary of rule errors found during verification.",
         ),
     ]
 

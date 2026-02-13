@@ -23,7 +23,7 @@ class VerifyRules:
 
         self._processes[process.get_field_name()] = process
 
-    def validate(self, fm: FrontMatterMeta) -> dict[str, dict[str, str]]:
+    def validate(self, fm: FrontMatterMeta) -> dict[str, dict[str, list[str]]]:
         """
         Validates the frontmatter keys against predefined processes.
         Iterates through the keys in the provided FrontMatterMeta object's frontmatter.
@@ -50,7 +50,7 @@ class VerifyRules:
                     if isinstance(p_result.error, VerifyError):
                         result[r_key][key] = p_result.error.errors
                     else:
-                        result[r_key][key] = str(p_result.error)
+                        result[r_key][key] = [str(p_result.error)]
         if not result[r_key]:
             return {}
         return result
