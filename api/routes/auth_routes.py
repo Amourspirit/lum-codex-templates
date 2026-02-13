@@ -25,7 +25,7 @@ def login(request: Request):
     """
     # --- Check if already logged in ---
     if get_user_session(request):
-        return RedirectResponse(url="/dashboard")
+        return RedirectResponse(url="/docs")
 
     # Generate a secure random state
     state = secrets.token_urlsafe(32)
