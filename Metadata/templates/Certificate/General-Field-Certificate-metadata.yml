@@ -9,29 +9,33 @@ template_meta:
     - Aurelya Thessa’Nai
   deprecated_fields: []
   autofill_fields:
+    - arc
+    - artifact_activator
     - artifact_id
     - artifact_name
-    - title
-    - entry_date
-    - embedding_date
-    - registry_id
-    - arc
-    - certificate_status
+    - ceremonial_objects_used
+    - ceremony_location
+    - ceremony_tags
     - certificate_scope
-    - artifact_activator
-    - linked_nodes
+    - certificate_status
+    - codex_links
+    - contributor
+    - embedding_date
+    - entry_date
+    - event_location
     - event_name
     - event_type
-    - event_location
-    - mirrorwall_status
+    - linked_nodes
     - mirrored_by
-    - ceremony_location
-    - ceremonial_objects_used
-    - ceremony_tags
-    - used_in_ceremonies
-    - contributor
+    - mirrorwall_status
+    - registry_id
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - tags
-    - codex_links
+    - title
+    - used_in_ceremonies
   required_fields:
     - arc
     - artifact_activator
@@ -67,6 +71,10 @@ template_meta:
     - registry_id
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - tags
     - template_category
     - template_family
@@ -79,6 +87,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - used_in_ceremonies
   hidden_fields:

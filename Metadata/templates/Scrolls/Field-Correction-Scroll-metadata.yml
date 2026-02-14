@@ -29,6 +29,10 @@ template_meta:
     - prior_assignment_status
     - registry_id
     - rendered_by
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - source_agent
     - tags
     - title
@@ -69,6 +73,10 @@ template_meta:
     - registry_id
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - scroll_type
     - source_agent
     - tags
@@ -83,6 +91,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - voice_confirmed_by
     - voice_transmission_format

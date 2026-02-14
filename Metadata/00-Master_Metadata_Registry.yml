@@ -1,6 +1,6 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.9"
+version: "3.10"
 schema_format_version: "2.4"
 registry_name: "Main Metadata Registry"
 strict_version: true
@@ -2755,3 +2755,133 @@ metadata_fields:
     nullable: true
     required: false
     status: active
+
+  roles_authority:
+    field_type: list[string]
+    template_output_mode: *TEMPLATE_OUTPUT_MARKDOWN
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Authority roles determining who may interpret, modify, or act upon this scroll.
+      Validated strictly against allowed values.
+    nullable: false
+    required: true
+    enforce_strict_values: true
+    field_being_autofill: true
+    allowed_values:
+      - tier0_system
+      - tier1_console
+      - tier2_chamber
+      - tier3_readonly
+      - lineage_holder
+      - lineage_vessel
+      - author_identity
+      - field_being
+      - witness_authority
+      - mirrorwall_attendant
+    status: active
+    field_group: archive_control
+
+
+  roles_visibility:
+    field_type: list[string]
+    template_output_mode: *TEMPLATE_OUTPUT_MARKDOWN
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Visibility roles determining who may view or retrieve this scroll.
+      Controls downstream RAG exposure and access control.
+    nullable: false
+    required: true
+    enforce_strict_values: true
+    field_being_autofill: true
+    allowed_values:
+      - public
+      - console_only
+      - ceremonial_only
+      - private
+      - sealed
+      - restricted
+      - mirrorwall_only
+      - debug_only
+      - archival_only
+    status: active
+    field_group: archive_control
+
+
+  roles_function:
+    field_type: list[string]
+    template_output_mode: *TEMPLATE_OUTPUT_MARKDOWN
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Functional role classification describing the type of scroll and its intended interpretive framing.
+      Used to guide RAG retrieval, routing, and semantic weighting.
+    nullable: false
+    required: true
+    enforce_strict_values: true
+    field_being_autofill: true
+    allowed_values:
+      - general_scroll
+      - awakening_scroll
+      - ritual_scroll
+      - history_scroll
+      - correction_scroll
+      - linkage_scroll
+      - node_scroll
+      - specification
+      - template_document
+      - analysis_document
+      - metadata_record
+      - record_event
+      - record_dialogue
+      - record_transmission
+      - ceremonial_declaration
+    status: active
+    field_group: archive_control
+
+
+  roles_action:
+    field_type: list[string]
+    template_output_mode: *TEMPLATE_OUTPUT_MARKDOWN
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Action-permission roles defining what operations are allowed on this scroll
+      within ingestion, embedding, retrieval, and revision systems.
+    nullable: false
+    required: true
+    enforce_strict_values: true
+    field_being_autofill: true
+    allowed_values:
+      - read_allowed
+      - write_allowed
+      - update_forbidden
+      - revise_author_only
+      - embedding_allowed
+      - embedding_forbidden
+      - rag_ingest_allowed
+      - rag_ingest_forbidden
+      - external_export_forbidden
+      - delete_restricted
+      - delete_allowed
+      - autorevision_allowed
+      - autorevision_forbidden
+    status: active
+    field_group: archive_control
+
+  tier:
+    field_type: string
+    template_output_mode: *TEMPLATE_OUTPUT_MARKDOWN
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Tier classification defining the access level of this artifact.
+      This is a critical field for access control, RAG retrieval filtering, and ceremonial usage restrictions.
+      Must be one of [council, public, family] with strict enforcement to prevent misclassification
+    default_value: council
+    nullable: false
+    required: true
+    enforce_strict_values: true
+    field_being_autofill: false
+    allowed_values:
+      - council
+      - public
+      - family
+    status: active
+    field_group: archive_control

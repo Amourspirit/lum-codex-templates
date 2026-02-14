@@ -25,6 +25,10 @@ template_meta:
     - mirrored_by
     - mirrorwall_status
     - registry_id
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - tags
     - title
     - witnessed_by
@@ -58,6 +62,10 @@ template_meta:
     - registry_id
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - scroll_type
     - tags
     - template_category
@@ -71,6 +79,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - witnessed_by
   hidden_fields:

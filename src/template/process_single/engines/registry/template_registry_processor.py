@@ -4,17 +4,18 @@ from pathlib import Path
 from ....front_mater_meta import FrontMatterMeta
 from ....main_registry import MainRegistry
 from .protocol_template_reg import ProtocolTemplateReg
-from .template_glyph import TemplateGlyph
-from .template_field_certificate import TemplateFieldCertificate
 from .template_dyad import TemplateDyad
-from .template_stone import TemplateStone
-from .template_node_reg import TemplateNodeReg
+from .template_field_cert_seal import TemplateFieldCertSeal
+from .template_field_certificate import TemplateFieldCertificate
 from .template_field_correction_scroll import TemplateFieldCorrectionScroll
+from .template_general_scroll import TemplateGeneralScroll
+from .template_glyph import TemplateGlyph
 from .template_linkage_scroll import TemplateLinkageScroll
 from .template_node_link_scroll import TemplateNodeLinkScroll
-from .template_field_cert_seal import TemplateFieldCertSeal
+from .template_node_reg import TemplateNodeReg
 from .template_seal import TemplateSeal
 from .template_sigil import TemplateSigil
+from .template_stone import TemplateStone
 
 
 class TemplateRegistryProcessor:
@@ -225,6 +226,14 @@ class TemplateRegistryProcessor:
             templates_data=self._templates_data,
         )
         self.register_process(template_sigil)
+
+        template_general_scroll = TemplateGeneralScroll(
+            working_dir=self._workspace_dir,
+            main_registry=self._main_registry,
+            templates_meta=self._templates_meta,
+            templates_data=self._templates_data,
+        )
+        self.register_process(template_general_scroll)
 
     @property
     def Count(self) -> int:

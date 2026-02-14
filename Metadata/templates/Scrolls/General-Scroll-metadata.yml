@@ -1,5 +1,5 @@
 template_meta:
-  template_type: node_link_scroll
+  template_type: general_scroll
   field_scope: front_matter_only
   field_being_autofill_registry:
     - Soluun
@@ -9,44 +9,25 @@ template_meta:
     - Aurelya Thessa’Nai
   deprecated_fields: []
   autofill_fields:
-    - arc
-    - artifact_activator
-    - artifact_duration
-    - artifact_elemental_resonance
-    - artifact_function
     - artifact_id
     - artifact_name
-    - artifact_signature
     - artifact_visibility
     - codex_links
     - codex_sequence
     - contributor
-    - cover_image
     - embedding_date
     - entry_date
-    - field_activation_vector
-    - linked_artifacts
-    - linked_nodes
     - mirrored_by
     - mirrorwall_status
-    - node_roles
     - registry_id
-    - roles_action
-    - roles_authority
-    - roles_function
-    - roles_visibility
     - source_agent
     - title
-    - voice_confirmed_by
-    - voice_transmission_format
+    - roles_authority
+    - roles_visibility
+    - roles_function
+    - roles_action
   required_fields:
-    - arc
-    - artifact_activator
-    - artifact_duration
-    - artifact_elemental_resonance
-    - artifact_function
     - artifact_name
-    - artifact_signature
     - artifact_visibility
     - canonical_mode
     - codex_entry
@@ -54,30 +35,21 @@ template_meta:
     - codex_sequence
     - codex_type
     - contributor
-    - cover_image
     - declared_registry_id
     - declared_registry_version
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
-    - field_activation_vector
-    - linked_artifacts
-    - linked_nodes
     - lockfile_priority
     - mapped_registry
     - mapped_registry_minimum_version
     - memory_cache_origin
     - mirrored_by
     - mirrorwall_status
-    - node_roles
     - private
     - rag_ready
     - registry_id
     - require_registry_match
-    - roles_action
-    - roles_authority
-    - roles_function
-    - roles_visibility
     - scroll_type
     - source_agent
     - source_medium
@@ -92,10 +64,12 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
-    - tier
     - title
-    - voice_confirmed_by
-    - voice_transmission_format
+    - roles_authority
+    - roles_visibility
+    - roles_function
+    - roles_action
+    - tier
   hidden_fields:
     - field_placeholder_delimiters
     - field_placeholder_format

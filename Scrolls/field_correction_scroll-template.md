@@ -46,6 +46,19 @@ threshold_flags_registry_scope:
   - lockfile_override  # Corrections can legally override older lockfile decisions
   - template_level     # All correction scrolls follow strict shared validation rules
 
+tier: "council" # council, public, family
+
+roles_authority:
+  - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+
+roles_visibility:
+  - "[[prompt:Choose from registry → metadata_fields → roles_visibility → allowed_values]]"
+
+roles_function:
+  - "[[prompt:Choose from registry → metadata_fields → roles_function → allowed_values]]"
+
+roles_action:
+  - "[[prompt:Choose from registry → metadata_fields → roles_action → allowed_values]]"
 
 canonical_mode: true
 enforce_lockfile_fields: true

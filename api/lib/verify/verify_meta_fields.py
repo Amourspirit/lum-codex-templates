@@ -16,6 +16,7 @@ class VerifyMetaFields:
 
         self._registry = registry
         self._fm = fm
+        self._verify_rules = VerifyRules()
 
     def _get_filtered_required_fields(self) -> set[str]:
         required_fields: set[str] = set()
@@ -171,11 +172,26 @@ class VerifyMetaFields:
                 }
         return incorrect_types
 
-    def _get_verify_rules(self, fm: FrontMatterMeta) -> dict[str, Any]:
-        verify_rules = VerifyRules()
-        return verify_rules.validate(fm)
+    def _get_verify_rules(self, fm: FrontMatterMeta) -> dict[str, dict[str, list[str]]]:
+        return self._verify_rules.validate(fm, self._registry)
 
     def verify(self) -> Result[dict[str, Any], None] | Result[None, Exception]:
+        """
+        Verify the metadata fields of a frontmatter object.
+        Checks the frontmatter against required fields, allowed fields, and field types.
+        Also validates the frontmatter against any defined verification rules.
+        Returns:
+            Result:
+                On success, returns a Result containing a dictionary with:
+                    - missing_fields (list[str]): Required fields that are absent
+                    - extra_fields (list[str]): Fields present but not allowed
+                    - template_info (dict): Template metadata including type, id, version, title, and artifact_name
+                    - incorrect_type_fields (dict, optional): Fields with incorrect data types
+                    - rule_errors (dict, optional): Validation errors from verify rules
+                    - rule_warnings (dict, optional): Validation warnings from verify rules
+                On failure, returns a Result containing the exception that occurred.
+        """
+
         try:
             required_fields = self._get_filtered_required_fields()
             all_fields = self._get_all_fields_filtered()
@@ -198,8 +214,12 @@ class VerifyMetaFields:
             if incorrect_type_fields:
                 result["incorrect_type_fields"] = incorrect_type_fields
             verify_rule_results = self._get_verify_rules(self._fm)
-            if verify_rule_results:
-                result["rule_errors"] = verify_rule_results
+            field_errors_key = "Field Errors"
+            field_warnings_key = "Field Warnings"
+            if field_errors_key in verify_rule_results:
+                result["rule_errors"] = verify_rule_results[field_errors_key]
+            if field_warnings_key in verify_rule_results:
+                result["rule_warnings"] = verify_rule_results[field_warnings_key]
             return Result.success(result)
         except Exception as e:
             return Result.failure(e)

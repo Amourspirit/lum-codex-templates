@@ -89,11 +89,20 @@ class VerifyArtifactResponse(BaseModel):
         ),
     ]
     rule_errors: Annotated[
-        dict[str, dict[str, list[str]]],
+        dict[str, list[str]],
         Field(
             default_factory=dict,
             title="Rule Errors",
             description="Dictionary of rule errors found during verification.",
+        ),
+    ]
+
+    rule_warnings: Annotated[
+        dict[str, list[str]],
+        Field(
+            default_factory=dict,
+            title="Rule Warnings",
+            description="Dictionary of rule warnings found during verification.",
         ),
     ]
 

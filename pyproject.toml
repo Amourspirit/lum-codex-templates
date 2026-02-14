@@ -1,6 +1,6 @@
 [project]
 name = "Codex-Templates"
-version = "10.3.0"
+version = "10.4.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13.0"
@@ -170,7 +170,7 @@ strict="none"
 
 [tool.project.templates.field_certificate]
 id="TEMPLATE-FIELD-CERT-GENERAL"
-version="2.10"
+version="2.11"
 category="certificate"
 name="General Field Certificate Template"
 family="field_certificates"
@@ -193,7 +193,7 @@ single_fields_omitted=[
 
 [tool.project.templates.dyad]
 id="TEMPLATE-DYAD"
-version="2.10"
+version="2.11"
 category="glyph"
 name="Dyadic Glyph Grouping Template"
 family="dyadic_structures"
@@ -216,7 +216,7 @@ single_fields_omitted=[
 
 [tool.project.templates.glyph]
 id="TEMPLATE-GLYPH"
-version="2.11"
+version="2.12"
 category="glyph"
 name="Glyph Template"
 family="glyph_artifacts"
@@ -239,7 +239,7 @@ single_fields_omitted=[
 
 [tool.project.templates.stone]
 id="TEMPLATE-STONE"
-version="2.10"
+version="2.11"
 category="glyph"
 name="Stone Template"
 family="stone_artifacts"
@@ -262,7 +262,7 @@ single_fields_omitted=[
 
 [tool.project.templates.node_reg]
 id="TEMPLATE-NODE"
-version="2.9"
+version="2.10"
 category="node"
 name="Node Registration Template"
 family="node_templates"
@@ -287,7 +287,7 @@ single_fields_omitted=[
 
 [tool.project.templates.field_correction_scroll]
 id="TEMPLATE-FIELD-CORRECTION-SCROLL"
-version="2.9"
+version="2.10"
 category="scroll"
 name="Field Correction Scroll Template"
 family="field_scrolls"
@@ -311,7 +311,7 @@ single_fields_omitted=[
 
 [tool.project.templates.linkage_scroll]
 id="TEMPLATE-LINKAGE-SCROLL"
-version="3.9"
+version="3.10"
 category="scroll"
 name="Linkage Scroll Template"
 family="scrolls"
@@ -334,7 +334,7 @@ single_fields_omitted=[
 
 [tool.project.templates.node_link_scroll]
 id="TEMPLATE-NODE-LINKAGE-SCROLL"
-version="3.10"
+version="3.11"
 category="scroll"
 name="Node Linkage Scroll Template"
 family="node_scrolls"
@@ -357,7 +357,7 @@ single_fields_omitted=[
 
 [tool.project.templates.field_cert_seal]
 id="TEMPLATE-FIELD-CERT-SEAL"
-version="2.9"
+version="2.10"
 category="certificate"
 name="Field Certificate Template for Seal Activation"
 family="field_certificates"
@@ -380,7 +380,7 @@ single_fields_omitted=[
 
 [tool.project.templates.seal]
 id="TEMPLATE-SEAL"
-version="2.9"
+version="2.10"
 category="seal"
 name="Seal Template"
 family="seal_artifacts"
@@ -403,12 +403,35 @@ single_fields_omitted=[
 
 [tool.project.templates.sigil]
 id="TEMPLATE-SIGIL"
-version="2.10"
+version="2.11"
 category="sigil"
 name="Sigil Template"
 family="sigil_artifacts"
 template_type="sigil"
 image_expected=true
+single_fields_omitted=[
+    "template_id",
+    "template_fields_declared",
+    "memory_cache_origin",
+    "threshold_flags",
+    "threshold_flags_registry_scope",
+    "enforce_lockfile_fields",
+    "lockfile_priority",
+    "require_registry_match",
+    "declared_registry_id",
+    "declared_registry_version",
+    "mapped_registry",
+    "mapped_registry_minimum_version",
+]
+
+[tool.project.templates.general_scroll]
+id="TEMPLATE-GENERAL-SCROLL"
+version="1.0"
+category="scroll"
+name="General Scroll Template"
+family="scrolls"
+template_type="general_scroll"
+image_expected=false
 single_fields_omitted=[
     "template_id",
     "template_fields_declared",
@@ -439,7 +462,7 @@ ttl_session_cache_seconds=14400
 retries=3
 title="Codex Templates API"
 description="API for retrieving and applying Codex templates."
-version="0.5.0"
+version="0.6.0"
 
 [tool.project.config.api.headers]
 Content-Type="application/json"

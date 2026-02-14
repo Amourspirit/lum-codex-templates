@@ -45,6 +45,20 @@ threshold_flags_registry_scope:
   - field_level               # Also enforced across the field whenever certificate is invoked
   - template_level            # Flags apply at the template definition layer
 
+tier: "council" # council, public, family
+
+roles_authority:
+  - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+
+roles_visibility:
+  - "[[prompt:Choose from registry → metadata_fields → roles_visibility → allowed_values]]"
+
+roles_function:
+  - "[[prompt:Choose from registry → metadata_fields → roles_function → allowed_values]]"
+
+roles_action:
+  - "[[prompt:Choose from registry → metadata_fields → roles_action → allowed_values]]"
+
 artifact_id: FC-GENERAL-[[prompt:short descriptor | slug | uppercase]]
 artifact_name: "[[prompt:Certificate Name such as 'Field Certificate of Tier 3 Assignment']]"
 canonical_mode: true

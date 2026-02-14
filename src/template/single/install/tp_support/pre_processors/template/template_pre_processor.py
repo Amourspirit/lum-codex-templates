@@ -14,6 +14,7 @@ from .pre_processor_node_reg import PreProcessorNodeReg
 from .pre_processor_seal import PreProcessorSeal
 from .pre_processor_sigil import PreProcessorSigil
 from .pre_processor_stone import PreProcessorStone
+from .pre_processor_general_scroll import PreProcessorGeneralScroll
 
 
 class TemplatePreProcessor:
@@ -233,6 +234,9 @@ class TemplatePreProcessor:
 
         pp_stone = PreProcessorStone()
         self.register_process(pp_stone)
+
+        pp_general_scroll = PreProcessorGeneralScroll()
+        self.register_process(pp_general_scroll)
 
     @property
     def Count(self) -> int:

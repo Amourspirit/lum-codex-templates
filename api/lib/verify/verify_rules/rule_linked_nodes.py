@@ -1,15 +1,17 @@
-from typing import Any
-from ...util.result import Result
-from ...exceptions.verify_error import VerifyError
+from typing import Any, cast
+
+from src.template.front_mater_meta import FrontMatterMeta
+from api.lib.util.result import Result
+from ...exceptions import VerifyError, MissingKeyError
 from .protocol_verify_rule import ProtocolVerifyRule
 
 
 class LinkedNodesRule(ProtocolVerifyRule):
     def __init__(self) -> None:
-        self._field_name = "linked_nodes"
+        self._field = "linked_nodes"
 
-    def get_field_name(self) -> str:
-        return self._field_name
+    def get_field(self) -> str:
+        return self._field
 
     def _is_numeric_string(self, s: str) -> bool:
         try:
@@ -18,12 +20,32 @@ class LinkedNodesRule(ProtocolVerifyRule):
         except ValueError:
             return False
 
-    def validate(self, value: Any) -> Result[bool, None] | Result[None, Exception]:
-        if not isinstance(value, list):
+    def validate(
+        self, fm: FrontMatterMeta, registry: dict[str, Any]
+    ) -> Result[bool, None] | Result[None, Exception]:
+
+        fields = cast(dict[str, Any], registry.get("fields", {}))
+        if self._field not in fields:
             return Result.failure(
-                TypeError(f"Field '{self._field_name}' must be a list.")
+                MissingKeyError(
+                    f"Missing Key error in field '{self._field}': ",
+                    self._field,
+                    f"Field '{self._field}' is not defined in the registry.",
+                )
             )
+        if not fm.has_field(self._field):
+            return Result.failure(
+                MissingKeyError(
+                    f"Missing Key error in field '{self._field}': ",
+                    self._field,
+                    f"Field '{self._field}' is required but not found in the frontmatter.",
+                )
+            )
+        value = fm.get_field(self._field)
+        if not isinstance(value, list):
+            return Result.failure(TypeError(f"Field '{self._field}' must be a list."))
         errors: list[str] = []
+
         for item in value:
             if not isinstance(item, str):
                 errors.append(f"Item '{item}' is not a string.")
@@ -33,8 +55,8 @@ class LinkedNodesRule(ProtocolVerifyRule):
         if errors:
             return Result.failure(
                 VerifyError(
-                    f"Validation errors in field '{self._field_name}': ",
-                    self._field_name,
+                    f"Validation errors in field '{self._field}': ",
+                    self._field,
                     errors,
                 )
             )

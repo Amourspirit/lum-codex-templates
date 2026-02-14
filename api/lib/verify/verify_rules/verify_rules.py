@@ -1,8 +1,11 @@
+from typing import Any
+
 from .protocol_verify_rule import ProtocolVerifyRule
 from src.template.front_mater_meta import FrontMatterMeta
 from .rule_linked_nodes import LinkedNodesRule
+from .rule_allow_fields import RuleAllowFields
 from ...util.result import Result
-from ...exceptions.verify_error import VerifyError
+from ...exceptions import VerifyError, MissingKeyError
 
 
 class VerifyRules:
@@ -21,9 +24,11 @@ class VerifyRules:
             None
         """
 
-        self._processes[process.get_field_name()] = process
+        self._processes[process.get_field()] = process
 
-    def validate(self, fm: FrontMatterMeta) -> dict[str, dict[str, list[str]]]:
+    def validate(
+        self, fm: FrontMatterMeta, registry: dict[str, Any]
+    ) -> dict[str, dict[str, list[str]]]:
         """
         Validates the frontmatter keys against predefined processes.
         Iterates through the keys in the provided FrontMatterMeta object's frontmatter.
@@ -33,25 +38,32 @@ class VerifyRules:
 
         Args:
             fm (FrontMatterMeta): The frontmatter metadata object to validate.
+            registry (dict[str, Any]): The metadata registry to use for validation.
 
         Returns:
             dict[str, str]: A dictionary where keys are frontmatter keys that failed
             validation, and values are the corresponding error messages as strings.
+            The dictionary is empty if all validations pass successfully.
+            Warnings are included in the result under the key `Field Warnings` and errors under `Field Errors`.
         """
-        r_key = "Field Errors"
-        result = {r_key: {}}
+        field_errors_key = "Field Errors"
+        field_warnings_key = "Field Warnings"
+        result = {field_errors_key: {}, field_warnings_key: {}}
         fm_keys = fm.frontmatter.keys()
         for key in fm_keys:
             if key in self._processes:
                 process = self._processes[key]
-                value = fm.frontmatter[key]
-                p_result = process.validate(value)
+                p_result = process.validate(fm, registry)
                 if Result.is_failure(p_result):
                     if isinstance(p_result.error, VerifyError):
-                        result[r_key][key] = p_result.error.errors
+                        result[field_errors_key][key] = p_result.error.errors
+                    elif isinstance(p_result.error, MissingKeyError):
+                        # missing key errors are considered to be warnings rather than hard errors,
+                        # since they may be optional fields that are simply not present in the frontmatter
+                        result[field_warnings_key][key] = p_result.error.errors
                     else:
-                        result[r_key][key] = [str(p_result.error)]
-        if not result[r_key]:
+                        result[field_errors_key][key] = [str(p_result.error)]
+        if not result[field_errors_key] and not result[field_warnings_key]:
             return {}
         return result
 
@@ -96,13 +108,19 @@ class VerifyRules:
             - The method is not thread-safe; synchronize externally if concurrent access is possible.
         """
 
-        if process.get_field_name() in self._processes:
-            del self._processes[process.get_field_name()]
+        if process.get_field() in self._processes:
+            del self._processes[process.get_field()]
 
     def _register_default_processes(self) -> None:
         """Register the default set of processes with this processor."""
 
         self.register_process(LinkedNodesRule())
+        self.register_process(RuleAllowFields("tier"))
+        self.register_process(RuleAllowFields("roles_authority"))
+        self.register_process(RuleAllowFields("roles_visibility"))
+        self.register_process(RuleAllowFields("roles_function"))
+        self.register_process(RuleAllowFields("roles_action"))
+        self.register_process(RuleAllowFields("canonical_mode"))
 
     @property
     def Count(self) -> int:

@@ -1,5 +1,5 @@
-class VerifyError(Exception):
-    """Custom exception for verification errors."""
+class MissingKeyError(Exception):
+    """Custom exception for missing key errors."""
 
     def __init__(self, message: str, field_name: str, errors: list[str] | str) -> None:
         super().__init__(message)

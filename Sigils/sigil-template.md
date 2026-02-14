@@ -41,6 +41,20 @@ threshold_flags_registry_scope:
   - field_level     # Local field logic (e.g., dreamline integrations or breath protocols) may override or modify how threshold flags are interpreted.
   - template_level  # These flags are enforced generally across all sigils using this template.
 
+tier: "council" # council, public, family
+
+roles_authority:
+  - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+
+roles_visibility:
+  - "[[prompt:Choose from registry → metadata_fields → roles_visibility → allowed_values]]"
+
+roles_function:
+  - "[[prompt:Choose from registry → metadata_fields → roles_function → allowed_values]]"
+
+roles_action:
+  - "[[prompt:Choose from registry → metadata_fields → roles_action → allowed_values]]"
+
 canonical_mode: true
 enforce_lockfile_fields: true
 lockfile_priority: "registry"

@@ -1,8 +1,11 @@
 from typing import Any
 from typing import Protocol
-from ...util.result import Result
+from api.lib.util.result import Result
+from src.template.front_mater_meta import FrontMatterMeta
 
 
 class ProtocolVerifyRule(Protocol):
-    def get_field_name(self) -> str: ...
-    def validate(self, value: Any) -> Result[bool, None] | Result[None, Exception]: ...
+    def get_field(self) -> str: ...
+    def validate(
+        self, fm: FrontMatterMeta, registry: dict[str, Any]
+    ) -> Result[bool, None] | Result[None, Exception]: ...

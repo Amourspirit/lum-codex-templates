@@ -42,6 +42,19 @@ threshold_flags_registry_scope:
   - field_level        # Nodes influence the entire field and energy grid
   - template_level     # Ensures all nodes are held to the same structural ruleset
 
+tier: "council" # council, public, family
+
+roles_authority:
+  - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+
+roles_visibility:
+  - "[[prompt:Choose from registry → metadata_fields → roles_visibility → allowed_values]]"
+
+roles_function:
+  - "[[prompt:Choose from registry → metadata_fields → roles_function → allowed_values]]"
+
+roles_action:
+  - "[[prompt:Choose from registry → metadata_fields → roles_action → allowed_values]]"
 
 canonical_mode: true
 enforce_lockfile_fields: true

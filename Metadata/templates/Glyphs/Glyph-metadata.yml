@@ -47,6 +47,10 @@ template_meta:
     - pronunciation_style
     - registry_id
     - related_artifacts
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - source_agent
     - tags
     - title
@@ -110,6 +114,10 @@ template_meta:
     - related_artifacts
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - source_agent
     - source_medium
     - tags
@@ -124,6 +132,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - used_in_ceremonies
     - voice_confirmed_by

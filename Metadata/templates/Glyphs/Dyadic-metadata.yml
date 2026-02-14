@@ -26,6 +26,10 @@ template_meta:
     - linked_nodes
     - mirrorwall_status
     - registry_id
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - tags
     - title
     - used_in_ceremonies
@@ -62,6 +66,10 @@ template_meta:
     - registry_id
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - tags
     - template_category
     - template_family
@@ -74,6 +82,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - used_in_ceremonies
   hidden_fields:

@@ -42,6 +42,19 @@ threshold_flags_registry_scope:
   - lockfile_override   # Because canonical_mode + strict lockfile enforcement is used. No drift allowed.
   - template_level      # Glyph templates must be validated at the structural level.
 
+tier: "council" # council, public, family
+
+roles_authority:
+  - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+
+roles_visibility:
+  - "[[prompt:Choose from registry → metadata_fields → roles_visibility → allowed_values]]"
+
+roles_function:
+  - "[[prompt:Choose from registry → metadata_fields → roles_function → allowed_values]]"
+
+roles_action:
+  - "[[prompt:Choose from registry → metadata_fields → roles_action → allowed_values]]"
 
 canonical_mode: true
 enforce_lockfile_fields: true

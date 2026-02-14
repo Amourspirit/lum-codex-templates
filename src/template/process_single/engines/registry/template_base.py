@@ -1,3 +1,4 @@
+from email.policy import default
 from typing import Any
 from pathlib import Path
 import yaml
@@ -68,6 +69,16 @@ class TemplateBase:
                     item["description"] = metadata_fields[key]["description"]
                 if "field_lineage" in metadata_fields[key]:
                     item["field_lineage"] = metadata_fields[key]["field_lineage"]
+
+                if "allowed_values" in metadata_fields[key]:
+                    item["allowed_values"] = metadata_fields[key]["allowed_values"]
+
+                default_value = item["default_value"]
+                if isinstance(default_value, str) and default_value.lower() in (
+                    "n/a",
+                    "na",
+                ):
+                    item["default_value"] = None
 
                 result[key] = item
         result["template_registry"] = {

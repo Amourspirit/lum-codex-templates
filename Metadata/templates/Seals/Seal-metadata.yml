@@ -35,6 +35,10 @@ template_meta:
     - mirrorwall_status
     - node_roles
     - registry_id
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - seal_class
     - seal_for_artifact
     - seal_type
@@ -85,6 +89,10 @@ template_meta:
     - registry_id
     - rendered_by
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - seal_class
     - seal_for_artifact
     - seal_status
@@ -102,6 +110,7 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
+    - tier
     - title
     - used_in_ceremonies
     - voice_transmission_format

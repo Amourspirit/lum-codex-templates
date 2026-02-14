@@ -495,24 +495,22 @@ def _verify_artifact(submission: ArtifactSubmission) -> VerifyArtifactResponse:
     data = result.data
     if not data:
         raise ValueError("Verification result data is missing.")
-    errors: list[str] = []
     if "missing_fields" in data and data["missing_fields"]:
-        errors.append("missing fields")
         default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["missing_fields"] = data["missing_fields"]
     if "extra_fields" in data and data["extra_fields"]:
         default_result["extra_fields"] = data["extra_fields"]
     if "incorrect_type_fields" in data and data["incorrect_type_fields"]:
-        errors.append("incorrect type fields")
         default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["incorrect_type_fields"] = data["incorrect_type_fields"]
     if "rule_errors" in data and data["rule_errors"]:
-        errors.append("rule errors")
         default_result["status"] = status.HTTP_422_UNPROCESSABLE_ENTITY
         default_result["field_validation"] = "failed"
         default_result["rule_errors"] = data["rule_errors"]
+    if "rule_warnings" in data and data["rule_warnings"]:
+        default_result["rule_warnings"] = data["rule_warnings"]
 
     try:
         result = VerifyArtifactResponse(**default_result)

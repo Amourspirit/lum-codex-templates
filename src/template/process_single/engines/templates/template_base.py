@@ -54,6 +54,23 @@ class TemplateBase:
                 "executor_mode": f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}",
             },
         )
+        # the current role prompts are likely - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
+        # for single, api, and mcp we want fields and not metadata_fields
+        # this is because single, api and mcp use individual registry files.
+        roles = (
+            "roles_authority",
+            "roles_visibility",
+            "roles_function",
+            "roles_action",
+        )
+        for role in roles:
+            if self.fm.has_field(role):
+                self.fm.set_field(
+                    role,
+                    [
+                        f"[[prompt:Choose from registry → fields → {role} → allowed_values]]"
+                    ],
+                )
         # result["batch_number"] = str(self.main_registry.build_version)
         # self.fm.set_field("batch_number", str(self.main_registry.build_version))
 
