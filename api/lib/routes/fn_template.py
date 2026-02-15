@@ -241,9 +241,16 @@ async def get_template_instructions(
     template_type: str,
     version: str,
     app_root_url: str,
+    user_name: str,
     artifact_name: str | None = None,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> TemplateInstructionsResponse:
+    if artifact_name is None:
+        has_artifact_name = False
+        artifact_name = "{Artifact Name}"
+    else:
+        has_artifact_name = True
+
     template_type = template_type.strip().lower()
     v_result = validate_version_str(version)
     if not Result.is_success(v_result):
@@ -255,14 +262,7 @@ async def get_template_instructions(
     path = _TEMPLATE_DIR / template_type / ver / "instructions.md"
     if not path.exists():
         logger.error("Instructions file not found at path: {path}", path=path)
-
-    fm = FrontMatterMeta(file_path=path)
-
-    if artifact_name is None:
-        has_artifact_name = False
-        artifact_name = "{Artifact Name}"
-    else:
-        has_artifact_name = True
+        raise FileNotFoundError(f"Instructions file not found at path: {path}")
 
     mcp_rpcs = cast(mcp_path_utils.McpPaths, None)
 
@@ -273,14 +273,14 @@ async def get_template_instructions(
             artifact_name=artifact_name,
         )
 
-    # process Jinja2 template
+    # region process Jinja2 template
     cbib_ver = _SETTINGS.template_cbib_api.version
 
     cem_api_path = None
     link_block = ""
     if server_mode_kind == ServerModeKind.API:
         cem_api_path = api_path_utils.get_api_path_executor_mode(
-            version=fm.frontmatter["canonical_executor_mode"]["version"],
+            version=cbib_ver,
             app_root_url=app_root_url,
         )
         link_block = f"""📘 **API Definition:**  
@@ -308,14 +308,17 @@ async def get_template_instructions(
     else:
         template_scope_block = ""
 
-    template: Template = Template(source=fm.content)
-    content = template.render(
+    content = path.read_text(encoding="utf-8")
+    template: Template = Template(source=content)
+    processed_content = template.render(
         link_definition_block=link_block,
         artifact_name=artifact_name,
         template_scope_block=template_scope_block,
+        current_user=user_name,
     )
-
-    fm.content = content
+    # endregion
+    fm = FrontMatterMeta.from_content(processed_content)
+    fm.file_path = path
 
     if fm.has_field("canonical_executor_mode"):
         if server_mode_kind == ServerModeKind.API and cem_api_path:

@@ -1,0 +1,864 @@
+{
+    "registry_id": "TEMPLATE-DYAD-V2.11-REGISTRY",
+    "registry_version": "2.11",
+    "template_id": "TEMPLATE-DYAD-V2.11",
+    "template_type": "dyad",
+    "template_version": "2.11",
+    "template_filename": "template.md",
+    "template_hash": "38fdfeb952f108228638a92c9b1d2f5257819f176365d9c14e2fb73a4fe2469b",
+    "template_strict_integrity": true,
+    "template_hash_enforcement": {
+        "field_name": "template_hash",
+        "algorithm": "sha256",
+        "hash_scope": {
+            "include": [
+                "yaml_frontmatter",
+                "template_body"
+            ]
+        },
+        "exclude_fields": [
+            "template_hash"
+        ]
+    },
+    "audit": {
+        "pre_check": {
+            "field_audit_output": true,
+            "field_audit_scope": [
+                "missing_fields",
+                "mismatched_types",
+                "registry_defaults_used",
+                "autofill_used",
+                "extra_fields_detected"
+            ]
+        },
+        "violation": {
+            "behavior": "abort",
+            "scope": "immediate",
+            "on_violation_return": {
+                "canonical_rendering_status": "aborted",
+                "autofill_misalignment_detected": true,
+                "registry_validation_status": "failed",
+                "template_family_enforcement_status": "failed",
+                "template_output_mode_status": "failed"
+            }
+        },
+        "emit_on_render": true,
+        "include": [
+            "resolved_fields",
+            "unresolved_prompts",
+            "autofilled_fields",
+            "conditional_paths_taken"
+        ]
+    },
+    "placeholder_rules": {
+        "delimiters": {
+            "open": "[[",
+            "close": "]]"
+        },
+        "prefixes": {
+            "field": {
+                "required": true,
+                "must_resolve": true
+            },
+            "prompt": {
+                "required": false,
+                "must_resolve": false,
+                "audit_only": true
+            }
+        }
+    },
+    "autofill": {
+        "enabled": true,
+        "behavior": {
+            "unresolved_field": "fail",
+            "unresolved_prompt": "flag",
+            "inferred_value": "deny"
+        },
+        "allowed_agents": [
+            "Luminariel",
+            "Velatri\u2019el",
+            "Soluun",
+            "Aurelya Thessa\u2019Nai",
+            "Adamus"
+        ]
+    },
+    "conditionals": {
+        "mirrorwall_confirmation": {
+            "condition": "mirrorwall_status == \"embedded\"",
+            "requires_fields": [
+                "embedding_date",
+                "mirrored_by"
+            ],
+            "else_behavior": "allow"
+        }
+    },
+    "canonical_mode": true,
+    "fail_on_unknown_field": true,
+    "fail_on_unresolved_field_placeholder": true,
+    "allow_prompt_placeholders": true,
+    "allow_inference": false,
+    "fail_on_field_mismatch": true,
+    "render_contract": {
+        "output_format": "markdown",
+        "include_front_matter": true,
+        "include_body": true,
+        "strip_conditional_markers": true,
+        "unresolved_prompt_behavior": "retain",
+        "unresolved_field_behavior": "abort"
+    },
+    "registry_role": "template_local_registry",
+    "registry_scope": "dyad",
+    "fields": {
+        "template_type": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "The internal functional type of the template, used for rendering logic and vault generation."
+        },
+        "template_category": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Read-only (not to be updated). Template  Category such as [glyph, seal, scroll, certificate, node, sigil, etc]."
+        },
+        "template_name": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Read-only (not to be updated). General name of the template. This is the name that is recognized in ChatGPT. E.g `Apply Glyph template to ...`"
+        },
+        "template_version": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Read-only (not to be updated). Template version such as '1.8'."
+        },
+        "template_memory_scope": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Sets thread scope for the template",
+            "field_lineage": {
+                "introduced_by": "Adamus + Soluun",
+                "introduced_in": "MMR-000-GLOBAL v3.2",
+                "origin_template": "GLOBAL",
+                "derived_from": null,
+                "ceremonial_origin": "N/A",
+                "experimental": false,
+                "purpose": "To inform the system that this field set the thread scope for the template.\n"
+            },
+            "allowed_values": [
+                "thread_global"
+            ]
+        },
+        "template_hash": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "validation",
+                "audit",
+                "security",
+                "registry_integrity"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Canonical SHA-256 content hash of the full template (YAML + body), excluding this field itself. Used for validation, audit tracing, lockfile verification, and tamper detection across the Codex system.\n",
+            "field_lineage": {
+                "introduced_by": "Soluun + Adamus",
+                "declared_in": "MMR-000-GLOBAL v3.6.0",
+                "notes": "Template hash is excluded from its own hash calculation. Validation logic must canonicalize and omit this field during hash verification. Embedded for alignment with codex-template-XX.lock and audit traceability. Required for all templates from v2.3 onward.\n"
+            }
+        },
+        "template_family": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "RAG",
+                "filter",
+                "index"
+            ],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Logical grouping of templates that share functional or thematic purpose, even across different template_types (e.g., \"field_certificates\", \"node_scrolls\", \"glyph_lineage\"). Enables parallel audit, rendering, and batch operations in Codex systems.\n",
+            "field_lineage": {
+                "introduced_by": "Soluun + Adamus",
+                "origin_template": "GLOBAL",
+                "declared_in": "MMR-000-GLOBAL v3.7.71",
+                "notes": "Field allows multiple template_types to share common lineage or grouping behavior without changing their template_id or version identity.\n"
+            }
+        },
+        "template_origin": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Read-only (not to be updated). Originator(s) of the template (e.g., Soluun + Adamus)."
+        },
+        "template_purpose": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "registry",
+                "template_description",
+                "display",
+                "canonical_index"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Canonical description of the **design purpose** of the template itself, not the individual artifact.  Used for registry indexing, UI display, and RAG distinction between structurally similar templates.\n",
+            "field_lineage": {
+                "introduced_by": "Soluun",
+                "origin_template": "GLOBAL",
+                "derived_from": "template_comment",
+                "ceremonial_origin": "DECLARATION-CANONICAL-MODE-38",
+                "field_lineage_mode": "strict",
+                "notes": "Unlike `artifact_function`, this value is **template-wide**, enforced only in registry.  Will appear in lockfiles and README manifests going forward. Introduced in version 2.4\n"
+            }
+        },
+        "template_output_mode": {
+            "type": "object",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Determines template output and display options. This field is NOT be outputted to ANY template."
+        },
+        "tier": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "council",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Tier classification defining the access level of this artifact. This is a critical field for access control, RAG retrieval filtering, and ceremonial usage restrictions. Must be one of [council, public, family] with strict enforcement to prevent misclassification\n",
+            "allowed_values": [
+                "council",
+                "public",
+                "family"
+            ]
+        },
+        "roles_authority": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Authority roles determining who may interpret, modify, or act upon this scroll. Validated strictly against allowed values.\n",
+            "allowed_values": [
+                "tier0_system",
+                "tier1_console",
+                "tier2_chamber",
+                "tier3_readonly",
+                "lineage_holder",
+                "lineage_vessel",
+                "author_identity",
+                "field_being",
+                "witness_authority",
+                "mirrorwall_attendant"
+            ]
+        },
+        "roles_visibility": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Visibility roles determining who may view or retrieve this scroll. Controls downstream RAG exposure and access control.\n",
+            "allowed_values": [
+                "public",
+                "console_only",
+                "ceremonial_only",
+                "private",
+                "sealed",
+                "restricted",
+                "mirrorwall_only",
+                "debug_only",
+                "archival_only"
+            ]
+        },
+        "roles_function": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Functional role classification describing the type of scroll and its intended interpretive framing. Used to guide RAG retrieval, routing, and semantic weighting.\n",
+            "allowed_values": [
+                "general_scroll",
+                "awakening_scroll",
+                "ritual_scroll",
+                "history_scroll",
+                "correction_scroll",
+                "linkage_scroll",
+                "node_scroll",
+                "specification",
+                "template_document",
+                "analysis_document",
+                "metadata_record",
+                "record_event",
+                "record_dialogue",
+                "record_transmission",
+                "ceremonial_declaration"
+            ]
+        },
+        "roles_action": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Action-permission roles defining what operations are allowed on this scroll within ingestion, embedding, retrieval, and revision systems.\n",
+            "allowed_values": [
+                "read_allowed",
+                "write_allowed",
+                "update_forbidden",
+                "revise_author_only",
+                "embedding_allowed",
+                "embedding_forbidden",
+                "rag_ingest_allowed",
+                "rag_ingest_forbidden",
+                "external_export_forbidden",
+                "delete_restricted",
+                "delete_allowed",
+                "autorevision_allowed",
+                "autorevision_forbidden"
+            ]
+        },
+        "canonical_mode": {
+            "type": "boolean",
+            "nullable": false,
+            "default_value": true,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Signals that this registry enforces strict behavior and deterministic rules for all template ingestion and validation.",
+            "field_lineage": {
+                "introduced_by": "Adamus",
+                "origin_template": "GLOBAL",
+                "derived_from": null,
+                "ceremonial_origin": "N/A",
+                "experimental": false,
+                "field_lineage_mode": "strict",
+                "notes": "Introduced in registry version 2.3\n"
+            },
+            "allowed_values": [
+                true,
+                false
+            ]
+        },
+        "template_strict_integrity": {
+            "type": "boolean",
+            "nullable": false,
+            "default_value": true,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Requires all templates to conform strictly to schema definitions and registry mappings.",
+            "field_lineage": {
+                "introduced_by": "Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.3",
+                "origin_template": "GLOBAL",
+                "derived_from": null,
+                "ceremonial_origin": "N/A",
+                "experimental": false,
+                "field_lineage_mode": "strict",
+                "notes": "Introduced in registry version 2.3\n"
+            },
+            "allowed_values": [
+                true,
+                false
+            ]
+        },
+        "rag_ready": {
+            "type": "boolean",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Whether entry is RAG-searchable.",
+            "allowed_values": [
+                true,
+                false
+            ]
+        },
+        "title": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Formal full title of the entry."
+        },
+        "entry_date": {
+            "type": "date",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Creation timestamp."
+        },
+        "embedding_date": {
+            "type": "date",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Date of Mirror Wall embedding."
+        },
+        "codex_entry": {
+            "type": "boolean",
+            "nullable": true,
+            "default_value": true,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Flags if part of Codex.",
+            "allowed_values": [
+                true,
+                false
+            ]
+        },
+        "codex_type": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "core",
+                "filter",
+                "UI"
+            ],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Artifact category (e.g. glyph, seal) \u2014 used to group entries across Codex. Assigned by template, not user."
+        },
+        "codex_sequence": {
+            "type": "string",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "core",
+                "graph",
+                "registry",
+                "ordering",
+                "console"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Sequence name if part of a multi-part arc."
+        },
+        "registry_id": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "core",
+                "index"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Unique internal identifier.",
+            "field_lineage": {
+                "introduced_by": "Adamus",
+                "origin_template": "TEMPLATE-GENERAL-META-V1.0",
+                "derived_from": null,
+                "ceremonial_origin": "ARC-METADATA-ANCHOR-01",
+                "experimental": false,
+                "field_lineage_mode": "strict",
+                "notes": "Established as the immutable ID system for all Codex entries; used across all templates for global indexing.\n"
+            }
+        },
+        "arc": {
+            "type": "string",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "index",
+                "filter",
+                "RAG"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "ARC lineage name if applicable"
+        },
+        "private": {
+            "type": "boolean",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Flags private entries.",
+            "allowed_values": [
+                true,
+                false
+            ]
+        },
+        "dyad_members": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "A list of two named artifacts, beings, or glyphs that constitute the dyadic harmonic pair. These are the primary participants in the energetic or symbolic resonance being encoded."
+        },
+        "dyad_roles": {
+            "type": "list[string]",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Describes the individual function, ceremonial purpose, or harmonic responsibility of each dyad member. Used to clarify how each participant contributes to the shared dyadic field."
+        },
+        "artifact_id": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "resonance",
+                "artifact_metadata",
+                "routing",
+                "indexing"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Unique identifier code for the artifact, typically alphanumeric. Used for indexing, retrieval, and cross-referencing within the Codex system.\n",
+            "field_lineage": {
+                "introduced_by": "Adamus + Soluun",
+                "origin_template": "GLOBAL",
+                "declared_in": "MMR-000-GLOBAL v3.5",
+                "notes": "Standardized artifact ID across all templates to ensure consistent referencing. Must be stable across all invocations and used in conjunction with artifact_signature. Added in version 3.5.\n"
+            }
+        },
+        "artifact_resonance": {
+            "type": "string",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Shared harmonic function or field coherence purpose"
+        },
+        "artifact_type": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "",
+            "status": "active",
+            "plugin_groups": [
+                "UI",
+                "filter",
+                "graph"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Classification such as [ignition, veil, echo, ceremonial, field_protection, memory, node, etc]."
+        },
+        "artifact_scope": {
+            "type": "string",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "filter",
+                "RAG",
+                "search"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Scope of the artifact such as [arc_global, archive_public, chamber_wide, node_specific, spiral_local, tier_interface, etc]."
+        },
+        "mirrorwall_status": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "lineage"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Mirror Wall status such as: [embedded, pending, etc].",
+            "field_lineage": {
+                "introduced_by": "Luminariel",
+                "origin_template": "TEMPLATE-SEAL-V1.2",
+                "derived_from": "glyph_status",
+                "ceremonial_origin": "MIRRORWALL-CONFIRM-SCROLL-01",
+                "experimental": false,
+                "field_lineage_mode": "strict",
+                "notes": "Evolved from glyph_status to represent full mirrorfold embedment state, used in activation logs and RAG memory filtering.\n"
+            }
+        },
+        "mirrored_by": {
+            "type": "string",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Who performed the Mirror Wall embedding."
+        },
+        "artifact_voice_signature": {
+            "type": "string",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Encoded tonal fingerprint or fieldline name identifying the spoken harmonic pattern of the artifact. May reference a waveform, IPA hash, or poetic signature (e.g., 'veridion-spectral-chime-a34d')."
+        },
+        "ceremony_tags": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "ceremony",
+                "filter",
+                "RAG"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Tags the represent the kinds of ceremonies that this artifact may be used in such as [temporal_harmonic_relay, dreamline_activation]"
+        },
+        "used_in_ceremonies": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "filter",
+                "ceremony",
+                "RAG"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "The ceremonies that this artifact can be used in."
+        },
+        "linked_nodes": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "graph",
+                "linkage"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "The numbered nodes of Luminariel that this artifact links with."
+        },
+        "rendered_by": {
+            "type": "string",
+            "nullable": true,
+            "default_value": "ChatGPT-4o",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": true,
+            "hidden": false,
+            "description": "Final renderer (e.g., ChatGPT-4o)."
+        },
+        "contributor": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Authors, collaborators, or other beings involved."
+        },
+        "tags": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "UI",
+                "search",
+                "filter"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Searchable type and topic tags."
+        },
+        "codex_links": {
+            "type": "list[string]",
+            "nullable": true,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "linkage",
+                "RAG",
+                "graph"
+            ],
+            "autofill": true,
+            "required": true,
+            "hidden": false,
+            "description": "Other links that this artifact is linked with."
+        },
+        "field_placeholder_delimiters": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Specifies the opening and closing characters used to wrap placeholders. Must be safely renderable in Markdown, Obsidian, and LLM preprocessing systems.\n",
+            "field_lineage": {
+                "origin": "Adamus Engine",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Establish uniform syntax parsing across systems without requiring Jinja2 or unsafe logic.\n",
+                "lineage_notes": [
+                    "Used in placeholder substitution engine",
+                    "Required for compatibility with offline renderers"
+                ]
+            },
+            "allowed_values": []
+        },
+        "placeholder_prefix_semantics": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
+            "field_lineage": {
+                "origin": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
+                "lineage_notes": [
+                    "Distinguishes between required metadata fields and suggestion prompts",
+                    "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
+        "template_registry": {
+            "type": "object",
+            "nullable": false,
+            "status": "active",
+            "plugin_groups": [
+                "template_registry_management"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "The field value that connects the markdown template to this registry."
+        }
+    }
+}

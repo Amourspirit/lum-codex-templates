@@ -211,6 +211,10 @@ async def get_template_instructions(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
+    monad_name = get_user_monad_name(session)
+    if not monad_name:
+        monad_name = "unknown"
+
     if not version:
         try:
             version = _get_latest_template_version(template_type)
@@ -229,6 +233,7 @@ async def get_template_instructions(
         version=version,
         app_root_url=app_root_url,
         artifact_name=artifact_name,
+        user_name=monad_name,
     )
     return result.content
 

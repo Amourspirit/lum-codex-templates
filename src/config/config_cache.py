@@ -45,6 +45,14 @@ class ConfigCache:
             self._cache[key] = p
         return self._cache[key]
 
+    def get_assets_path(self) -> Path:
+        """Get the path to the Assets directory."""
+        key = "assets_path"
+        if key not in self._cache:
+            p = self.config.root_path / "Assets"
+            self._cache[key] = p
+        return self._cache[key]
+
     def get_dist_single(self, build_number: int) -> Path:
         """Get the path to the single distribution directory for the given build number."""
         key = f"dist_single_{build_number}"

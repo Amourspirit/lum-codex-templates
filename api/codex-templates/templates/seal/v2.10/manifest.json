@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_seal",
+    "version": "0.1.0",
+    "description": "manifest for version 2.10 for template type seal",
+    "template_info": {
+        "template_type": "seal",
+        "template_file": "template.md",
+        "version": "2.10",
+        "hash": "5ab7c2f0b8dba75636aa5ecd210e832e7e19ada910a0e1f96c9155d0995589fd",
+        "template_hash": "5ab7c2f0b8dba75636aa5ecd210e832e7e19ada910a0e1f96c9155d0995589fd",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-SEAL-V2.10"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-SEAL-V2.10-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-14T22:30:39.622103-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

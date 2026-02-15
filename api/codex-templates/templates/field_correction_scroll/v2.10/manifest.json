@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_field_correction_scroll",
+    "version": "0.1.0",
+    "description": "manifest for version 2.10 for template type field_correction_scroll",
+    "template_info": {
+        "template_type": "field_correction_scroll",
+        "template_file": "template.md",
+        "version": "2.10",
+        "hash": "002848c13d041c80c369a049cffbe48f2b13da3582c012fdd795390539c13aff",
+        "template_hash": "002848c13d041c80c369a049cffbe48f2b13da3582c012fdd795390539c13aff",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-FIELD-CORRECTION-SCROLL-V2.10"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-FIELD-CORRECTION-SCROLL-V2.10-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-14T22:30:39.160721-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

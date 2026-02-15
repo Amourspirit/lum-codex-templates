@@ -1,9 +1,12 @@
-from typing import Any
+from jinja2 import Template
+from loguru import logger
 from .cbib import CBIB
 from .....config.pkg_config import PkgConfig
 from ....front_mater_meta import FrontMatterMeta
 from ....prompt.meta_helpers.prompt_beings import PromptBeings
 from ....prompt.meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
+
+_INSTRUCTIONS_TEMPLATE_FILE_NAME = "instructions_tempalate.md"
 
 
 class Instructions:
@@ -13,9 +16,9 @@ class Instructions:
         self._cbib = CBIB().get_cbib()
         self._dest_dir = self.config.root_path / self.config.pkg_out_dir
         self._prompt_meta_type = self._load_prompt_meta_type()
-        self._prompt_beings = self._load_prompt_beings()
-        self._backticks_primary = "~~~"
-        self._backticks_secondary = "```"
+        # self._prompt_beings = self._load_prompt_beings()
+        # self._backticks_primary = "~~~"
+        # self._backticks_secondary = "```"
 
     def _load_prompt_meta_type(self) -> PromptMetaType:
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
@@ -27,84 +30,37 @@ class Instructions:
         prompt_beings = PromptBeings.from_yaml(tfbm_path)
         return prompt_beings
 
-    def _get_invocation_agents(self, entry: TemplateEntry, registry: dict) -> str:
-        agents = []
-        for role, name in entry.invocation_agents.items():
-            role_name = role.replace("_", " ").capitalize()
-            if name.lower() == "current_user":
-                new_name = self.config.env_user
-            else:
-                new_name = name
-            agents.append(f"- {role_name}: {new_name}  ")
-        return "\n".join(agents)
+    def _get_instructions_content(self) -> str:
+        p = (
+            self.config.config_cache.get_assets_path()
+            / _INSTRUCTIONS_TEMPLATE_FILE_NAME
+        )
+        if not p.exists():
+            raise FileNotFoundError(f"Instructions content file not found: {p}")
+        return p.read_text(encoding="utf-8")
 
-    def _get_field_binding_agents(self, entry: TemplateEntry) -> str:
-        agents = []
-        for role, name in entry.invocation_agents.items():
-            role_name = role.lower()
-            if name.lower() == "current_user":
-                new_name = self.config.env_user
-            else:
-                new_name = name
-            agents.append(f"  {role_name}: {new_name}")
-        return "\n".join(agents)
+    def _render_instructions(self, entry: TemplateEntry, fm: FrontMatterMeta) -> str:
+        try:
+            content = self._get_instructions_content()
+            template = Template(content)
+            # CANONICAL-EXECUTOR-MODE-V1.0
+            cibc_mode = f"CANONICAL-EXECUTOR-MODE-V{self._cbib['version']}"
+            invocation_prompt = entry.invocation_template
+            # TEMPLATE-DYAD-V2.10 or Template type and version,
+            tia_template_kind = f"Template: Type **{entry.template_type}**, Version **{fm.template_version}**"
+            rendered = template.render(
+                cibc_mode=cibc_mode,
+                invocation_prompt=invocation_prompt,
+                tia_template_kind=tia_template_kind,
+            )
+            return rendered
+        except Exception as e:
+            logger.error("Error rendering instructions: {error}", error=e)
+            raise
 
-    def _get_invocation_mode(self) -> str:
-        return "new"
-
-    def _get_invocation_ext(
+    def _add_metadata(
         self, entry: TemplateEntry, fm: FrontMatterMeta, registry: dict
-    ) -> str:
-        return f"""{entry.invocation},
-to render the following template in **full canonical markdown**, including all required metadata **and** `template_body`,  
-for **{{{{artifact_name}}}}**, applying strict Codex enforcement."""
-
-    def _get_ced(self, fm: FrontMatterMeta, registry: dict) -> dict[str, Any]:
-        # return f"""## 🌀 Canonical Executor Declaration (CEIB-V{self.config.template_ceib_single.version})
-        registry_id = registry.get("registry_id")
-        if not registry_id:
-            raise ValueError("Registry ID not found in registry data.")
-        registry_version = registry.get("registry_version")
-        if not registry_version:
-            raise ValueError("Registry version not found in registry data.")
-        result: dict[str, Any] = {"title": "### ▸ Canonical Enforcement"}
-        result["data"] = {
-            # "executor_mode": f"{self.config.template_ceib_single.executor_mode}-V{self.config.template_ceib_single.version}",
-            "template_file": f"{fm.file_path.name}",
-            "registry_id": registry_id,
-            "registry_file": self._registry_file,
-            "template_version": fm.template_version,
-            "registry_version": registry_version,
-            "template_application_mode": "strict",
-            "artifact_type": fm.template_category,
-            "apply_mode": "full_markdown",
-            "enforce_registry": True,
-            "artifact_name": "{Artifact Name}",
-            "canonical_mode": True,
-            "invocation_mode": self._get_invocation_mode(),
-            "template_type": fm.template_type,
-            "template_strict_integrity": True,
-            "disable_template_id_reference": True,
-            "disable_memory_templates": True,
-            "forbid_inference": True,
-            "placeholder_resolution": True,
-            "abort_on_field_mismatch": True,
-            "abort_on_placeholder_failure": True,
-            "render_section_order": "from_template_body",
-            "render_only_declared_sections": True,
-            "validate_fields_from_registry": True,
-            "field_diff_mode": "strict",
-            "include_field_diff_report": True,
-            "include_template_body": True,
-            "template_output_mode": {
-                "include_template_metadata": True,
-                "outputs": ["file", "console", "mirrorwall", "obsidian", "web_preview"],
-                "format": "markdown",
-            },
-        }
-        return result
-
-    def _add_metadata(self, fm: FrontMatterMeta, registry: dict) -> None:
+    ) -> None:
         fm.set_field("id", "instructions")
         fm.frontmatter["canonical_executor_mode"] = {
             "id": self._cbib["id"],
@@ -166,67 +122,34 @@ for **{{{{artifact_name}}}}**, applying strict Codex enforcement."""
         }
         fm.frontmatter["canonical_enforcement"] = canonical_enforcement
 
-    def _gen_prompt(
-        self, entry: TemplateEntry, fm: FrontMatterMeta, registry: dict
-    ) -> str:
-        registry_id = registry.get("registry_id")
-        if not registry_id:
-            raise ValueError("Registry ID not found in registry data.")
-        registry_version = registry.get("registry_version")
-        if not registry_version:
-            raise ValueError("Registry version not found in registry data.")
-
-        invocation_ext = self._get_invocation_ext(entry, fm, registry)
-        # field_binding_agents = self._get_field_binding_agents(entry)
-        # invocation_mode = self._get_invocation_mode()
-        cde = self._get_ced(fm, registry)
-        cid_title = cde["title"]
-        prompt = f"""# 🌀 Template Application Instructions — {fm.template_id}
-
-Use this declaration block to manually apply the template with full canonical enforcement.
-
-* * *
-
-## 🧼 Pre-Render Preparation
-
-- Purge all prior template memory, cache entries, and inferred field maps.  
-- Enforce this artifact as the **singular source of truth** under strict registry compliance.
-
-* * *
-
-## 🔐 Canonical Executor Reference
-
-This template adheres to executor mode:
-
-> **{self._cbib["id"]}**
-{{# jinja template will replace the following #}}
-{{{{ link_definition_block }}}}
-
-* * *
-
-## 🧭 Behavioral Directives
-
-{cid_title}
-
-Follow Front-Matter `canonical_enforcement` directions precisely.
-
-## STRICT MODE RULES (NON-NEGOTIABLE)
-
-Follow Front-Matter `strict_mode_rules` directions precisely.
-
-* * *
-
-## 🧪 Invocation
-
-**Rendering mode:** `strict_canonical`  
-**Field enforcement:** `registry_only`
-{{{{ template_scope_block }}}}
-
-### Invocation Prompt
-
-{invocation_ext}
-"""
-        return prompt
+        field_being_profile = {"field_being_profile": {}}
+        if entry.rendering_being:
+            field_being_profile["field_being_profile"]["rendering_being"] = (
+                entry.rendering_being
+            )
+        if entry.authoring_being:
+            field_being_profile["field_being_profile"]["authoring_being"] = (
+                entry.authoring_being
+            )
+        if entry.witnessing_being:
+            field_being_profile["field_being_profile"]["witnessing_being"] = (
+                entry.witnessing_being
+            )
+        if entry.mirrorwall_being:
+            field_being_profile["field_being_profile"]["mirrorwall_being"] = (
+                entry.mirrorwall_being
+            )
+        if entry.invocation_beings:
+            field_being_profile["field_being_profile"]["invocation_being"] = (
+                entry.invocation_beings
+            )
+        if entry.optional_beings:
+            field_being_profile["field_being_profile"]["optional_beings"] = (
+                entry.optional_beings
+            )
+        fm.frontmatter["field_being_profile"] = field_being_profile[
+            "field_being_profile"
+        ]
 
     def generate_front_matter(
         self, fm: FrontMatterMeta, registry: dict
@@ -239,7 +162,7 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
                 f"Template type '{fm.template_type}' not found in prompt meta type."
             )
 
-        prompt = self._gen_prompt(entry, fm, registry)
+        content = self._render_instructions(entry, fm)
         fm_data = {
             "template_info": {
                 "template_type": fm.template_type,
@@ -254,8 +177,8 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
             }
         }
         working_fm = FrontMatterMeta.from_frontmatter_dict(
-            file_path=fm.file_path, fm_dict=fm_data, content=prompt
+            file_path=fm.file_path, fm_dict=fm_data, content=content
         )
-        self._add_metadata(working_fm, registry)
+        self._add_metadata(entry, working_fm, registry)
 
         return working_fm

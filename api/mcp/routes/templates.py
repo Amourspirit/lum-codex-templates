@@ -236,13 +236,15 @@ The template consists of Frontmatter metadata and markdown content that contain 
         logger.debug("get_template called")
 
         try:
-            _ = await _ctx_validate_template_access(ctx=ctx)
+            session = await _ctx_validate_template_access(ctx=ctx)
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Authentication failed: {str(e)}",
             )
-        # monad_name = get_user_monad_name(session=session)
+        monad_name = get_user_monad_name(session=session)
+        if not monad_name:
+            monad_name = "unknown"
         if not input_ver.version:
             try:
                 ver = _get_latest_template_version(template_type=input_type.type)
@@ -263,6 +265,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
             app_root_url=cfg.current_api_prefix,
             artifact_name=artifact_name,
             server_mode_kind=ServerModeKind.MCP,
+            user_name=monad_name,
         )
 
     @mcp.tool(
