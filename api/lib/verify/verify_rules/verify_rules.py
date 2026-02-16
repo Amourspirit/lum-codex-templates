@@ -5,7 +5,7 @@ from src.template.front_mater_meta import FrontMatterMeta
 from .rule_linked_nodes import LinkedNodesRule
 from .rule_allow_fields import RuleAllowFields
 from ...util.result import Result
-from ...exceptions import VerifyError, MissingKeyError
+from ...exceptions import VerifyError, MissingKeyError, RequiredFieldMissingError
 
 
 class VerifyRules:
@@ -55,7 +55,9 @@ class VerifyRules:
                 process = self._processes[key]
                 p_result = process.validate(fm, registry)
                 if Result.is_failure(p_result):
-                    if isinstance(p_result.error, VerifyError):
+                    if isinstance(
+                        p_result.error, (VerifyError, RequiredFieldMissingError)
+                    ):
                         result[field_errors_key][key] = p_result.error.errors
                     elif isinstance(p_result.error, MissingKeyError):
                         # missing key errors are considered to be warnings rather than hard errors,
@@ -116,11 +118,12 @@ class VerifyRules:
 
         self.register_process(LinkedNodesRule())
         self.register_process(RuleAllowFields("tier"))
-        self.register_process(RuleAllowFields("roles_authority"))
-        self.register_process(RuleAllowFields("roles_visibility"))
-        self.register_process(RuleAllowFields("roles_function"))
-        self.register_process(RuleAllowFields("roles_action"))
-        self.register_process(RuleAllowFields("canonical_mode"))
+        self.register_process(RuleAllowFields("roles_authority", "any"))
+        self.register_process(RuleAllowFields("roles_visibility", "any"))
+        self.register_process(RuleAllowFields("roles_function", "any"))
+        self.register_process(RuleAllowFields("roles_action", "any"))
+        self.register_process(RuleAllowFields("artifact_duration"))
+        self.register_process(RuleAllowFields("artifact_elemental_resonance"))
 
     @property
     def Count(self) -> int:
