@@ -150,7 +150,7 @@ def _get_template_registry(template_type: str, version: str) -> dict[str, Any]:
     return json_content
 
 
-async def get_template(
+def get_template(
     template_type: str,
     version: str,
     app_root_url: str,
@@ -237,7 +237,7 @@ async def get_template(
     )
 
 
-async def get_template_instructions(
+def get_template_instructions(
     template_type: str,
     version: str,
     app_root_url: str,
@@ -366,7 +366,7 @@ async def get_template_instructions(
     )
 
 
-async def get_template_registry(
+def get_template_registry(
     template_type: str,
     version: str,
     monad_name: str | None = None,
@@ -390,7 +390,7 @@ async def get_template_registry(
     return reg
 
 
-async def get_template_status(
+def get_template_status(
     template_type: str,
     version: str,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
@@ -418,7 +418,7 @@ async def get_template_status(
     return TemplateStatusResponse(**status_dict)
 
 
-async def get_template_manifest(
+def get_template_manifest(
     template_type: str,
     version: str,
     app_root_url: str,
@@ -538,7 +538,7 @@ def _verify_artifact(submission: ArtifactSubmission) -> VerifyArtifactResponse:
     return result
 
 
-async def verify_mcp_artifact(
+def verify_mcp_artifact(
     submission: ArtifactSubmission,
 ) -> VerifyArtifactMcpResponse:
     artifact_response = _verify_artifact(submission)
@@ -578,7 +578,7 @@ async def verify_api_artifact(
     return VerifyArtifactApiResponse(**default_result)
 
 
-async def finalize_artifact(
+def finalize_artifact(
     submission: ArtifactSubmission,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
 ) -> FinalizeArtifactResponse:
@@ -730,7 +730,7 @@ def _upgrade_to_template(
     return upgrade_result
 
 
-async def upgrade_to_api_template(
+def upgrade_to_api_template(
     submission: UpgradeToTemplateSubmission,
     app_root_url: str,
     server_mode_kind: ServerModeKind = ServerModeKind.API,
@@ -771,7 +771,7 @@ async def upgrade_to_api_template(
     return upgrade_result
 
 
-async def upgrade_to_mcp_template(
+def upgrade_to_mcp_template(
     submission: UpgradeToTemplateSubmission,
     app_root_url: str,
     server_mode_kind: ServerModeKind = ServerModeKind.API,

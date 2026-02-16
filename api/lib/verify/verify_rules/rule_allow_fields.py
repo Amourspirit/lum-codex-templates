@@ -58,17 +58,18 @@ class RuleAllowFields(ProtocolVerifyRule):
     def _validate_allowed_list_all(
         self, value: list[str], allowed_values_set: set
     ) -> Result[bool, None] | Result[None, Exception]:
-        # All Values in the value list must be present in the allowed_values_set
-        for item in value:
-            if item not in allowed_values_set:
-                allowed_values = sorted(allowed_values_set)
-                return Result.failure(
-                    VerifyError(
-                        f"Validation error in field '{self._field}': ",
-                        self._field,
-                        f"Value '{item}' is not an allowed value for field '{self._field}'. Allowed values are: {', '.join(allowed_values)}.",
-                    )
+        # All Values in the value list must be present in the allowed_values_set and vise versa
+        value_set = set(value)
+        if value_set != allowed_values_set:
+            allowed_values = sorted(allowed_values_set)
+            return Result.failure(
+                VerifyError(
+                    f"Validation error in field '{self._field}': ",
+                    self._field,
+                    f"All values in the list must be allowed values for field '{self._field}' and all allowed values must be present in the list. Allowed values are: {', '.join(allowed_values)}.",
                 )
+            )
+
         return Result.success(True)
 
     def validate(
@@ -129,8 +130,25 @@ class RuleAllowFields(ProtocolVerifyRule):
 
         value = fm.get_field(self._field)
         if isinstance(value, str):
+            if not value:
+                return Result.failure(
+                    VerifyError(
+                        f"Validation error in field '{self._field}': ",
+                        self._field,
+                        f"Value for field '{self._field}' cannot be an empty string.",
+                    )
+                )
             return self._validate_allowed_str(value, allowed_values_set)
         elif isinstance(value, list) and all(isinstance(item, str) for item in value):
+            if not value:
+                return Result.failure(
+                    VerifyError(
+                        f"Validation error in field '{self._field}': ",
+                        self._field,
+                        f"Value list for field '{self._field}' cannot be empty.",
+                    )
+                )
+
             if self._match_kind == "any":
                 return self._validate_allowed_list_any(value, allowed_values_set)
             else:

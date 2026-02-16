@@ -188,7 +188,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
         artifact_name = None
         if input_artifact_name.name:
             artifact_name = input_artifact_name.name
-        return await fn_template.get_template(
+        return fn_template.get_template(
             template_type=typ,
             version=ver,
             app_root_url=app_root_url,
@@ -259,7 +259,7 @@ The template consists of Frontmatter metadata and markdown content that contain 
         artifact_name = None
         if input_artifact_name.name:
             artifact_name = input_artifact_name.name
-        return await fn_template.get_template_instructions(
+        return fn_template.get_template_instructions(
             template_type=input_type.type,
             version=ver,
             app_root_url=cfg.current_api_prefix,
@@ -322,7 +322,7 @@ The response includes the template registry data, which determines the structure
 
         monad_name = get_user_monad_name(session)
 
-        return await fn_template.get_template_registry(
+        return fn_template.get_template_registry(
             template_type=input_type.type,
             version=ver,
             monad_name=monad_name,
@@ -384,7 +384,7 @@ and required permissions.""",
         else:
             ver = input_ver.version
 
-        return await fn_template.get_template_status(
+        return fn_template.get_template_status(
             template_type=input_type.type,
             version=ver,
             server_mode_kind=ServerModeKind.MCP,
@@ -436,7 +436,7 @@ correctness, and adherence to defined rules.
                 detail=f"Authentication failed: {str(e)}",
             )
 
-        return await fn_template.verify_mcp_artifact(submission=submission)
+        return fn_template.verify_mcp_artifact(submission=submission)
 
     @mcp.tool(
         name="finalize_codex_template_artifact",
@@ -479,7 +479,7 @@ within the registry, and cleans metadata fields according to the registry schema
                 detail=f"Authentication failed: {str(e)}",
             )
 
-        return await fn_template.finalize_artifact(
+        return fn_template.finalize_artifact(
             submission=submission,
             server_mode_kind=ServerModeKind.MCP,
         )
@@ -527,7 +527,7 @@ and constructs a response with the upgraded content and metadata.""",
 
         app_root_url = ctx_util.get_request_app_root_url(ctx=ctx, return_default=True)
 
-        return await fn_template.upgrade_to_mcp_template(
+        return fn_template.upgrade_to_mcp_template(
             submission=submission,
             app_root_url=app_root_url,
             server_mode_kind=ServerModeKind.MCP,
@@ -670,7 +670,7 @@ The return version will have a prefix of 'v', e.g., 'v1.0'.""",
         if input_artifact_name.name:
             artifact_name = input_artifact_name.name
 
-        result = await fn_template.get_template_manifest(
+        result = fn_template.get_template_manifest(
             template_type=typ,
             version=ver,
             app_root_url="",

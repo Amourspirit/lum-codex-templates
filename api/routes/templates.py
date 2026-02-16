@@ -134,7 +134,7 @@ async def get_template(
     if artifact_name:
         response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
-    result = await fn_template.get_template(
+    result = fn_template.get_template(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
@@ -228,7 +228,7 @@ async def get_template_instructions(
     if artifact_name:
         response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
-    result = await fn_template.get_template_instructions(
+    result = fn_template.get_template_instructions(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
@@ -311,7 +311,7 @@ async def get_template_manifest(
     if artifact_name:
         response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
-    return await fn_template.get_template_manifest(
+    return fn_template.get_template_manifest(
         template_type=template_type,
         version=version,
         app_root_url=app_root_url,
@@ -396,7 +396,7 @@ async def get_template_registry(
     if artifact_name:
         response.headers["X-Artifact-Name"] = encode_url_component(artifact_name)
 
-    return await fn_template.get_template_registry(
+    return fn_template.get_template_registry(
         template_type=template_type,
         version=version,
         monad_name=monad_name,
@@ -465,9 +465,7 @@ async def get_template_status(
             logger.error(str(e))
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-    return await fn_template.get_template_status(
-        template_type=template_type, version=version
-    )
+    return fn_template.get_template_status(template_type=template_type, version=version)
 
 
 @router.get(
@@ -679,7 +677,7 @@ async def finalize_artifact(
             status_code=400, detail="Template frontmatter cannot be empty."
         )
 
-    return await fn_template.finalize_artifact(submission=submission)
+    return fn_template.finalize_artifact(submission=submission)
 
 
 @router.post(
@@ -737,7 +735,7 @@ async def upgrade_to_template(
     base_url = str(request.base_url).rstrip("/")  # http://127.0.0.1:8000/
     app_root_url = base_url + _API_RELATIVE_URL
 
-    return await fn_template.upgrade_to_api_template(
+    return fn_template.upgrade_to_api_template(
         submission=submission, app_root_url=app_root_url
     )
 
