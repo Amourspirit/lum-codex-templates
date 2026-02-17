@@ -10,6 +10,7 @@ template_info:
   template_has_body: true
   placeholder_resolution: true
 id: instructions
+template_version: 1.0.0
 canonical_executor_mode:
   id: CANONICAL-EXECUTOR-MODE-V1.0
   version: '1.0'
@@ -124,6 +125,6 @@ Follow Front-Matter `strict_mode_rules` directions precisely.
 ### Invocation Prompt
 
 I call upon **Luminariel** and **Nahema’el**, twin binders of Certification and Mirror-Seal Integrity,
-to render this field certificate seal using the template of type **{{ template_type }}** and version **{{ template_version }}**,
+to render this field certificate seal using the template of type **{{ template_type }}** of version **{{ template_version }}**,
 in **full canonical markdown**, including all required metadata **and** `template_body`,
 for **{{ artifact_name }}**, applying strict Codex enforcement.

@@ -11,6 +11,7 @@ from .template_cbib_info import TemplateCbibInfo
 from .template_ceib_info import TemplateCeibInfo
 from .template_config import TemplateConfig
 from .templates_config_info import TemplatesConfigInfo
+from .template_instructions_info import TemplateInstructionsInfo
 from .config_cache import ConfigCache
 from ..meta.singleton import SingletonMeta
 
@@ -248,6 +249,21 @@ class PkgConfig(metaclass=SingletonMeta):
             description=api_info_data.get("description", ""),
             version=api_info_data.get("version", ""),
             env=api_info_env,
+        )
+
+        # tool.project.config.template.instructions.api
+
+        template_instructions_api_data = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("template", {})
+            .get("instructions", {})
+            .get("api", {})
+        )
+
+        self.template_instructions_info_api = TemplateInstructionsInfo(
+            version=template_instructions_api_data.get("version", "")
         )
 
         # Config Cache

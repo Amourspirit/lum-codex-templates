@@ -53,7 +53,7 @@ from api.lib.exceptions import (
 from api.lib.routes import api_path as api_path_utils
 from api.lib.routes import mcp_path as mcp_path_utils
 from . import fn_versions
-from .mcp_path import validate_version_str
+from .mcp_path import validate_version_str, parse_version
 
 _CONFIG = Config()
 _SETTINGS = PkgConfig()
@@ -309,16 +309,31 @@ def get_template_instructions(
         template_scope_block = ""
 
     content = path.read_text(encoding="utf-8")
+    fm = FrontMatterMeta(file_path=path)
+    instructions_version = parse_version(fm.get_field("template_version", "0.0.1"))
+
     template: Template = Template(source=content)
-    processed_content = template.render(
-        link_definition_block=link_block,
-        artifact_name=artifact_name,
-        template_scope_block=template_scope_block,
-        current_user=user_name,
-    )
+    if instructions_version >= (1, 0, 0):
+        processed_content = template.render(
+            link_definition_block=link_block,
+            artifact_name=artifact_name,
+            template_scope_block=template_scope_block,
+            current_user=user_name,
+            template_type=template_type,
+            template_version=ver,
+        )
+        fm = FrontMatterMeta.from_content(processed_content)
+        fm.file_path = path
+    else:
+        processed_content = template.render(
+            link_definition_block=link_block,
+            template_scope_block=template_scope_block,
+            artifact_name=artifact_name,
+        )
+        fm = FrontMatterMeta.from_content(processed_content)
+        fm.file_path = path
+
     # endregion
-    fm = FrontMatterMeta.from_content(processed_content)
-    fm.file_path = path
 
     if fm.has_field("canonical_executor_mode"):
         if server_mode_kind == ServerModeKind.API and cem_api_path:
@@ -328,9 +343,6 @@ def get_template_instructions(
                 version=fm.frontmatter["canonical_executor_mode"]["version"]
             )
             fm.frontmatter["canonical_executor_mode"]["jsonrpc_call"] = mcp_tool
-            # fm.frontmatter["canonical_executor_mode"]["resource_name"] = (
-            #     "template_executor_mode"
-            # )
 
     api_paths = api_path_utils.get_api_paths_template(
         template_type=template_type,
@@ -355,9 +367,21 @@ def get_template_instructions(
         elif server_mode_kind == ServerModeKind.MCP:
             fm.frontmatter["template_info"]["jsonrpc_call"] = mcp_rpcs["template_tool"]
 
+    if instructions_version >= (1, 0, 0):
+        # the final output does not need a template_version field as it is implied by the instructions content and used for internal processing only.
+        if fm.has_field("template_version"):
+            fm.remove_field("template_version")
+
+    if fm.has_field("id"):
+        # id is usually set to instructions and does not encapsulate any meaningful information for the LLM
+        # and can cause confusion if left in, so we remove it from the final output.
+        fm.remove_field("id")
+
     text = fm.get_template_text()
-    if has_artifact_name:
-        text = text.replace("{Artifact Name}", artifact_name)
+    if instructions_version < (1, 0, 0):
+        # before there was a version added to instructions.
+        if has_artifact_name:
+            text = text.replace("{Artifact Name}", artifact_name)
 
     return TemplateInstructionsResponse(
         content=text,

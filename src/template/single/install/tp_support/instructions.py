@@ -6,7 +6,7 @@ from ....front_mater_meta import FrontMatterMeta
 from ....prompt.meta_helpers.prompt_beings import PromptBeings
 from ....prompt.meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
 
-_INSTRUCTIONS_TEMPLATE_FILE_NAME = "instructions_tempalate.md"
+_INSTRUCTIONS_TEMPLATE_FILE_NAME = "instructions_template.md"
 
 
 class Instructions:
@@ -62,6 +62,9 @@ class Instructions:
         self, entry: TemplateEntry, fm: FrontMatterMeta, registry: dict
     ) -> None:
         fm.set_field("id", "instructions")
+        fm.set_field(
+            "template_version", self.config.template_instructions_info_api.version
+        )
         fm.frontmatter["canonical_executor_mode"] = {
             "id": self._cbib["id"],
             "version": self._cbib["version"],

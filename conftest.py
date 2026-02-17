@@ -8,8 +8,3 @@ def root_path():
     import os
 
     return Path(os.path.dirname(__file__)).parent
-
-
-@pytest.fixture(scope="session")
-def current_monad_name():
-    return "Soluun"

@@ -1,7 +1,7 @@
 [project]
 name = "Codex-Templates"
-version = "10.4.1"
-description = "Add your description here"
+version = "10.4.2"
+description = "Codex Templates is a collection of standardized templates for creating and managing various types of artifacts within the Codex ecosystem, including certificates, glyphs, nodes, scrolls, seals, and sigils. These templates are designed to ensure consistency, interoperability, and ease of use across different applications and platforms that utilize Codex artifacts."
 readme = "README.md"
 requires-python = ">=3.13.0"
 dependencies = [
@@ -145,6 +145,15 @@ version="1.0"
 
 [tool.project.config.template.ceib.api]
 version="1.0"
+
+[tool.project.config.template.instructions]
+description="Instructions Template used for guiding LLM on how to process the template and its fields during rendering."
+
+[tool.project.config.template.instructions.api]
+# version applied to instruction before installed to codex-templates.
+# This allows for template processor to keep backwards compatibility with older instruction formats
+# while still allowing for updates and improvements to instruction structure and content.
+version="1.0.0"
 
 [tool.project.config.template.placeholder_prefix_semantics]
 required=true

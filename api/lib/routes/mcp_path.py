@@ -37,6 +37,34 @@ def validate_version_str(
     return Result(v, None)
 
 
+def parse_version(version: str) -> tuple[int, int, int]:
+    """
+    Parse a version string into a tuple of major, minor, and patch version numbers.
+    Converts a version string (with optional leading 'v') into its numeric components.
+    If the version string is incomplete, missing components default to 0.
+    Args:
+        version (str): A version string in the format "v1.2.3", "1.2.3", "1.2", or "1".
+                      The leading 'v' is optional and will be stripped.
+    Returns:
+        tuple[int, int, int]: A tuple containing (major, minor, patch) version numbers.
+                             Missing version parts default to 0.
+    Examples:
+        >>> parse_version("v1.2.3")
+        (1, 2, 3)
+        >>> parse_version("2.1")
+        (2, 1, 0)
+        >>> parse_version("v3")
+        (3, 0, 0)
+    """
+
+    parts = version.lower().lstrip("v").split(".")
+    len_parts = len(parts)
+    major = int(parts[0]) if len_parts > 0 else 0
+    minor = int(parts[1]) if len_parts > 1 else 0
+    patch = int(parts[2]) if len_parts > 2 else 0
+    return (major, minor, patch)
+
+
 class McpToolArg(defaultdict):
     name: str
     value: str
