@@ -92,7 +92,11 @@ def register_routes(mcp: FastMCP):
         mime_type="application/json",
         description="Use this executor_mode resource when retrieving the Executor Mode (CBIB) file for a specific executor mode version that is used in Codex templates. Usually the `executor_mode://default_executor_mode` resource can be used instead unless a specific version is needed.",
         tags=set(["codex-template", "executor-modes"]),
-        annotations={"readOnlyHint": True, "idempotentHint": True},
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "destructiveHint": False,
+        },
     )
     async def template_executor_mode_resource(
         version: str, ctx: Context = CurrentContext()
@@ -105,7 +109,11 @@ def register_routes(mcp: FastMCP):
         mime_type="application/json",
         tags=set(["codex-template", "executor-modes"]),
         description="Use this executor_mode resource when the for applying default executor mode to codex templates.",
-        annotations={"readOnlyHint": True, "idempotentHint": True},
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "destructiveHint": False,
+        },
     )
     async def default_template_executor_mode_resource(
         ctx: Context = CurrentContext(),
