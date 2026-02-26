@@ -1,5 +1,5 @@
-import tempfile
 from pathlib import Path
+from loguru import logger
 from ..protocol_support import ProtocolSupport
 from ....config.pkg_config import PkgConfig
 from .prompt_template_field_beings import PromptTemplateFieldBeings
@@ -25,7 +25,11 @@ class SupportProcessor:
         self._workspace_dir = self.config.root_path / self.config.pkg_out_dir
         self._main_registry = registry
         self._processes: list[ProtocolSupport] = []
-        self._register_default_processes()
+        try:
+            self._register_default_processes()
+        except Exception as e:
+            logger.error("Error initializing SupportProcessor: {error}", error=e)
+            raise
 
     def register_process(self, process: ProtocolSupport) -> None:
         """Register a ProtocolSupport with this processor.
@@ -81,17 +85,24 @@ class SupportProcessor:
             - Side effects (file creation, network I/O, etc.) are performed by the
             individual processes and are not handled by this method.
         """
-
-        if not self._processes:
-            raise RuntimeError(
-                "No processes registered to execute. Has cleanup been called?"
+        try:
+            if not self._processes:
+                raise RuntimeError(
+                    "No processes registered to execute. Has cleanup been called?"
+                )
+            results = {}
+            for process in self._processes:
+                logger.info(
+                    f"Processing Support Companion: {process.get_process_name()}"
+                )
+                result_path = process.process(tokens)
+                results[process.get_process_name()] = result_path
+            return results
+        except Exception as e:
+            logger.error(
+                "Error executing processes in SupportProcessor: {error}", error=e
             )
-        results = {}
-        for process in self._processes:
-            print(f"Processing Support Companion: {process.get_process_name()}")
-            result_path = process.process(tokens)
-            results[process.get_process_name()] = result_path
-        return results
+            return {}
 
     def unregister_all(self) -> None:
         """Unregister all processes from the registry.

@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_node_reg",
+    "version": "0.1.0",
+    "description": "manifest for version 2.11 for template type node_reg",
+    "template_info": {
+        "template_type": "node_reg",
+        "template_file": "template.md",
+        "version": "2.11",
+        "hash": "5252d1f3f0c162d751c4d0c035c1d21bcfdf90da4f436dc2ac97774599018901",
+        "template_hash": "5252d1f3f0c162d751c4d0c035c1d21bcfdf90da4f436dc2ac97774599018901",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-NODE-V2.11"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-NODE-V2.11-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-26T01:57:30.620969-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

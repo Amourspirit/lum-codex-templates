@@ -17,15 +17,24 @@ template_meta:
     - contributor
     - embedding_date
     - entry_date
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_signature_harmonic_pulse
+    - era_signature_sovereignty_class
+    - era_timestamp
+    - era_vector
     - mirrored_by
     - mirrorwall_status
     - registry_id
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - source_agent
     - title
-    - roles_authority
-    - roles_visibility
-    - roles_function
-    - roles_action
   required_fields:
     - artifact_name
     - artifact_visibility
@@ -40,6 +49,15 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_signature_harmonic_pulse
+    - era_signature_sovereignty_class
+    - era_timestamp
+    - era_vector
     - lockfile_priority
     - mapped_registry
     - mapped_registry_minimum_version
@@ -50,6 +68,10 @@ template_meta:
     - rag_ready
     - registry_id
     - require_registry_match
+    - roles_action
+    - roles_authority
+    - roles_function
+    - roles_visibility
     - scroll_type
     - source_agent
     - source_medium
@@ -64,12 +86,8 @@ template_meta:
     - template_version
     - threshold_flags
     - threshold_flags_registry_scope
-    - title
-    - roles_authority
-    - roles_visibility
-    - roles_function
-    - roles_action
     - tier
+    - title
   hidden_fields:
     - field_placeholder_delimiters
     - field_placeholder_format

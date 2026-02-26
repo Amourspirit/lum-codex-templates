@@ -1,4 +1,5 @@
 from pathlib import Path
+from loguru import logger
 from ....front_mater_meta import FrontMatterMeta
 from ....main_registry import MainRegistry
 from .protocol_template import ProtocolTemplate
@@ -61,19 +62,22 @@ class TemplateProcessor:
             dict: A dictionary of dict[str, FrontMatterMeta] mapping template types to their processed
                 FrontMatterMeta results.
         """
-
-        if not self._processes:
-            raise RuntimeError(
-                "No processes registered to execute. Has cleanup been called?"
-            )
-        results = {}
-        for process in self._processes:
-            result_fm = process.process(tokens)
-            results[result_fm.template_type] = result_fm
-            print(
-                f"Processed Template: {result_fm.template_type} -> {result_fm.file_path.name}"
-            )
-        return results
+        try:
+            if not self._processes:
+                raise RuntimeError(
+                    "No processes registered to execute. Has cleanup been called?"
+                )
+            results = {}
+            for process in self._processes:
+                result_fm = process.process(tokens)
+                results[result_fm.template_type] = result_fm
+                logger.info(
+                    f"Processed Template: {result_fm.template_type} -> {result_fm.file_path.name}"
+                )
+            return results
+        except Exception as e:
+            logger.error("Error executing processes: {error}", error=e)
+            raise
 
     def unregister_all(self) -> None:
         """Unregister all processes from the registry.

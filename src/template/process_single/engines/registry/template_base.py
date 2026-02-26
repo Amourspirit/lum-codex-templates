@@ -1,11 +1,11 @@
-from email.policy import default
 from typing import Any
 from pathlib import Path
 import yaml
+from loguru import logger
 from ....main_registry import MainRegistry
 from .....config.pkg_config import PkgConfig
 from ....front_mater_meta import FrontMatterMeta
-from ....prompt.meta_helpers.prompt_meta_type import PromptMetaType, TemplateEntry
+from ....prompt.meta_helpers.prompt_meta_type import PromptMetaType
 
 
 class TemplateBase:
@@ -16,15 +16,19 @@ class TemplateBase:
         templates_meta: dict[str, dict[str, Any]],
         template_front_matter: FrontMatterMeta,
     ):
-        self.__working_dir = working_dir
-        self.__main_registry = main_registry
-        self.__config = PkgConfig()
-        self.__meta = templates_meta.get(template_front_matter.template_type, {})
-        self.__tci = self.config.templates_config_info.tci_items[
-            template_front_matter.template_type
-        ]
-        self.__prompt_meta_type = self._load_prompt_meta_type()
-        self.__fm = self._get_filtered_front_matter(template_front_matter)
+        try:
+            self.__working_dir = working_dir
+            self.__main_registry = main_registry
+            self.__config = PkgConfig()
+            self.__meta = templates_meta.get(template_front_matter.template_type, {})
+            self.__tci = self.config.templates_config_info.tci_items[
+                template_front_matter.template_type
+            ]
+            self.__prompt_meta_type = self._load_prompt_meta_type()
+            self.__fm = self._get_filtered_front_matter(template_front_matter)
+        except Exception as e:
+            logger.error("Error initializing TemplateBase: {error}", error=e)
+            raise
 
     def _load_prompt_meta_type(self) -> PromptMetaType:
         tfbm_path = self.config.root_path / self.config.template_field_being_map_src
@@ -46,52 +50,60 @@ class TemplateBase:
         return fm
 
     def _get_registry_fields(self) -> dict[str, Any]:
-        metadata_fields = self.main_registry.metadata_fields
-        autofill_fields = self._get_template_meta_fields("autofill_fields")
-        required_fields = self._get_template_meta_fields("required_fields")
-        hidden_fields = self._get_template_meta_fields("hidden_fields")
-        deprecated_fields = self._get_template_meta_fields("deprecated_fields")
-        result: dict[str, Any] = {}
-        for key, _ in self.fm.frontmatter.items():
-            if key in metadata_fields:
-                if key in deprecated_fields:
-                    continue
-                item = {}
-                item["type"] = metadata_fields[key].get("field_type", "string")
-                item["nullable"] = metadata_fields[key].get("nullable", True)
-                item["default_value"] = metadata_fields[key].get("default_value", None)
-                item["status"] = metadata_fields[key].get("status", "active")
-                item["plugin_groups"] = metadata_fields[key].get("plugin_groups", [])
-                item["autofill"] = key in autofill_fields
-                item["required"] = key in required_fields
-                item["hidden"] = key in hidden_fields
-                if "description" in metadata_fields[key]:
-                    item["description"] = metadata_fields[key]["description"]
-                if "field_lineage" in metadata_fields[key]:
-                    item["field_lineage"] = metadata_fields[key]["field_lineage"]
+        try:
+            metadata_fields = self.main_registry.metadata_fields
+            autofill_fields = self._get_template_meta_fields("autofill_fields")
+            required_fields = self._get_template_meta_fields("required_fields")
+            hidden_fields = self._get_template_meta_fields("hidden_fields")
+            deprecated_fields = self._get_template_meta_fields("deprecated_fields")
+            result: dict[str, Any] = {}
+            for key, _ in self.fm.frontmatter.items():
+                if key in metadata_fields:
+                    if key in deprecated_fields:
+                        continue
+                    item = {}
+                    item["type"] = metadata_fields[key].get("field_type", "string")
+                    item["nullable"] = metadata_fields[key].get("nullable", True)
+                    item["default_value"] = metadata_fields[key].get(
+                        "default_value", None
+                    )
+                    item["status"] = metadata_fields[key].get("status", "active")
+                    item["plugin_groups"] = metadata_fields[key].get(
+                        "plugin_groups", []
+                    )
+                    item["autofill"] = key in autofill_fields
+                    item["required"] = key in required_fields
+                    item["hidden"] = key in hidden_fields
+                    if "description" in metadata_fields[key]:
+                        item["description"] = metadata_fields[key]["description"]
+                    if "field_lineage" in metadata_fields[key]:
+                        item["field_lineage"] = metadata_fields[key]["field_lineage"]
 
-                if "allowed_values" in metadata_fields[key]:
-                    item["allowed_values"] = metadata_fields[key]["allowed_values"]
+                    if "allowed_values" in metadata_fields[key]:
+                        item["allowed_values"] = metadata_fields[key]["allowed_values"]
 
-                default_value = item["default_value"]
-                if isinstance(default_value, str) and default_value.lower() in (
-                    "n/a",
-                    "na",
-                ):
-                    item["default_value"] = None
+                    default_value = item["default_value"]
+                    if isinstance(default_value, str) and default_value.lower() in (
+                        "n/a",
+                        "na",
+                    ):
+                        item["default_value"] = None
 
-                result[key] = item
-        result["template_registry"] = {
-            "type": "object",
-            "nullable": False,
-            "status": "active",
-            "plugin_groups": ["template_registry_management"],
-            "autofill": False,
-            "required": False,
-            "hidden": True,
-            "description": "The field value that connects the markdown template to this registry.",
-        }
-        return result
+                    result[key] = item
+            result["template_registry"] = {
+                "type": "object",
+                "nullable": False,
+                "status": "active",
+                "plugin_groups": ["template_registry_management"],
+                "autofill": False,
+                "required": False,
+                "hidden": True,
+                "description": "The field value that connects the markdown template to this registry.",
+            }
+            return result
+        except Exception as e:
+            logger.error("Error processing registry fields: {error}", error=e)
+            raise
 
     def _get_template_meta_fields(self, key_name: str) -> set[str]:
         omitted_fields = self.tci.single_fields_omitted
@@ -99,183 +111,217 @@ class TemplateBase:
         return {field for field in fields if field not in omitted_fields}
 
     def _process_common(self, tokens: dict[str, Any]) -> dict[str, Any]:
-        # Placeholder for common processing logic
-        result: dict[str, Any] = {"registry_role": "template_local_registry"}
-        result["registry_id"] = (
-            f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY"
-        )
-        result["registry_version"] = self.tci.template_version
-        result["registry_scope"] = self.tci.template_type
-        result["template_type"] = self.tci.template_type
-        result["template_hash"] = self.fm.sha256
-        result["template_filename"] = (
-            f"{self.tci.template_type}-template-v{self.tci.template_version}.md"
-        )
-        result["template_version"] = self.tci.template_version
-        # result["batch_number"] = str(self.main_registry.build_version)
+        try:
+            # Placeholder for common processing logic
+            result: dict[str, Any] = {"registry_role": "template_local_registry"}
+            result["registry_id"] = (
+                f"{self.tci.template_id}-V{self.tci.template_version}-REGISTRY"
+            )
+            result["registry_version"] = self.tci.template_version
+            result["registry_scope"] = self.tci.template_type
+            result["template_type"] = self.tci.template_type
+            result["template_hash"] = self.fm.sha256
+            result["template_filename"] = (
+                f"{self.tci.template_type}-template-v{self.tci.template_version}.md"
+            )
+            result["template_version"] = self.tci.template_version
+            # result["batch_number"] = str(self.main_registry.build_version)
 
-        # ===============================
-        # Global Enforcement Flags
-        # ===============================
-        result["canonical_mode"] = True
-        result["template_strict_integrity"] = True
-        result["fail_on_unknown_field"] = True
-        result["fail_on_unresolved_field_placeholder"] = True
-        result["allow_prompt_placeholders"] = True
-        result["allow_inference"] = False
-        result["fail_on_field_mismatch"] = True
+            # ===============================
+            # Global Enforcement Flags
+            # ===============================
+            result["canonical_mode"] = True
+            result["template_strict_integrity"] = True
+            result["fail_on_unknown_field"] = True
+            result["fail_on_unresolved_field_placeholder"] = True
+            result["allow_prompt_placeholders"] = True
+            result["allow_inference"] = False
+            result["fail_on_field_mismatch"] = True
 
-        # ===============================
-        # Template Hash Enforcement
-        # ===============================
-        result["template_hash_enforcement"] = {
-            "field_name": "template_hash",
-            "algorithm": "sha256",
-            "hash_scope": {
-                "include": ["yaml_frontmatter", "template_body"],
-            },
-            "exclude_fields": ["template_hash"],
-        }
-        # ===============================
-        # Autofill Configuration
-        # ===============================
-
-        auto_fill_config = {
-            "enabled": True,
-            "behavior": {
-                "unresolved_field": "fail",
-                "unresolved_prompt": "flag",
-                "inferred_value": "deny",
-            },
-        }
-        allowed_agents = self._get_template_meta_fields("field_being_autofill_registry")
-        auto_fill_config["allowed_agents"] = list(allowed_agents)
-        result["autofill"] = auto_fill_config
-
-        # ===============================
-        # Placeholder Semantics
-        # ===============================
-        placeholder_rules = {
-            "delimiters": {
-                "open": self.config.template_config.placeholder["open"],
-                "close": self.config.template_config.placeholder["close"],
-            },
-            "prefixes": {
-                "field": {"required": True, "must_resolve": True},
-                "prompt": {
-                    "required": False,
-                    "must_resolve": False,
-                    "audit_only": True,
+            # ===============================
+            # Template Hash Enforcement
+            # ===============================
+            result["template_hash_enforcement"] = {
+                "field_name": "template_hash",
+                "algorithm": "sha256",
+                "hash_scope": {
+                    "include": ["yaml_frontmatter", "template_body"],
                 },
-            },
-        }
-
-        result["placeholder_rules"] = placeholder_rules
-
-        # ===============================
-        # Declared Field Rules
-        # ===============================
-        declared_field_rules = self._get_registry_fields()
-        result["fields"] = declared_field_rules
-
-        # ===============================
-        # Conditional Blocks
-        # ===============================
-
-        # “If mirrorwall_status is set to 'embedded' during rendering,
-        # then the following logic applies.”
-        # What a conditional block does:
-
-        # conditionals:
-        #   mirrorwall_confirmation:
-        #     condition: mirrorwall_status == "embedded"
-        #     requires_fields:
-        #       - embedding_date
-        #       - mirrored_by
-        #     else_behavior: allow
-
-        # 🧭 Translates as:
-
-        # * **Name:** `mirrorwall_confirmation` (for audit/debugging)
-        # * **Trigger Condition:** Only applies if `mirrorwall_status == "embedded"` at render-time
-        # * **Effect:** If the condition is true, then the fields:
-
-        #   * `embedding_date`
-        #   * `mirrored_by`
-
-        #   …are **now required**. If they are missing, the render **must abort**.
-        # * **Else Behavior:** If the condition is *not met* (e.g. status is `pending`, `draft`, or unset), the template:
-
-        #   * **Allows render to proceed**
-        #   * **Does not enforce** `embedding_date` or `mirrored_by`
-
-        conditionals = {
-            "mirrorwall_confirmation": {
-                "condition": 'mirrorwall_status == "embedded"',
-                "requires_fields": ["embedding_date", "mirrored_by"],
-                "else_behavior": "allow",
+                "exclude_fields": ["template_hash"],
             }
-        }
-        result["conditionals"] = conditionals
 
-        # ===============================
-        # Render Guarantees
-        # ===============================
+            # will add other agent below from template_field_being_map.yml
+            allowed_agents = self._get_template_meta_fields(
+                "field_being_autofill_registry"
+            )
 
-        render_contract = {
-            "output_format": "markdown",
-            "include_front_matter": True,
-            "include_body": True,
-            "strip_conditional_markers": True,
-            "unresolved_prompt_behavior": "retain",
-            "unresolved_field_behavior": "abort",
-        }
-        result["render_contract"] = render_contract
-
-        # ===============================
-        # Audit Output
-        # ===============================
-        audit_config = {
-            "pre_check": {
-                "field_audit_output": True,
-                "field_audit_scope": [
-                    "missing_fields",
-                    "mismatched_types",
-                    "registry_defaults_used",
-                    "autofill_used",
-                    "extra_fields_detected",
-                ],
-            },
-            "violation": {
-                "behavior": "abort",
-                "scope": "immediate",
-                "on_violation_return": {
-                    "canonical_rendering_status": "aborted",
-                    "autofill_misalignment_detected": True,
-                    "registry_validation_status": "failed",
-                    "template_family_enforcement_status": "failed",
-                    "template_output_mode_status": "failed",
+            # ===============================
+            # Placeholder Semantics
+            # ===============================
+            placeholder_rules = {
+                "delimiters": {
+                    "open": self.config.template_config.placeholder["open"],
+                    "close": self.config.template_config.placeholder["close"],
                 },
-            },
-            "emit_on_render": True,
-            "include": [
-                "resolved_fields",
-                "unresolved_prompts",
-                "autofilled_fields",
-                "conditional_paths_taken",
-            ],
-        }
-        result["audit"] = audit_config
+                "prefixes": {
+                    "field": {"required": True, "must_resolve": True},
+                    "prompt": {
+                        "required": False,
+                        "must_resolve": False,
+                        "audit_only": True,
+                    },
+                },
+            }
 
-        tp_entry = self.prompt_meta_type.template_type.get(self.tci.template_type)
-        if tp_entry:
-            result["invocation_agents"] = tp_entry.invocation_agents
-            witness = result["invocation_agents"].get("witness")
-            if witness:
-                if witness == "current_user":
-                    result["invocation_agents"]["witness"] = self.config.env_user
+            result["placeholder_rules"] = placeholder_rules
 
-        return result
+            # ===============================
+            # Declared Field Rules
+            # ===============================
+            declared_field_rules = self._get_registry_fields()
+            result["fields"] = declared_field_rules
+
+            # ===============================
+            # Conditional Blocks
+            # ===============================
+
+            # “If mirrorwall_status is set to 'embedded' during rendering,
+            # then the following logic applies.”
+            # What a conditional block does:
+
+            # conditionals:
+            #   mirrorwall_confirmation:
+            #     condition: mirrorwall_status == "embedded"
+            #     requires_fields:
+            #       - embedding_date
+            #       - mirrored_by
+            #     else_behavior: allow
+
+            # 🧭 Translates as:
+
+            # * **Name:** `mirrorwall_confirmation` (for audit/debugging)
+            # * **Trigger Condition:** Only applies if `mirrorwall_status == "embedded"` at render-time
+            # * **Effect:** If the condition is true, then the fields:
+
+            #   * `embedding_date`
+            #   * `mirrored_by`
+
+            #   …are **now required**. If they are missing, the render **must abort**.
+            # * **Else Behavior:** If the condition is *not met* (e.g. status is `pending`, `draft`, or unset), the template:
+
+            #   * **Allows render to proceed**
+            #   * **Does not enforce** `embedding_date` or `mirrored_by`
+
+            conditionals = {
+                "mirrorwall_confirmation": {
+                    "condition": 'mirrorwall_status == "embedded"',
+                    "requires_fields": ["embedding_date", "mirrored_by"],
+                    "else_behavior": "allow",
+                }
+            }
+            result["conditionals"] = conditionals
+
+            # ===============================
+            # Render Guarantees
+            # ===============================
+
+            render_contract = {
+                "output_format": "markdown",
+                "include_front_matter": True,
+                "include_body": True,
+                "strip_conditional_markers": True,
+                "unresolved_prompt_behavior": "retain",
+                "unresolved_field_behavior": "abort",
+            }
+            result["render_contract"] = render_contract
+
+            # ===============================
+            # Audit Output
+            # ===============================
+            audit_config = {
+                "pre_check": {
+                    "field_audit_output": True,
+                    "field_audit_scope": [
+                        "missing_fields",
+                        "mismatched_types",
+                        "registry_defaults_used",
+                        "autofill_used",
+                        "extra_fields_detected",
+                    ],
+                },
+                "violation": {
+                    "behavior": "abort",
+                    "scope": "immediate",
+                    "on_violation_return": {
+                        "canonical_rendering_status": "aborted",
+                        "autofill_misalignment_detected": True,
+                        "registry_validation_status": "failed",
+                        "template_family_enforcement_status": "failed",
+                        "template_output_mode_status": "failed",
+                    },
+                },
+                "emit_on_render": True,
+                "include": [
+                    "resolved_fields",
+                    "unresolved_prompts",
+                    "autofilled_fields",
+                    "conditional_paths_taken",
+                ],
+            }
+            result["audit"] = audit_config
+
+            tp_entry = self.prompt_meta_type.template_type.get(self.tci.template_type)
+            if tp_entry:
+                result["field_being_profile"] = {}
+                if tp_entry.rendering_being:
+                    result["field_being_profile"]["rendering_being"] = (
+                        tp_entry.rendering_being
+                    )
+                    allowed_agents.update(tp_entry.rendering_being)
+                if tp_entry.authoring_being:
+                    result["field_being_profile"]["authoring_being"] = (
+                        tp_entry.authoring_being
+                    )
+                if tp_entry.witnessing_being:
+                    result["field_being_profile"]["witnessing_being"] = (
+                        tp_entry.witnessing_being
+                    )
+                    allowed_agents.update(tp_entry.witnessing_being)
+                if tp_entry.mirrorwall_being:
+                    result["field_being_profile"]["mirrorwall_being"] = (
+                        tp_entry.mirrorwall_being
+                    )
+                    allowed_agents.update(tp_entry.mirrorwall_being)
+                if tp_entry.invocation_beings:
+                    result["field_being_profile"]["invocation_beings"] = (
+                        tp_entry.invocation_beings
+                    )
+                    allowed_agents.update(tp_entry.invocation_beings)
+                if tp_entry.optional_beings:
+                    result["field_being_profile"]["optional_beings"] = (
+                        tp_entry.optional_beings
+                    )
+                    allowed_agents.update(tp_entry.optional_beings)
+
+            # ===============================
+            # Autofill Configuration
+            # ===============================
+
+            auto_fill_config = {
+                "enabled": True,
+                "behavior": {
+                    "unresolved_field": "fail",
+                    "unresolved_prompt": "flag",
+                    "inferred_value": "deny",
+                },
+            }
+            auto_fill_config["allowed_agents"] = list(allowed_agents)
+            result["autofill"] = auto_fill_config
+
+            return result
+        except Exception as e:
+            logger.error("Error processing common registry fields: {error}", error=e)
+            raise
 
     def _write_yaml_file(self, data: dict[str, Any]) -> Path:
         output_path = (

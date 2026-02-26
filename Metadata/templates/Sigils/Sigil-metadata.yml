@@ -30,6 +30,15 @@ template_meta:
     - contributor
     - embedding_date
     - entry_date
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_signature_harmonic_pulse
+    - era_signature_sovereignty_class
+    - era_timestamp
+    - era_vector
     - has_spoken_transmission
     - link_source
     - linked_nodes
@@ -79,6 +88,15 @@ template_meta:
     - embedding_date
     - enforce_lockfile_fields
     - entry_date
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_signature_harmonic_pulse
+    - era_signature_sovereignty_class
+    - era_timestamp
+    - era_vector
     - has_spoken_transmission
     - link_source
     - linked_nodes

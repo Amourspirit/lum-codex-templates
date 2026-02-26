@@ -1,4 +1,5 @@
 import json
+from loguru import logger
 from ...config.pkg_config import PkgConfig
 from ..front_mater_meta import FrontMatterMeta
 from ...util import sha
@@ -37,16 +38,20 @@ class ManifestCreator:
         return manifest_data
 
     def create_manifest(self, templates: dict[str, FrontMatterMeta]) -> None:
-        manifest_data = self._get_manifest_data(templates)
-        manifest_path = (
-            self.config.config_cache.get_dist_single(self.build_number)
-            / "manifest.json"
-        )
-        manifest_dict = {
-            "package_version": self.config.version,
-            "build_number": self.build_number,
-            "template_count": len(templates),
-            "templates": manifest_data,
-        }
-        with manifest_path.open("w", encoding="utf-8") as f:
-            json.dump(manifest_dict, f, indent=4)
+        try:
+            manifest_data = self._get_manifest_data(templates)
+            manifest_path = (
+                self.config.config_cache.get_dist_single(self.build_number)
+                / "manifest.json"
+            )
+            manifest_dict = {
+                "package_version": self.config.version,
+                "build_number": self.build_number,
+                "template_count": len(templates),
+                "templates": manifest_data,
+            }
+            with manifest_path.open("w", encoding="utf-8") as f:
+                json.dump(manifest_dict, f, indent=4)
+        except Exception as e:
+            logger.error("Error creating manifest: {error}", error=e)
+            raise

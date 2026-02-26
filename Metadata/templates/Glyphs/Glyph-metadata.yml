@@ -57,6 +57,15 @@ template_meta:
     - used_in_ceremonies
     - voice_confirmed_by
     - voice_transmission_format
+    - era_vector
+    - era_signature_sovereignty_class
+    - era_signature_harmonic_pulse
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_timestamp
   required_fields:
     - arc
     - artifact_activator
@@ -137,6 +146,15 @@ template_meta:
     - used_in_ceremonies
     - voice_confirmed_by
     - voice_transmission_format
+    - era_vector
+    - era_signature_sovereignty_class
+    - era_signature_harmonic_pulse
+    - era_signature_continuum_frame
+    - era_signature_field_resonance
+    - era_function_primary
+    - era_function_secondary
+    - era_function_tertiary
+    - era_timestamp
   hidden_fields:
     - field_placeholder_delimiters
     - field_placeholder_format

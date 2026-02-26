@@ -1,7 +1,3 @@
-# write a function that takes a string and makes it into a valid filename by removing invalid characters
-from pathlib import Path
-
-
 def get_valid_filename(filename: str) -> str:
     """
     Converts a string into a valid filename by removing or replacing invalid characters.

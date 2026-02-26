@@ -1,5 +1,7 @@
 from typing import Any
 from pathlib import Path
+from loguru import logger
+from passlib import exc
 
 from ....front_mater_meta import FrontMatterMeta
 from ....main_registry import MainRegistry
@@ -40,7 +42,13 @@ class TemplateRegistryProcessor:
         self._templates_meta = templates_meta
         self._processes: list[ProtocolTemplateReg] = []
         self._templates_data = templates_data
-        self._register_default_processes()
+        try:
+            self._register_default_processes()
+        except Exception as e:
+            logger.error(
+                "Error initializing TemplateRegistryProcessor: {error}", error=e
+            )
+            raise
 
     def register_process(self, process: ProtocolTemplateReg) -> None:
         """Register a ProtocolTemplate with this processor.
@@ -84,19 +92,22 @@ class TemplateRegistryProcessor:
             - Side effects (file creation, network I/O, etc.) are performed by the
             individual processes and are not handled by this method.
         """
-
-        if not self._processes:
-            raise RuntimeError(
-                "No processes registered to execute. Has cleanup been called?"
-            )
-        results = {}
-        for process in self._processes:
-            result_path = process.process(tokens)
-            results[result_path[0]] = result_path[1]
-            print(
-                f"Processed Template Registry: {result_path[0]} -> {result_path[1].name}"
-            )
-        return results
+        try:
+            if not self._processes:
+                raise RuntimeError(
+                    "No processes registered to execute. Has cleanup been called?"
+                )
+            results = {}
+            for process in self._processes:
+                result_path = process.process(tokens)
+                results[result_path[0]] = result_path[1]
+                logger.info(
+                    f"Processed Template Registry: {result_path[0]} -> {result_path[1].name}"
+                )
+            return results
+        except Exception as e:
+            logger.error("Error executing processes: {error}", error=e)
+            raise
 
     def unregister_all(self) -> None:
         """Unregister all processes from the registry.

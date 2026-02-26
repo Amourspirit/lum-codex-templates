@@ -1,7 +1,7 @@
 import re
 import tempfile
 from typing import Any
-
+from loguru import logger
 from pathlib import Path
 from ...config.pkg_config import PkgConfig
 from ..obsidian_editor import ObsidianEditor
@@ -40,9 +40,11 @@ class ProcessObsidianTemplates:
                     clean_content = self.remove_line_comments(content)
                     clean_content = clean_content.lstrip()
                     if fm_dict is None:
-                        print(f"Skipping file without frontmatter: {file_path.name}")
+                        logger.info(
+                            f"Skipping file without frontmatter: {file_path.name}"
+                        )
                         continue
-                    print(f"Processing template: {file_path.name}")
+                    logger.info(f"Processing template: {file_path.name}")
                     fm = FrontMatterMeta.from_frontmatter_dict(
                         file_path, fm_dict, clean_content
                     )
@@ -131,12 +133,16 @@ class ProcessObsidianTemplates:
         Returns:
             dict: Dictionary of file hash values as key and FrontMatterMeta a value
         """
-        self._validate_tokens(tokens)
-        fms = self._process_templates(self._tmp_path, tokens)
-        results: dict[str, FrontMatterMeta] = {}
-        for fm in fms:
-            results[fm.sha256] = fm
-        return results
+        try:
+            self._validate_tokens(tokens)
+            fms = self._process_templates(self._tmp_path, tokens)
+            results: dict[str, FrontMatterMeta] = {}
+            for fm in fms:
+                results[fm.sha256] = fm
+            return results
+        except Exception as e:
+            logger.error("Error processing templates: {error}", error=e)
+            raise
 
     def cleanup(self):
         self._tmp_dir.cleanup()

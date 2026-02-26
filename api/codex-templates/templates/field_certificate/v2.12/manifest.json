@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_field_certificate",
+    "version": "0.1.0",
+    "description": "manifest for version 2.12 for template type field_certificate",
+    "template_info": {
+        "template_type": "field_certificate",
+        "template_file": "template.md",
+        "version": "2.12",
+        "hash": "3fc9fc2718d8a37a5ba5a033eb84969c5ebcd577c92f8441f8e8feb44bb00a38",
+        "template_hash": "3fc9fc2718d8a37a5ba5a033eb84969c5ebcd577c92f8441f8e8feb44bb00a38",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.12"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-FIELD-CERT-GENERAL-V2.12-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-26T01:57:30.194238-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

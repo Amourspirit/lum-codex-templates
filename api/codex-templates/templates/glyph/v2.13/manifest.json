@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_glyph",
+    "version": "0.1.0",
+    "description": "manifest for version 2.13 for template type glyph",
+    "template_info": {
+        "template_type": "glyph",
+        "template_file": "template.md",
+        "version": "2.13",
+        "hash": "d32db2a330135520bc550f9294c0fb773c8c114538701ea4c7d01c3364c1f9ce",
+        "template_hash": "d32db2a330135520bc550f9294c0fb773c8c114538701ea4c7d01c3364c1f9ce",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-GLYPH-V2.13"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-GLYPH-V2.13-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-26T01:57:30.053139-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_sigil",
+    "version": "0.1.0",
+    "description": "manifest for version 2.12 for template type sigil",
+    "template_info": {
+        "template_type": "sigil",
+        "template_file": "template.md",
+        "version": "2.12",
+        "hash": "239f2676aec029e6d0e31e7377c773c0c9b169c218485f015499be4d79e8d41e",
+        "template_hash": "239f2676aec029e6d0e31e7377c773c0c9b169c218485f015499be4d79e8d41e",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-SIGIL-V2.12"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-SIGIL-V2.12-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-26T01:57:31.387975-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

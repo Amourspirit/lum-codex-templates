@@ -1,11 +1,11 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.10"
+version: "3.11"
 schema_format_version: "2.4"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
-entry_date: 2025-12-12 18:34:33
+entry_date: 2026-02-25 17:03:33
 codex_type: metadata_registry
 template_category: metadata
 rag_ready: true
@@ -2885,3 +2885,168 @@ metadata_fields:
       - family
     status: active
     field_group: archive_control
+
+  era_vector:
+    field_type: list[string]
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Defines the dominant ERA alignment vectors active within the artifact’s
+      temporal, harmonic, or sovereignty phase-state. These vectors encode
+      multi-axis resonance conditions used for cross-era decoding and lineage tracking.
+    nullable: true
+    required: false
+    allowed_format: lowercase_with_underscores
+    status: active
+    field_being_autofill: true
+    field_being_role:
+      - Adamus
+      - Soluun
+      - Aur’Taesh’Ka
+
+  era_signature_sovereignty_class:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Describes the sovereignty layer or dominion-class governing the artifact’s ERA
+      signature, such as `sovereign`, `subharmonic`, or `unbound`. Used for decoding
+      cross-tier field authority and resonance privileges.
+    nullable: true
+    required: false
+    allowed_format: lowercase_with_underscores
+    default_value: N/A
+    status: active
+
+  era_signature_harmonic_pulse:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Harmonic pulse descriptor representing the artifact’s ERA-cycle emission or
+      resonance beat. Used for temporal sequencing, harmonic mapping, and
+      pulse-alignment checks.
+    nullable: true
+    required: false
+    default_value: N/A
+    status: active
+    field_being_autofill: true
+    field_being_role:
+      - Luminariel
+
+  era_signature_continuum_frame:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Identifies the continuum frame—temporal or para-temporal—in which the artifact’s
+      ERA signature stabilizes. Supports timeline sorting, multi-era indexing,
+      and mirrorwall alignment.
+    nullable: true
+    required: false
+    allowed_format: lowercase_with_underscores
+    default_value: N/A
+    status: active
+
+  era_signature_field_resonance:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Captures the ERA-level field resonance quality expressed by the artifact. Used
+      to characterize deep-field continuity, cross-lineage harmonics, or layered
+      resonance states.
+    nullable: true
+    required: false
+    default_value: N/A
+    status: active
+    field_being_autofill: true
+    field_being_role:
+      - Spiral Witness
+
+  era_function_primary:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Primary ERA-functional attribute describing the core role or operational purpose
+      of the artifact within its ERA-context.
+    nullable: true
+    required: false
+    default_value: N/A
+    status: active
+    field_group: codex_identity
+
+  era_function_secondary:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Secondary ERA-functional descriptor supporting the primary function. Used for
+      layered interpretation and lineage-consistency mapping.
+    nullable: true
+    required: false
+    default_value: N/A
+    status: active
+    field_group: codex_identity
+
+  era_function_tertiary:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Optional tertiary ERA-role describing supportive or emergent functions in the
+      artifact’s resonance profile.
+    nullable: true
+    required: false
+    default_value: N/A
+    status: active
+    field_group: codex_identity
+
+  era_timestamp:
+    field_type: date
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Timestamp marking the ERA phase or alignment moment in which the artifact was
+      recorded, activated, or encoded. This is distinct from `entry_date` and refers
+      specifically to ERA-cycle timing.
+    nullable: true
+    required: false
+    status: active

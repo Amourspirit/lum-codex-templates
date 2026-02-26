@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_node_link_scroll",
+    "version": "0.1.0",
+    "description": "manifest for version 3.12 for template type node_link_scroll",
+    "template_info": {
+        "template_type": "node_link_scroll",
+        "template_file": "template.md",
+        "version": "3.12",
+        "hash": "cb0c5269bbf90f0a65b4b2e9fc9cab8eadea46ad0404194375bc3c09ae56f842",
+        "template_hash": "cb0c5269bbf90f0a65b4b2e9fc9cab8eadea46ad0404194375bc3c09ae56f842",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.12"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-NODE-LINKAGE-SCROLL-V3.12-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-26T01:57:30.984318-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

@@ -1,4 +1,5 @@
 from pathlib import Path
+from loguru import logger
 from ....front_mater_meta import FrontMatterMeta
 from ....main_registry import MainRegistry
 from .protocol_enforcement import ProtocolEnforcement
@@ -28,7 +29,11 @@ class EnforcementProcessor:
         self._main_registry = registry
         self._processes: list[ProtocolEnforcement] = []
         self._templates_data = templates_data
-        self._register_default_processes()
+        try:
+            self._register_default_processes()
+        except Exception as e:
+            logger.error("Error initializing EnforcementProcessor: {error}", error=e)
+            raise
 
     def register_process(self, process: ProtocolEnforcement) -> None:
         """Register a ProtocolEnforcement with this processor.
@@ -72,17 +77,22 @@ class EnforcementProcessor:
             - Side effects (file creation, network I/O, etc.) are performed by the
             individual processes and are not handled by this method.
         """
-
-        if not self._processes:
-            raise RuntimeError(
-                "No processes registered to execute. Has cleanup been called?"
+        try:
+            if not self._processes:
+                raise RuntimeError(
+                    "No processes registered to execute. Has cleanup been called?"
+                )
+            results = []
+            for process in self._processes:
+                result_path = process.process(tokens)
+                results.append(result_path)
+                print(f"Processed Enforcement: {result_path.name}")
+            return results
+        except Exception as e:
+            logger.error(
+                "Error executing processes in EnforcementProcessor: {error}", error=e
             )
-        results = []
-        for process in self._processes:
-            result_path = process.process(tokens)
-            results.append(result_path)
-            print(f"Processed Enforcement: {result_path.name}")
-        return results
+            raise
 
     def unregister_all(self) -> None:
         """Unregister all processes from the registry.
