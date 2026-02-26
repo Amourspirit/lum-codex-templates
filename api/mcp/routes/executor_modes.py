@@ -130,7 +130,11 @@ def register_routes(mcp: FastMCP):
         title="Get Template Executor Mode (CBIB) by Version",
         description="Use this tool when asked to retrieve the Canonical Executor Mode (CBIB) for a specific executor mode version that is used in Codex templates.",
         tags=set(["codex-template", "executor-modes"]),
-        annotations={"readOnlyHint": True, "idempotentHint": True},
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "destructiveHint": False,
+        },
     )
     async def template_executor_mode_tool(
         version: str, ctx: Context = CurrentContext()
@@ -139,10 +143,14 @@ def register_routes(mcp: FastMCP):
 
     @mcp.tool(
         name="get_default_canonical_executor_mode",
-        title="Get Template Executor Mode (CBIB) by Version",
+        title="Get Template Executor Mode (CBIB) latest version",
         description="Use this tool when asked to retrieve the default Canonical Executor Mode (CBIB) that is used in Codex templates.",
         tags=set(["codex-template", "executor-modes"]),
-        annotations={"readOnlyHint": True, "idempotentHint": True},
+        annotations={
+            "readOnlyHint": True,
+            "idempotentHint": True,
+            "destructiveHint": False,
+        },
     )
     async def get_default_template_executor_mode_tool(
         ctx: Context = CurrentContext(),
