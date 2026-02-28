@@ -1,11 +1,16 @@
 from typing import Any
-
 from .protocol_verify_rule import ProtocolVerifyRule
 from src.template.front_mater_meta import FrontMatterMeta
 from .rule_linked_nodes import LinkedNodesRule
 from .rule_allow_fields import RuleAllowFields
+from .rule_boolean import RuleBoolean
 from ...util.result import Result
-from ...exceptions import VerifyError, MissingKeyError, RequiredFieldMissingError
+from ...exceptions import (
+    VerifyError,
+    MissingKeyError,
+    RequiredFieldMissingError,
+    NullFieldError,
+)
 
 
 class VerifyRules:
@@ -25,6 +30,73 @@ class VerifyRules:
         """
 
         self._processes[process.get_field()] = process
+
+    def _get_registry_field_types(self, registry: dict[str, Any]) -> dict[str, str]:
+        """
+        Extract and organize field types from a registry dictionary.
+        This method processes a registry's field definitions and creates a mapping of
+        field types to the field names that use each type.
+        Args:
+            registry (dict[str, Any]): A registry dictionary containing field definitions.
+                Expected to have a "fields" key with nested dictionaries defining field
+                properties including "type".
+        Returns:
+            dict[str, str]: A dictionary mapping field type names to sets of field names
+                that use each type. Only includes fields that have a "type" property
+                defined in their field_info dictionary.
+        Example:
+            >>> registry = {
+            ...     "fields": {
+            ...         "name": {"type": "string"},
+            ...         "age": {"type": "integer"},
+            ...         "email": {"type": "string"}
+            ...     }
+            ... }
+            >>> result = self._get_registry_field_types(registry)
+            >>> result
+            {'string': {'name', 'email'}, 'integer': {'age'}}
+        """
+
+        reg_fields = registry.get("fields", {})
+        field_types = {}
+        for field_name, field_info in reg_fields.items():
+            if isinstance(field_info, dict) and "type" in field_info:
+                if field_info["type"] not in field_types:
+                    field_types[field_info["type"]] = set()
+                field_types[field_info["type"]].add(field_name)
+        return field_types
+
+    def _get_boolean_rules(
+        self, registry: dict[str, Any]
+    ) -> dict[str, ProtocolVerifyRule]:
+        """
+        Identify and return a dictionary of ProtocolVerifyRule instances that are of type RuleBoolean
+        based on the field types defined in the registry.
+
+        Args:
+            registry (dict[str, Any]): A registry dictionary containing field definitions.
+                Expected to have a "fields" key with nested dictionaries defining field
+                properties including "type".
+
+        Returns:
+            dict[str, ProtocolVerifyRule]: A dictionary of ProtocolVerifyRule instances that are of type
+                RuleBoolean. This dictionary is constructed by checking the field types in the registry
+                and matching them to the registered processes in self._processes.
+        """
+
+        boolean_processes = {}
+        field_types = self._get_registry_field_types(registry)
+
+        key = "boolean"
+        if key not in field_types:
+            return boolean_processes
+
+        boolean_fields = field_types[key]
+
+        for field in boolean_fields:
+            boolean_processes[field] = RuleBoolean(field)
+
+        return boolean_processes
 
     def validate(
         self, fm: FrontMatterMeta, registry: dict[str, Any]
@@ -50,13 +122,20 @@ class VerifyRules:
         field_warnings_key = "Field Warnings"
         result = {field_errors_key: {}, field_warnings_key: {}}
         fm_keys = fm.frontmatter.keys()
+        boolean_rules = self._get_boolean_rules(registry)
+
+        processes: dict[str, ProtocolVerifyRule] = {}
+        processes.update(self._processes)
+        processes.update(boolean_rules)
+
         for key in fm_keys:
-            if key in self._processes:
-                process = self._processes[key]
+            if key in processes:
+                process = processes[key]
                 p_result = process.validate(fm, registry)
                 if Result.is_failure(p_result):
                     if isinstance(
-                        p_result.error, (VerifyError, RequiredFieldMissingError)
+                        p_result.error,
+                        (VerifyError, RequiredFieldMissingError, NullFieldError),
                     ):
                         result[field_errors_key][key] = p_result.error.errors
                     elif isinstance(p_result.error, MissingKeyError):
@@ -116,14 +195,26 @@ class VerifyRules:
     def _register_default_processes(self) -> None:
         """Register the default set of processes with this processor."""
 
+        # boolean rules are dynamically generated based on the registry field types, so they are not registered here in the default processes
+
         self.register_process(LinkedNodesRule())
-        self.register_process(RuleAllowFields("tier"))
-        self.register_process(RuleAllowFields("roles_authority", "any"))
-        self.register_process(RuleAllowFields("roles_visibility", "any"))
-        self.register_process(RuleAllowFields("roles_function", "any"))
-        self.register_process(RuleAllowFields("roles_action", "any"))
-        self.register_process(RuleAllowFields("artifact_duration"))
-        self.register_process(RuleAllowFields("artifact_elemental_resonance"))
+
+        allowed_fields_all = (
+            "tier",
+            "artifact_elemental_resonance",
+            "artifact_duration",
+        )
+        for field in allowed_fields_all:
+            self.register_process(RuleAllowFields(field, "all"))
+
+        allowed_fields_any = (
+            "roles_authority",
+            "roles_visibility",
+            "roles_function",
+            "roles_action",
+        )
+        for field in allowed_fields_any:
+            self.register_process(RuleAllowFields(field, "any"))
 
     @property
     def Count(self) -> int:

@@ -126,12 +126,14 @@ class PkgConfig(metaclass=SingletonMeta):
             int, self._cfg["tool"]["project"]["config"]["version_override"]
         )
         self._version = cast(str, self._cfg["project"]["version"])
-        # endregion read config values
 
         self._upgrade_dir = cast(
             str,
             self._cfg["tool"]["project"]["config"]["upgrade_dir"],
         )
+        # endregion read config values
+
+        self._t_version = None  # will be a tuple of the version numbers as ints, e.g. (1, 2, 3) for version "1.2.3"
 
         self._validate_config()
 
@@ -447,6 +449,12 @@ class PkgConfig(metaclass=SingletonMeta):
         assert isinstance(self._version, str), "version must be a string"
         if not self._version:
             raise ValueError("version cannot be empty")
+
+        version_parts = self._version.split(".")
+        if len(version_parts) != 3 or not all(part.isdigit() for part in version_parts):
+            raise ValueError(
+                "version must be in the format 'X.Y.Z' where X, Y, and Z are integers"
+            )
 
         assert isinstance(self._upgrade_dir, str), "upgrade_dir must be a string"
         if not self._upgrade_dir:
@@ -864,15 +872,27 @@ class PkgConfig(metaclass=SingletonMeta):
     @property
     def version(self) -> str:
         """
-        Return the cached version string, loading it from configuration on first access.
-        If self._version is already set, that value is returned. Otherwise the method
-        retrieves the value at self._cfg["tool"]["project"]["version"], casts it to str, stores it
-        in self._version for future calls, and returns it.
+        Return the version string, loading it from configuration on first access.
 
         Returns:
             str: The version value.
         """
         return self._version
+
+    @property
+    def project_version(self) -> tuple[int, int, int]:
+        """
+        Return the project version as a tuple of integers (major, minor, patch).
+
+        Returns:
+            tuple[int, int, int]: The project version as a tuple of integers.
+        """
+        if self._t_version is None:
+            version_parts = self.version.split(".")
+            self._t_version = cast(
+                tuple[int, int, int], tuple(int(part) for part in version_parts)
+            )
+        return self._t_version
 
     @property
     def upgrade_dir(self) -> str:

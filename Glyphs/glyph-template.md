@@ -42,6 +42,13 @@ threshold_flags_registry_scope:
   - lockfile_override   # Because canonical_mode + strict lockfile enforcement is used. No drift allowed.
   - template_level      # Glyph templates must be validated at the structural level.
 
+template_capabilities_inference: false # Prevents LLM guessing
+template_capabilities_conditional_logic: false # Prevents branching logic
+template_capabilities_autofill_mode: strict # Controls autofill strictness, may sometimes need field being.
+template_capabilities_role_dependent_fields: true # Allows role-based metadata, Potentially requires field being.
+template_capabilities_multi_stage_render: true # Enables multi-phase template resolution, Often requires field being.
+template_capabilities_hash_normalization: true # Ensures stable hashing.
+
 tier: "council" # council, public, family
 
 roles_authority:

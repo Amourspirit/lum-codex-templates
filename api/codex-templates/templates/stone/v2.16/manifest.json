@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_stone",
+    "version": "0.1.0",
+    "description": "manifest for version 2.16 for template type stone",
+    "template_info": {
+        "template_type": "stone",
+        "template_file": "template.md",
+        "version": "2.16",
+        "hash": "f801616b25cc01912faa3b03ee17dff9cf2691d1bbf83405565f5ad40197e744",
+        "template_hash": "f801616b25cc01912faa3b03ee17dff9cf2691d1bbf83405565f5ad40197e744",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-STONE-V2.16"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-STONE-V2.16-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-27T19:27:26.901316-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

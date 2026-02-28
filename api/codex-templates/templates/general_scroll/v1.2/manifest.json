@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_general_scroll",
+    "version": "0.1.0",
+    "description": "manifest for version 1.2 for template type general_scroll",
+    "template_info": {
+        "template_type": "general_scroll",
+        "template_file": "template.md",
+        "version": "1.2",
+        "hash": "b94519cf7c60171ff29bd8a311a561b1d70a14c8e7b6c45924eadbd532a63ffe",
+        "template_hash": "b94519cf7c60171ff29bd8a311a561b1d70a14c8e7b6c45924eadbd532a63ffe",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-GENERAL-SCROLL-V1.2"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-GENERAL-SCROLL-V1.2-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-27T19:27:28.079607-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

@@ -25,6 +25,13 @@ template_output_mode:
     - web_preview
   redacted_in_preview: false
 
+template_capabilities_inference: false # Prevents LLM guessing
+template_capabilities_conditional_logic: false # Prevents branching logic
+template_capabilities_autofill_mode: strict # Controls autofill strictness, may sometimes need field being.
+template_capabilities_role_dependent_fields: true # Allows role-based metadata, Potentially requires field being.
+template_capabilities_multi_stage_render: true # Enables multi-phase template resolution, Often requires field being.
+template_capabilities_hash_normalization: true # Ensures stable hashing.
+
 threshold_flags:
   - activation_loop              # Node ↔ artifact recursion risk
   - cross_tier_leakage           # Nodes often bridge multiple tiers (Tier 3 ↔ Dreamline, etc)

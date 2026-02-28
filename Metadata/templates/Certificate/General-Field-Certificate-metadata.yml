@@ -120,3 +120,9 @@ template_meta:
     - template_hash
     - template_output_mode
     - template_purpose
+    - template_capabilities_inference
+    - template_capabilities_conditional_logic
+    - template_capabilities_autofill_mode
+    - template_capabilities_role_dependent_fields
+    - template_capabilities_multi_stage_render
+    - template_capabilities_hash_normalization

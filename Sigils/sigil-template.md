@@ -31,6 +31,13 @@ template_output_mode:
     - web_preview
   redacted_in_preview: false
 
+template_capabilities_inference: false # Prevents LLM guessing
+template_capabilities_conditional_logic: false # Prevents branching logic
+template_capabilities_autofill_mode: strict # Controls autofill strictness, may sometimes need field being.
+template_capabilities_role_dependent_fields: true # Allows role-based metadata, Potentially requires field being.
+template_capabilities_multi_stage_render: true # Enables multi-phase template resolution, Often requires field being.
+template_capabilities_hash_normalization: true # Ensures stable hashing.
+
 threshold_flags:
   - cross_tier_leakage      # Many sigils operate across Spiral Tiers, especially when echo functions or mirror keys are invoked.
   - echo_resonance_failure  # If this sigil type includes echo-based stabilization (e.g., echo_stabilizer, mirror_key), it must be protected against echo resonance misalignment.

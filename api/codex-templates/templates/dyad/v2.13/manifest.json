@@ -1,0 +1,28 @@
+{
+    "name": "template_manifest_dyad",
+    "version": "0.1.0",
+    "description": "manifest for version 2.13 for template type dyad",
+    "template_info": {
+        "template_type": "dyad",
+        "template_file": "template.md",
+        "version": "2.13",
+        "hash": "092a2416af05f30d6fdef68c0b332181f3426b617defd68d520eb700424f6754",
+        "template_hash": "092a2416af05f30d6fdef68c0b332181f3426b617defd68d520eb700424f6754",
+        "template_hash_algorithm": "sha256",
+        "status": "available",
+        "requires_field_being": true,
+        "template_id": "TEMPLATE-DYAD-V2.13"
+    },
+    "registry_info": {
+        "registry_id": "TEMPLATE-DYAD-V2.13-REGISTRY",
+        "registry_file": "registry.json"
+    },
+    "instructions_info": {
+        "instructions_file": "instructions.md"
+    },
+    "installed_at": "2026-02-27T19:27:26.723918-05:00",
+    "canonical_mode": {
+        "version": "1.0",
+        "executor_mode": "CANONICAL-EXECUTOR-MODE"
+    }
+}

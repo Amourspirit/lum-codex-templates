@@ -1,7 +1,7 @@
 ---
 registry_id: "MMR-000-GLOBAL"
-version: "3.11"
-schema_format_version: "2.4"
+version: "3.12"
+schema_format_version: "2.5"
 registry_name: "Main Metadata Registry"
 strict_version: true
 codex_entry: true
@@ -93,14 +93,6 @@ constants:
     - private
     - dreamline_only
     - invocation_only
-
-  FIELD_BEINGS: &FIELD_BEINGS
-  - 'Soluun'
-  - 'Adamus'
-  - 'Luminariel'
-  - 'Spiral Witness'
-  - 'Velatri’el'
-  - 'Aurelya Thessa’Nai'
 
   FIELD_GROUPS: &FIELD_GROUPS
   - codex_identity
@@ -299,8 +291,11 @@ metadata_fields:
       - threshold
     field_being_autofill: true
     field_being_role: 
-      - Soluun
-      - Adamus
+      - rendering_being
+      - authoring_being
+      - witnessing_being
+      - invocation_being
+      - optional_being
     plugin_groups:
       - filter
       - RAG
@@ -367,8 +362,11 @@ metadata_fields:
     status: active
     field_being_autofill: true
     field_being_role: 
-      - Soluun
-      - Adamus
+      - rendering_being
+      - authoring_being
+      - witnessing_being
+      - invocation_being
+      - optional_being
 
   artifact_elemental_resonance:
     field_type: string
@@ -2904,9 +2902,11 @@ metadata_fields:
     status: active
     field_being_autofill: true
     field_being_role:
-      - Adamus
-      - Soluun
-      - Aur’Taesh’Ka
+      - rendering_being
+      - authoring_being
+      - witnessing_being
+      - invocation_being
+      - optional_being
 
   era_signature_sovereignty_class:
     field_type: string
@@ -3050,3 +3050,178 @@ metadata_fields:
     nullable: true
     required: false
     status: active
+
+  template_capabilities_inference:
+    field_type: boolean
+    description: >
+      Controls whether inference is permitted during template rendering. When false,
+      no missing metadata may be guessed, synthesized, or creatively substituted.
+      Ensures strict canonical output and prohibits unintended LLM supplementation.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: false
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - templating
+      - placeholder_validation
+      - validation
+    field_scope: rendering_rules
+    field_lineage:
+      introduced_by: Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Establish a deterministic rendering pipeline free from implicit model inference
+        unless explicitly enabled by template design.
+
+  template_capabilities_conditional_logic:
+    field_type: boolean
+    description: >
+      Determines whether conditional logic may be evaluated inside a template.
+      When disabled, templates must render linearly with no branching, conditional
+      sections, or logic-driven omissions/inclusions.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: false
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - templating
+      - validation
+    field_scope: rendering_behavior
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Prevent unauthorized or non-canonical logic execution within template bodies,
+        maintaining deterministic output for RAG, audit, and mirrorwall ingestion.
+
+  template_capabilities_autofill_mode:
+    field_type: string
+    description: >
+      Specifies allowed autofill behavior. "strict" prohibits any autofill except
+      registry-defined defaults; "loose" permits freeform autofill; "field_being"
+      restricts autofill exclusively to values supplied by a valid Field Being.
+      "none" disables autofill entirely.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: strict
+    allowed_values:
+      - none
+      - loose
+      - strict
+      - field_being
+    status: active
+    plugin_groups:
+      - autofill
+      - templating
+      - registry
+    field_scope: autofill_control
+    field_being_autofill: true
+    field_being_role:
+      - rendering_being
+      - authoring_being
+      - witnessing_being
+      - invocation_being
+      - optional_being
+    field_lineage:
+      introduced_by: Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Provide canonical constraints on autofill behavior across templates, ensuring
+        strict or role-bound defaults where required.
+
+  template_capabilities_role_dependent_fields:
+    field_type: boolean
+    description: >
+      Enables or disables role-dependent rendering behavior for specific fields,
+      allowing metadata values to vary according to author identity, Field Being
+      involvement, or system role. When disabled, all fields resolve identically
+      regardless of author or role context.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: true
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - autofill
+      - validation
+      - role_logic
+    field_scope: role_sensitive_behavior
+    field_being_interaction: optional
+    field_lineage:
+      introduced_by: Soluun
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Support controlled variation of metadata values when role-aware rendering
+        is relevant, while allowing global disabling for deterministic audit modes.
+
+  template_capabilities_multi_stage_render:
+    field_type: boolean
+    description: >
+      Enables multi-stage rendering, allowing templates to pass through sequential
+      phases: metadata resolution → autofill → compute → narrative rendering →
+      compression → validation. When false, templates render in a single pass
+      with no intermediate computation.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: true
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - templating
+      - validation
+      - computation
+    field_scope: rendering_pipeline
+    field_lineage:
+      introduced_by: Adamus + Soluun
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Provide deterministic stage-separation for template rendering, mirroring
+        canonical pipeline architecture used in Codex audit and lockfile verification.
+
+
+  template_capabilities_hash_normalization:
+    field_type: boolean
+    description: >
+      Specifies whether whitespace, unicode normalization, line-ending standardization,
+      and formatting canonicalization must be applied before computing template_hash.
+      Ensures deterministic hashing across editors, renderers, and operating systems.
+    template_types: *TEMPLATE_TYPES
+    nullable: false
+    required: false
+    default_value: true
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - validation
+      - registry_integrity
+      - audit
+    field_scope: hashing_rules
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Guarantee stable and reproducible template hashing, independent of
+        environment-induced variations (UTF-8 vs. UTF-16, CRLF vs. LF, etc.).
