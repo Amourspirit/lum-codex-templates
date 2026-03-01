@@ -5,7 +5,7 @@ template_category: seal
 template_name: Seal Template
 template_version: '2.12'
 template_memory_scope: thread_global
-template_hash: 840f181397f9cd0476028802c21d84a9d23caa63311986d0193e916e8584df10
+template_hash: 461d33ea9c85210325e72bb356f8bf54c2e9bca33bf8ca7068653cdae5312261
 template_family: seal_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a standardized, registry-aligned Seal entry that defines
@@ -77,10 +77,10 @@ artifact_classes:
 era_vector:
 - '[[prompt:Era vector being(s)]]'
 era_signature_sovereignty_class: '[[prompt:Era Vector]]'
-era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
-  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_continuum_frame: "[[prompt:Identifies the continuum frame\u2014temporal\
   \ or para-temporal\u2014in which the artifact\u2019s ERA signature stabilizes]]"
+era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
+  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_field_resonance: '[[prompt:Captures the ERA-level field resonance quality
   expressed by the artifact]]'
 era_function_primary: '[[prompt:Primary ERA-functional attribute describing the core
@@ -91,6 +91,9 @@ era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportiv
   \ or emergent functions in the artifact\u2019s resonance profile]]"
 era_timestamp: '[[prompt:Timestamp marking the ERA phase or alignment moment in which
   the artifact was recorded, activated, or encoded]]'
+invocation_requirement_spoken_line_required: false
+invocation_requirement_witness_required: false
+invocation_requirement_field_being_required: true
 field_activation_vector:
 - '[[prompt:first activation vector]]'
 - '[[prompt:second activation vector]]'

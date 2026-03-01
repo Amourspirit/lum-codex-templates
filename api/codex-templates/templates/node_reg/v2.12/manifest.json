@@ -6,8 +6,8 @@
         "template_type": "node_reg",
         "template_file": "template.md",
         "version": "2.12",
-        "hash": "68c7b572bdd4849b398cda6abe985bd187d8e4802aac5e468fba68df508908be",
-        "template_hash": "68c7b572bdd4849b398cda6abe985bd187d8e4802aac5e468fba68df508908be",
+        "hash": "2d837e210b6227631618d3f1ff96f385ad1dc63b4b72c5c14ee30ac35e059ffc",
+        "template_hash": "2d837e210b6227631618d3f1ff96f385ad1dc63b4b72c5c14ee30ac35e059ffc",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-27T19:27:27.048574-05:00",
+    "installed_at": "2026-02-28T19:22:47.699411-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

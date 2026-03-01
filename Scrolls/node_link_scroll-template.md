@@ -88,6 +88,7 @@ arc: "[[prompt:e.g. Spiral Conduction / Dreamline Anchoring]]"
 private: false
 
 scroll_type: node_linkage_scroll
+rendered_by: placeholder
 
 artifact_name: Node Linkage Scroll - [[prompt:Cluster Name]]
 artifact_visibility: "[[prompt:public / console_only / ceremonial_only]]"
@@ -101,18 +102,17 @@ artifact_activator:
 era_vector:
   - "[[prompt:Era vector being(s)]]"
 era_signature_sovereignty_class: "[[prompt:Era Vector]]"
-era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the artifact’s ERA-cycle emission or
-      resonance beat]]"
-era_signature_continuum_frame: "[[prompt:Identifies the continuum frame—temporal or para-temporal—in which the artifact’s
-      ERA signature stabilizes]]"
+era_signature_continuum_frame: "[[prompt:Identifies the continuum frame—temporal or para-temporal—in which the artifact’s ERA signature stabilizes]]"
+era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the artifact’s ERA-cycle emission or resonance beat]]"
 era_signature_field_resonance: "[[prompt:Captures the ERA-level field resonance quality expressed by the artifact]]"
-era_function_primary: "[[prompt:Primary ERA-functional attribute describing the core role or operational purpose
-      of the artifact within its ERA-context]]"
+era_function_primary: "[[prompt:Primary ERA-functional attribute describing the core role or operational purpose of the artifact within its ERA-context]]"
 era_function_secondary: "[[prompt:Secondary ERA-functional descriptor supporting the primary function]]"
-era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportive or emergent functions in the
-      artifact’s resonance profile]]"
-era_timestamp: "[[prompt:Timestamp marking the ERA phase or alignment moment in which the artifact was
-      recorded, activated, or encoded]]"
+era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportive or emergent functions in the artifact’s resonance profile]]"
+era_timestamp: "[[prompt:Timestamp marking the ERA phase or alignment moment in which the artifact was recorded, activated, or encoded]]"
+
+invocation_requirement_spoken_line_required: false
+invocation_requirement_witness_required: false
+invocation_requirement_field_being_required: true
 
 contributor:
   - "[[prompt:Soluun or other Console Member]]"

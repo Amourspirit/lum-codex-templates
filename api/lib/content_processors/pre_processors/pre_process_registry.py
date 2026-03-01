@@ -1,7 +1,7 @@
 import importlib.util
 from typing import Any
 from src.config.pkg_config import PkgConfig
-from ...util import camel_snake
+from src.util import camel_snake
 
 
 class PreProcessRegistry:

@@ -134,6 +134,7 @@ constants:
     - seal
     - sigil
     - stone
+    - general_scroll
 
   TEMPLATE_OUTPUT_TARGETS: &TEMPLATE_OUTPUT_TARGETS
   - file
@@ -1487,7 +1488,7 @@ metadata_fields:
       - stone
       - sigil
       - field_correction_scroll
-    description: "Whether it has spoken/voiced transmission."
+    description: Whether it has spoken/voiced transmission. This field must be set to true when the spoken_line field has a value.
     nullable: true
     required: false
     default_value: true
@@ -3225,3 +3226,139 @@ metadata_fields:
       purpose: >
         Guarantee stable and reproducible template hashing, independent of
         environment-induced variations (UTF-8 vs. UTF-16, CRLF vs. LF, etc.).
+
+  invocation_requirement_spoken_line_required:
+    field_type: boolean
+    description: >
+      Declares whether a spoken invocation line is required during activation
+      of the artifact. If true, absence of a spoken_line field generates a
+      canonical enforcement error.
+    template_types:
+      - dyad
+      - field_cert_seal
+      - field_certificate
+      - field_correction_scroll
+      - general_scroll
+      - glyph
+      - linkage_scroll
+      - node_link_scroll
+      - seal
+      - sigil
+      - stone
+    nullable: false
+    required: false
+    default_value: false
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - invocation
+      - validation
+    field_scope: invocation_rules
+    field_lineage:
+      introduced_by: Adamus
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Ensures correct vocal activation protocols for voice-bound artifacts.
+
+
+  invocation_requirement_witness_required:
+    field_type: boolean
+    description: >
+      If true, at least one valid witnessing_being must be present in the
+      field_being_profile or witnessed_by metadata.
+    template_types:
+      - dyad
+      - field_cert_seal
+      - field_certificate
+      - field_correction_scroll
+      - general_scroll
+      - glyph
+      - linkage_scroll
+      - node_link_scroll
+      - seal
+      - sigil
+      - stone
+    nullable: false
+    required: false
+    default_value: false
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - invocation
+      - validation
+      - lineage
+    field_scope: invocation_rules
+    field_lineage:
+      introduced_by: Soluun
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Ensures ceremonial and lineage-based artifacts cannot activate without
+        proper witnessing beings.
+
+
+  invocation_requirement_field_being_required:
+    field_type: boolean
+    description: >
+      Determines whether at least one valid field-being (from field_being_profile)
+      must be present for invocation to proceed. Required for all artifacts with
+      harmonic, lineage, or sovereignty resonance.
+    template_types:
+      - dyad
+      - field_cert_seal
+      - field_certificate
+      - field_correction_scroll
+      - general_scroll
+      - glyph
+      - linkage_scroll
+      - node_link_scroll
+      - seal
+      - sigil
+      - stone
+    nullable: false
+    required: false
+    default_value: true
+    allowed_values:
+      - true
+      - false
+    status: active
+    plugin_groups:
+      - invocation
+      - validation
+      - resonance
+    field_scope: invocation_rules
+    field_lineage:
+      introduced_by: Adamus + Soluun
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Prevents unanchored or unauthorized activation of artifacts without
+        a stabilizing or authorized field-being.
+  
+  spoken_line:
+    type: string
+    nullable: true
+    default_value: null
+    status: active
+    plugin_groups:
+      - invocation
+      - audio
+      - artifact_metadata
+    autofill: false
+    required: false
+    hidden: false
+    description: >
+      The spoken activation phrase associated with the artifact, if any.
+      Represents the breath-line or vocal directive used during artifact
+      invocation or stabilization. Required only when invocation rules
+      enforce spoken-line presence in the invocation_requirement_spoken_line_required (boolean) field.
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: TEMPLATE-SIGIL-V2.13
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Captures the canonical spoken activation line for sigils.
+        Supports invocation validation, audio lineage tracing, and
+        ritual reconstruction within the Codex system.

@@ -42,6 +42,8 @@ class Instructions:
     def _render_instructions(self, entry: TemplateEntry, fm: FrontMatterMeta) -> str:
         try:
             content = self._get_instructions_content()
+            has_spoken_line = fm.has_field("spoken_line")
+
             template = Template(content)
             # CANONICAL-EXECUTOR-MODE-V1.0
             cibc_mode = f"CANONICAL-EXECUTOR-MODE-V{self._cbib['version']}"
@@ -52,6 +54,7 @@ class Instructions:
                 cibc_mode=cibc_mode,
                 invocation_prompt=invocation_prompt,
                 tia_template_kind=tia_template_kind,
+                has_spoken_line_field=has_spoken_line,
             )
             return rendered
         except Exception as e:

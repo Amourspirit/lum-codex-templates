@@ -6,8 +6,8 @@
         "template_type": "glyph",
         "template_file": "template.md",
         "version": "2.14",
-        "hash": "38c5a7ed0787825c15610fd3b9cb43b312bcf74f13bbf6f1891b1379f6ec66f1",
-        "template_hash": "38c5a7ed0787825c15610fd3b9cb43b312bcf74f13bbf6f1891b1379f6ec66f1",
+        "hash": "100ff6cf911535cb9ebe8dc764c56b79e7c0c5802fad2feacf9c870f6e39f812",
+        "template_hash": "100ff6cf911535cb9ebe8dc764c56b79e7c0c5802fad2feacf9c870f6e39f812",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-27T19:27:26.414006-05:00",
+    "installed_at": "2026-02-28T19:22:46.889754-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

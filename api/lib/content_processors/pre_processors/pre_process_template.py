@@ -1,7 +1,7 @@
 import importlib.util
 from src.template.front_mater_meta import FrontMatterMeta
 from src.config.pkg_config import PkgConfig
-from ...util import camel_snake
+from src.util import camel_snake
 
 
 class PreProcessTemplate:

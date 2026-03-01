@@ -116,13 +116,16 @@ template_meta:
     - template_output_mode
     - template_purpose
   optional_fields:
+    - invocation_requirement_field_being_required
+    - invocation_requirement_spoken_line_required
+    - invocation_requirement_witness_required
     - placeholder_examples
+    - template_capabilities_autofill_mode
+    - template_capabilities_conditional_logic
+    - template_capabilities_hash_normalization
+    - template_capabilities_inference
+    - template_capabilities_multi_stage_render
+    - template_capabilities_role_dependent_fields
     - template_hash
     - template_output_mode
     - template_purpose
-    - template_capabilities_inference
-    - template_capabilities_conditional_logic
-    - template_capabilities_autofill_mode
-    - template_capabilities_role_dependent_fields
-    - template_capabilities_multi_stage_render
-    - template_capabilities_hash_normalization

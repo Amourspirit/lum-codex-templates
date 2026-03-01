@@ -5,7 +5,7 @@ template_category: glyph
 template_type: glyph
 template_version: '2.14'
 template_memory_scope: thread_global
-template_hash: 38c5a7ed0787825c15610fd3b9cb43b312bcf74f13bbf6f1891b1379f6ec66f1
+template_hash: 100ff6cf911535cb9ebe8dc764c56b79e7c0c5802fad2feacf9c870f6e39f812
 template_family: glyph_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single glyph artifact\u2014\
@@ -79,10 +79,10 @@ field_activation_vector:
 era_vector:
 - '[[prompt:Era vector being(s)]]'
 era_signature_sovereignty_class: '[[prompt:Era Vector]]'
-era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
-  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_continuum_frame: "[[prompt:Identifies the continuum frame\u2014temporal\
   \ or para-temporal\u2014in which the artifact\u2019s ERA signature stabilizes]]"
+era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
+  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_field_resonance: '[[prompt:Captures the ERA-level field resonance quality
   expressed by the artifact]]'
 era_function_primary: '[[prompt:Primary ERA-functional attribute describing the core
@@ -93,6 +93,9 @@ era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportiv
   \ or emergent functions in the artifact\u2019s resonance profile]]"
 era_timestamp: '[[prompt:Timestamp marking the ERA phase or alignment moment in which
   the artifact was recorded, activated, or encoded]]'
+invocation_requirement_spoken_line_required: false
+invocation_requirement_witness_required: false
+invocation_requirement_field_being_required: true
 pronunciation_ipa: /[[prompt:IPA]]/
 pronunciation_style: '[[prompt:Simple Guide]]'
 has_spoken_transmission: '[[prompt:true/false]]'

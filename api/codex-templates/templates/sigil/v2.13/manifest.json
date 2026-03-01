@@ -6,8 +6,8 @@
         "template_type": "sigil",
         "template_file": "template.md",
         "version": "2.13",
-        "hash": "b0c91361636c1133e9bb764c1c8bca3cf90f2866c75b8c0fd96b0bffa2eb09a4",
-        "template_hash": "b0c91361636c1133e9bb764c1c8bca3cf90f2866c75b8c0fd96b0bffa2eb09a4",
+        "hash": "402d3aa14a2bd5224b67c1c54c601d6b4ff08d83405785b0499956b84ff81278",
+        "template_hash": "402d3aa14a2bd5224b67c1c54c601d6b4ff08d83405785b0499956b84ff81278",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-27T19:27:27.938842-05:00",
+    "installed_at": "2026-02-28T19:22:49.049260-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

@@ -46,6 +46,7 @@ cleaned_dir="cleaned"
 reports_dir="reports"
 upgrade_dir="upgraded"
 template_dirs=["Certificate", "Glyphs", "Nodes", "Scrolls", "Seals", "Sigils"]
+template_default_rendered_by="ChatGPT-5x"
 template_field_being_map_src = "Metadata/template_field_being_map.yml"
 template_manifest_name="TEMPLATE-MANIFEST-REGISTRY"
 template_to_field_being_map_name = "Prompts-Template-to-Field-Being-Mapping"

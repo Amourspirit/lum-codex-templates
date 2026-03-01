@@ -110,6 +110,9 @@ template_meta:
     - template_purpose
     - template_usage
   optional_fields:
+    - invocation_requirement_field_being_required
+    - invocation_requirement_spoken_line_required
+    - invocation_requirement_witness_required
     - placeholder_examples
     - template_capabilities_autofill_mode
     - template_capabilities_conditional_logic

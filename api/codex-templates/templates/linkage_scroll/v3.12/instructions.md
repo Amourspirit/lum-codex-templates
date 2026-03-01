@@ -106,6 +106,7 @@ This template adheres to executor mode:
 
 ## 🧭 Behavioral Directives
 
+
 ### ▸ Canonical Enforcement
 
 Follow Front-Matter `canonical_enforcement` directions precisely.

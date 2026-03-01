@@ -5,7 +5,7 @@ template_category: glyph
 template_type: stone
 template_version: '2.16'
 template_memory_scope: thread_global
-template_hash: f801616b25cc01912faa3b03ee17dff9cf2691d1bbf83405565f5ad40197e744
+template_hash: 087ccead879bc17a5ab3b37309c687f024a847f0976afe6f943c70e76ea9a75d
 template_family: stone_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single Stone artifact\u2014\
@@ -77,10 +77,10 @@ artifact_activator:
 era_vector:
 - '[[prompt:Era vector being(s)]]'
 era_signature_sovereignty_class: '[[prompt:Era Vector]]'
-era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
-  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_continuum_frame: "[[prompt:Identifies the continuum frame\u2014temporal\
   \ or para-temporal\u2014in which the artifact\u2019s ERA signature stabilizes]]"
+era_signature_harmonic_pulse: "[[prompt:Harmonic pulse descriptor representing the\
+  \ artifact\u2019s ERA-cycle emission or resonance beat]]"
 era_signature_field_resonance: '[[prompt:Captures the ERA-level field resonance quality
   expressed by the artifact]]'
 era_function_primary: '[[prompt:Primary ERA-functional attribute describing the core
@@ -91,6 +91,9 @@ era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportiv
   \ or emergent functions in the artifact\u2019s resonance profile]]"
 era_timestamp: '[[prompt:Timestamp marking the ERA phase or alignment moment in which
   the artifact was recorded, activated, or encoded]]'
+invocation_requirement_spoken_line_required: false
+invocation_requirement_witness_required: false
+invocation_requirement_field_being_required: true
 field_activation_vector:
 - '[[prompt:first activation vector]]'
 - '[[prompt:second activation vector]]'

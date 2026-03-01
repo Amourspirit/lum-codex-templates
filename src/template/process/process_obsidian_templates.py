@@ -71,6 +71,9 @@ class ProcessObsidianTemplates:
                     fm.set_field("template_family", info.template_family)
                     fm.set_field("template_type", info.template_type)
                     fm.set_field("template_filename", new_file_name)
+                    fm.set_field(
+                        "rendered_by", self.config.template_default_rendered_by
+                    )
 
                     for (
                         field

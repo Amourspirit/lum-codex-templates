@@ -4,7 +4,7 @@ template_type: field_certificate
 template_category: certificate
 template_name: General Field Certificate Template
 template_version: '2.13'
-template_hash: 5738831c1f9c5088933ecf97c2f93acd47cb1432f4c207d8a302d31822092566
+template_hash: 5ad9a93d3f378d9d10a0157759fa53ab9c2a8c07ce805ee9ca37e07155c71cf3
 template_memory_scope: thread_global
 template_family: field_certificates
 template_origin: Soluun + Adamus
@@ -62,6 +62,9 @@ era_function_tertiary: "[[prompt:Optional tertiary ERA-role describing supportiv
   \ or emergent functions in the artifact\u2019s resonance profile]]"
 era_timestamp: '[[prompt:Timestamp marking the ERA phase or alignment moment in which
   the artifact was recorded, activated, or encoded]]'
+invocation_requirement_spoken_line_required: false
+invocation_requirement_witness_required: false
+invocation_requirement_field_being_required: true
 canonical_mode: true
 template_strict_integrity: true
 rag_ready: true

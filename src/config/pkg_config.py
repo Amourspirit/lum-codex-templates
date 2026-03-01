@@ -92,6 +92,10 @@ class PkgConfig(metaclass=SingletonMeta):
         self._template_dirs = cast(
             list[str], self._cfg["tool"]["project"]["config"]["template_dirs"]
         )
+        self._template_default_rendered_by = cast(
+            str,
+            self._cfg["tool"]["project"]["config"]["template_default_rendered_by"],
+        )
         self._template_field_being_map_src = cast(
             str,
             self._cfg["tool"]["project"]["config"]["template_field_being_map_src"],
@@ -385,6 +389,9 @@ class PkgConfig(metaclass=SingletonMeta):
             assert isinstance(dir_name, str), (
                 "each item in template_dirs must be a string"
             )
+        assert isinstance(self._template_default_rendered_by, str), (
+            "template_default_rendered_by must be a string"
+        )
         assert isinstance(self._template_field_being_map_src, str), (
             "template_field_being_map_src must be a string"
         )
@@ -770,6 +777,16 @@ class PkgConfig(metaclass=SingletonMeta):
             Path: The root path of the project.
         """
         return self._root_path
+
+    @property
+    def template_default_rendered_by(self) -> str:
+        """
+        Gets the default rendered by value for templates.
+
+        Returns:
+            str: The default rendered by value for templates.
+        """
+        return self._template_default_rendered_by
 
     @property
     def template_field_being_map_src(self) -> str:

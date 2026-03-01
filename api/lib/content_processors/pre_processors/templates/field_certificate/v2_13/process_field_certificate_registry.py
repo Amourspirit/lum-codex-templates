@@ -20,8 +20,9 @@ class ProcessFieldCertificateRegistry:
         return tt
 
     def _process_reg(self) -> None:
-        if "field_being_profile" in self.registry:
-            fbp = cast(dict[str, Any], self.registry["field_being_profile"])
+        reg_data = self.registry.get("metadata", self.registry)
+        if "field_being_profile" in reg_data:
+            fbp = cast(dict[str, Any], reg_data["field_being_profile"])
             keys = (
                 "rendering_being",
                 "authoring_being",
@@ -40,6 +41,17 @@ class ProcessFieldCertificateRegistry:
                         else:
                             updated_list.append(being)
                     fbp[key] = updated_list
+
+            if "allowed_beings" not in reg_data:
+                # simplify allowed_beings as a flat list of unique beings across all roles in field_being_profile
+                beings = set()
+                for _, role_beings in fbp.items():
+                    if isinstance(role_beings, list):
+                        for b in role_beings:
+                            if b and str(b).strip():
+                                beings.add(str(b).strip())
+
+                reg_data["allowed_beings"] = sorted(beings)
 
         if (
             "autofill" in self.registry

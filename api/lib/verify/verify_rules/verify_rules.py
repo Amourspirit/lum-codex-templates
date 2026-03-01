@@ -4,6 +4,9 @@ from src.template.front_mater_meta import FrontMatterMeta
 from .rule_linked_nodes import LinkedNodesRule
 from .rule_allow_fields import RuleAllowFields
 from .rule_boolean import RuleBoolean
+from .rule_spoken_transmission import RuleSpokenTransmission
+from .rule_field_being_requirement import RuleFieldBeingRequirement
+from .rule_witness_requirement import RuleWitnessRequirement
 from ...util.result import Result
 from ...exceptions import (
     VerifyError,
@@ -198,6 +201,9 @@ class VerifyRules:
         # boolean rules are dynamically generated based on the registry field types, so they are not registered here in the default processes
 
         self.register_process(LinkedNodesRule())
+        self.register_process(RuleSpokenTransmission())
+        self.register_process(RuleFieldBeingRequirement())
+        self.register_process(RuleWitnessRequirement())
 
         allowed_fields_all = (
             "tier",
