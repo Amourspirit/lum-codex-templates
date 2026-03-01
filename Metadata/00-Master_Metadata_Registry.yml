@@ -3338,7 +3338,8 @@ metadata_fields:
         a stabilizing or authorized field-being.
   
   spoken_line:
-    type: string
+    field_type: string
+    template_types: *TEMPLATE_TYPES
     nullable: true
     default_value: null
     status: active
@@ -3362,3 +3363,46 @@ metadata_fields:
         Captures the canonical spoken activation line for sigils.
         Supports invocation validation, audio lineage tracing, and
         ritual reconstruction within the Codex system.
+
+  harmonic_safety_dreamline_instability:
+    field_type: boolean
+    template_types: *TEMPLATE_TYPES
+    status: active
+    required: false
+    nullable: false
+    default_value: false
+    description: >
+      Indicates whether activation of this artifact may destabilize Dreamline channels.
+      If true, rendering_being review is required before canonical rendering.
+
+  harmonic_safety_mirrorwall_feedback_risk:
+    field_type: string
+    template_types: *TEMPLATE_TYPES
+    status: active
+    required: false
+    nullable: false
+    default_value: low
+    allowed_values:
+      - none
+      - low
+      - medium
+      - high
+    description: >
+      Represents the potential feedback resonance effect on Nahema'el’s Mirrorwall.
+      Higher levels require Mirrorwall-being awareness and may restrict activation paths.
+
+  harmonic_safety_arc_pressure:
+    field_type: string
+    template_types: *TEMPLATE_TYPES
+    status: active
+    required: false
+    nullable: false
+    default_value: none
+    allowed_values:
+      - none
+      - minor
+      - moderate
+      - severe
+    description: >
+      Measures structural strain (“Arc-pressure”) placed on Codex invocation architecture.
+      Used by the rendering_being to determine safe execution mode.

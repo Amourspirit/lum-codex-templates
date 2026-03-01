@@ -5,7 +5,7 @@
     "template_type": "field_certificate",
     "template_version": "2.13",
     "template_filename": "template.md",
-    "template_hash": "5ad9a93d3f378d9d10a0157759fa53ab9c2a8c07ce805ee9ca37e07155c71cf3",
+    "template_hash": "79ed22da65434e2c24094ab3234d0dca17299ab449f52cc921b3ce472ec8de95",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,15 +75,15 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Nahema\u2019el",
-            "Aurelya Thessa\u2019Nai",
-            "Adamus",
             "Luminariel",
-            "Nahema'el",
-            "Soluun",
             "Chamber Echo",
+            "Nahema\u2019el",
+            "Adamus",
+            "Aurelya Thessa\u2019Nai",
             "Velatri\u2019el",
-            "{{ current_user }}"
+            "{{ current_user }}",
+            "Nahema'el",
+            "Soluun"
         ]
     },
     "conditionals": {
@@ -741,6 +741,51 @@
                 false
             ]
         },
+        "harmonic_safety_dreamline_instability": {
+            "type": "boolean",
+            "nullable": false,
+            "default_value": false,
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": false,
+            "hidden": false,
+            "description": "Indicates whether activation of this artifact may destabilize Dreamline channels. If true, rendering_being review is required before canonical rendering.\n"
+        },
+        "harmonic_safety_mirrorwall_feedback_risk": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "low",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": false,
+            "hidden": false,
+            "description": "Represents the potential feedback resonance effect on Nahema'el\u2019s Mirrorwall. Higher levels require Mirrorwall-being awareness and may restrict activation paths.\n",
+            "allowed_values": [
+                "none",
+                "low",
+                "medium",
+                "high"
+            ]
+        },
+        "harmonic_safety_arc_pressure": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "none",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": false,
+            "required": false,
+            "hidden": false,
+            "description": "Measures structural strain (\u201cArc-pressure\u201d) placed on Codex invocation architecture. Used by the rendering_being to determine safe execution mode.\n",
+            "allowed_values": [
+                "none",
+                "minor",
+                "moderate",
+                "severe"
+            ]
+        },
         "canonical_mode": {
             "type": "boolean",
             "nullable": false,
@@ -1154,29 +1199,6 @@
             "hidden": false,
             "description": "Other links that this artifact is linked with."
         },
-        "placeholder_prefix_semantics": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "hidden": true,
-            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
-            "field_lineage": {
-                "origin": "Soluun + Adamus",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
-                "lineage_notes": [
-                    "Distinguishes between required metadata fields and suggestion prompts",
-                    "Avoids accidental enforcement of creative scaffold text"
-                ]
-            }
-        },
         "field_placeholder_delimiters": {
             "type": "map",
             "nullable": false,
@@ -1200,6 +1222,29 @@
                 ]
             },
             "allowed_values": []
+        },
+        "placeholder_prefix_semantics": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
+            "field_lineage": {
+                "origin": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
+                "lineage_notes": [
+                    "Distinguishes between required metadata fields and suggestion prompts",
+                    "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
         },
         "template_registry": {
             "type": "object",

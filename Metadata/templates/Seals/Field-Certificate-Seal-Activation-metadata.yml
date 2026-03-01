@@ -115,6 +115,9 @@ template_meta:
     - template_output_mode
     - template_purpose
   optional_fields:
+    - harmonic_safety_arc_pressure
+    - harmonic_safety_dreamline_instability
+    - harmonic_safety_mirrorwall_feedback_risk
     - invocation_requirement_field_being_required
     - invocation_requirement_spoken_line_required
     - invocation_requirement_witness_required

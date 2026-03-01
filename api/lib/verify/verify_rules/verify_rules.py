@@ -1,4 +1,5 @@
 from typing import Any
+from loguru import logger
 from .protocol_verify_rule import ProtocolVerifyRule
 from src.template.front_mater_meta import FrontMatterMeta
 from .rule_linked_nodes import LinkedNodesRule
@@ -7,12 +8,16 @@ from .rule_boolean import RuleBoolean
 from .rule_spoken_transmission import RuleSpokenTransmission
 from .rule_field_being_requirement import RuleFieldBeingRequirement
 from .rule_witness_requirement import RuleWitnessRequirement
+from .rule_harmonic_safety_escalation import RuleHarmonicSafetyEscalation
 from ...util.result import Result
 from ...exceptions import (
     VerifyError,
     MissingKeyError,
     RequiredFieldMissingError,
     NullFieldError,
+    SafetyAbortError,
+    SafetyRestrictionError,
+    SafetyWarningError,
 )
 
 
@@ -20,6 +25,7 @@ class VerifyRules:
     def __init__(self):
         self._processes: dict[str, ProtocolVerifyRule] = {}
         self._register_default_processes()
+        logger.debug("Initialized VerifyRules")
 
     def register_process(self, process: ProtocolVerifyRule) -> None:
         """Register a ProtocolTemplate with this processor.
@@ -124,29 +130,63 @@ class VerifyRules:
         field_errors_key = "Field Errors"
         field_warnings_key = "Field Warnings"
         result = {field_errors_key: {}, field_warnings_key: {}}
-        fm_keys = fm.frontmatter.keys()
         boolean_rules = self._get_boolean_rules(registry)
 
         processes: dict[str, ProtocolVerifyRule] = {}
         processes.update(self._processes)
         processes.update(boolean_rules)
 
-        for key in fm_keys:
+        # By using fm_and_global_keys it ensure rules are evaluated for all relevant keys,
+        # even if they are not present in the frontmatter
+        # (which allows for missing key errors to be properly captured and reported),
+        # while also ensuring that we only evaluate rules for keys that are actually relevant to
+        # the current frontmatter and registry context (since we take the union of the keys from both sources,
+        # we won't accidentally evaluate rules for keys that are completely unrelated to the current validation scenario).
+        # This can is also useful for rules that cover several related fields (multi-field rules).
+        fm_and_global_keys = set(fm.frontmatter.keys()) | set(self._processes.keys())
+
+        for key in fm_and_global_keys:
             if key in processes:
                 process = processes[key]
                 p_result = process.validate(fm, registry)
                 if Result.is_failure(p_result):
-                    if isinstance(
-                        p_result.error,
-                        (VerifyError, RequiredFieldMissingError, NullFieldError),
-                    ):
-                        result[field_errors_key][key] = p_result.error.errors
-                    elif isinstance(p_result.error, MissingKeyError):
+                    error = p_result.error
+
+                    # 1. SAFETY ABORT — highest priority, must return immediately
+                    if isinstance(error, SafetyAbortError):
+                        result[field_errors_key][key] = ["SAFETY ABORT: " + str(error)]
+                        return result  # immediate stop
+
+                    # 2. SAFETY RESTRICTION — hard error, but continue evaluating others
+                    elif isinstance(error, SafetyRestrictionError):
+                        result[field_errors_key][key] = [
+                            "SAFETY RESTRICTION: " + str(error)
+                        ]
+
+                    # 3. SAFETY WARNING — soft warning
+                    elif isinstance(error, SafetyWarningError):
+                        result[field_warnings_key][key] = [
+                            "SAFETY WARNING: " + str(error)
+                        ]
+
+                    # 4. MISSING KEY (treated as warning)
+                    elif isinstance(error, MissingKeyError):
                         # missing key errors are considered to be warnings rather than hard errors,
                         # since they may be optional fields that are simply not present in the frontmatter
-                        result[field_warnings_key][key] = p_result.error.errors
+                        result[field_warnings_key][key] = error.errors
+
+                    # 5. GENERAL VERIFY ERRORS (fallback)
+                    # this must come last because VerifyError is a more general error type that could potentially include the others as subclasses,
+                    # so we check for the more specific error types first before falling back to this more general case
+                    elif isinstance(
+                        error, (RequiredFieldMissingError, NullFieldError, VerifyError)
+                    ):
+                        result[field_errors_key][key] = error.errors
+
+                    # 6. UNKNOWN / UNEXPECTED
                     else:
-                        result[field_errors_key][key] = [str(p_result.error)]
+                        result[field_errors_key][key] = [str(error)]
+
         if not result[field_errors_key] and not result[field_warnings_key]:
             return {}
         return result
@@ -169,6 +209,7 @@ class VerifyRules:
         """
 
         self._processes.clear()
+        logger.debug("Unregistered all processes from VerifyRules")
 
     def unregister_process(self, process: ProtocolVerifyRule) -> None:
         """
@@ -194,6 +235,15 @@ class VerifyRules:
 
         if process.get_field() in self._processes:
             del self._processes[process.get_field()]
+            logger.debug(
+                "Unregistered process {field} from VerifyRules",
+                field=process.get_field(),
+            )
+        else:
+            logger.warning(
+                "Attempted to unregister process {field} which is not registered in VerifyRules",
+                field=process.get_field(),
+            )
 
     def _register_default_processes(self) -> None:
         """Register the default set of processes with this processor."""
@@ -204,6 +254,7 @@ class VerifyRules:
         self.register_process(RuleSpokenTransmission())
         self.register_process(RuleFieldBeingRequirement())
         self.register_process(RuleWitnessRequirement())
+        self.register_process(RuleHarmonicSafetyEscalation())
 
         allowed_fields_all = (
             "tier",
