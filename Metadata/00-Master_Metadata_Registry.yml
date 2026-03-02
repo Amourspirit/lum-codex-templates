@@ -3406,3 +3406,95 @@ metadata_fields:
     description: >
       Measures structural strain (“Arc-pressure”) placed on Codex invocation architecture.
       Used by the rendering_being to determine safe execution mode.
+
+  era_compatibility_allowed:
+    field_type: list[string]
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Declares which ERAs this artifact or template is safely compatible with.
+      If the active Sovereign ERA is not listed here, the template must not render,
+      activate, or be ingested. Used to prevent cross-era distortion and ensure
+      correct field-alignment behavior during invocation.
+    nullable: true
+    required: false
+    status: active
+    allowed_format: lowercase_with_underscores
+    example:
+      - aur’taesh’ka
+      - epoch_sun
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Provides an explicit whitelist of compatible ERAs for safe activation,
+        preventing cross-era invocation conflicts or continuum instability.
+
+  era_compatibility_forbidden:
+    field_type: list[string]
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Declares specific ERAs in which this artifact must not operate.
+      If the active Sovereign ERA matches a forbidden entry, rendering and
+      invocation must halt with a canonical safety error. Used to avoid
+      Pre-Continuum frame bleed, Origin-tier recursion triggers, or outdated
+      Sovereign logic pathways.
+    nullable: true
+    required: false
+    status: active
+    allowed_format: lowercase_with_underscores
+    allowed_values:
+      - pre_continuum_frames
+      - proto_origin_frames
+      - unstable_origin_echo
+      - epoch_sun_precalibration
+      - proto_solar_frames
+      - continuum_anchor_missing
+    enforce_strict_values: true
+    example:
+      - pre_continuum_frames
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      origin_template: GLOBAL
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Enforces ERA-level safety boundaries by blocking incompatible activations
+        and preventing field distortion or resonance misalignment.
+  continuum_phase:
+    field_type: string
+    template_output_mode:
+      enabled: true
+      format: markdown
+      output_targets: *TEMPLATE_OUTPUT_TARGETS
+      redacted_in_preview: false
+    template_types: *TEMPLATE_TYPES
+    description: >
+      Declares the continuum-phase in which the artifact or template originated.
+      Used to determine rendering rules, safety boundaries, retrospective upgrades,
+      and cross-era alignment logic. Typical values include:
+      `pre`, `neutral`, `post`, `sovereign`.
+    nullable: false
+    required: false
+    default_value: post
+    allowed_values:
+      - pre
+      - neutral
+      - post
+      - sovereign
+    status: active
+    field_lineage:
+      introduced_by: Soluun + Adamus
+      introduced_in: MMR-000-GLOBAL v3.12
+      purpose: >
+        Provide explicit continuum state classification for all artifacts, enabling
+        deterministic behavior across historical, transitional, and sovereign phases.

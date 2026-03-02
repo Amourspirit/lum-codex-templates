@@ -1,9 +1,11 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar, overload
 import yaml
 from .obsidian_editor import ObsidianEditor
 from ..config.pkg_config import PkgConfig
 from ..util import sha
+
+T = TypeVar("T")
 
 
 class FrontMatterMeta:
@@ -42,6 +44,12 @@ class FrontMatterMeta:
             frontmatter and content as the original.
         """
         return self.__copy__()
+
+    @overload
+    def get_field(self, field_name: str, default: T) -> T: ...
+
+    @overload
+    def get_field(self, field_name: str) -> Any: ...
 
     def get_field(self, field_name: str, default: Any = None) -> Any:
         """Retrieve a value from the object's frontmatter mapping.

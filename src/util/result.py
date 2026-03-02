@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TypeVar, Union, Generic, Iterator, Tuple
 from typing import TypeIs
+from .severity_kind import SeverityKind as SeverityKind
 
 
 T = TypeVar("T")
@@ -30,16 +31,18 @@ class Result(Generic[T, E]):
         >>> print(error)  # Outputs: Invalid input
     """
 
-    def __init__(self, data: T, error: E) -> None:
+    def __init__(self, data: T, error: E, severity: SeverityKind | None = None) -> None:
         """
         Initialize a Result instance.
 
         Args:
             data: The success value
             error: The error value
+            severity: The severity of the result
         """
         self.data: T = data
         self.error: E = error
+        self.severity: SeverityKind | None = severity
 
     def __eq__(self, value: object) -> bool:
         """
@@ -71,7 +74,7 @@ class Result(Generic[T, E]):
         Returns:
             A string representation of the Result instance
         """
-        return f"Result(data={repr(self.data)}, error={repr(self.error)})"
+        return f"Result(data={repr(self.data)}, error={repr(self.error)}, severity={self.severity})"
 
     def __iter__(self) -> Iterator[Union[T, E]]:
         """
@@ -92,30 +95,36 @@ class Result(Generic[T, E]):
         return (self.data, self.error)
 
     @staticmethod
-    def success(data: T_Success) -> "Result[T_Success, None]":
+    def success(
+        data: T_Success, severity: SeverityKind = SeverityKind.INFO
+    ) -> "Result[T_Success, None]":
         """
         Create a successful Result with the given data.
 
         Args:
             data: The success value
+            severity: The optional severity of the result
 
         Returns:
             A Result instance representing success
         """
-        return Result(data, None)
+        return Result(data, None, severity)
 
     @staticmethod
-    def failure(error: E_Failure) -> "Result[None, E_Failure]":
+    def failure(
+        error: E_Failure, severity: SeverityKind = SeverityKind.ERROR
+    ) -> "Result[None, E_Failure]":
         """
         Create a failure Result with the given error.
 
         Args:
             error: The error value
+            severity: The optional severity of the result
 
         Returns:
             A Result instance representing failure
         """
-        return Result(None, error)
+        return Result(None, error, severity)
 
     @staticmethod
     def is_success(

@@ -93,7 +93,7 @@ class RuleHarmonicSafetyEscalation(ProtocolVerifyRule):
         dreamline = bool(fm.get_field(self.DREAMLINE_FIELD, False))
 
         # Mirrorwall Risk
-        reg_risk = reg_data[self.FEEDBACK_FIELD]
+        reg_risk: dict[str, Any] = reg_data[self.FEEDBACK_FIELD]
         default_risk = reg_risk.get("default_value", "low")
         feedback_val: str = fm.get_field(self.FEEDBACK_FIELD, default_risk)
 
