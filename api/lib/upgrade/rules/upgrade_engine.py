@@ -1,11 +1,14 @@
 from __future__ import annotations
-from typing import Any, List, Dict, cast
+from typing import Any, List, Dict, Type, cast
 from loguru import logger
 
 from src.template.front_mater_meta import FrontMatterMeta
 from .protocol_upgrade_rule import ProtocolUpgradeRule
 from ..exceptions import ProtocolUpgradeError
-from src.util.result import Result, SeverityKind
+from src.util.result import Result
+from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
+from .shared_rule_cache import SharedRuleCache
+from .rule_upgrade import RuleUpgrade
 
 
 class UpgradeSummary:
@@ -42,14 +45,17 @@ class UpgradeEngine:
 
     def __init__(self):
         self._rules: Dict[str, ProtocolUpgradeRule] = {}
+        self._shared_cache = SharedRuleCache()
+        self._register_default_rules()
         logger.debug("Initialized UpgradeEngine")
 
     # --------------------------
     # Registration API
     # --------------------------
-    def register_rule(self, rule: ProtocolUpgradeRule) -> None:
-        self._rules[rule.get_rule_id()] = rule
-        logger.debug(f"Registered Upgrade Rule: {rule.get_rule_id()}")
+    def register_rule(self, rule_cls: Type[RuleUpgrade]) -> None:
+        instance = rule_cls(self._shared_cache)
+        self._rules[instance.get_rule_id()] = instance
+        logger.debug(f"Registered Upgrade Rule: {instance.get_rule_id()}")
 
     def unregister_rule(self, rule_id: str) -> None:
         if rule_id in self._rules:
@@ -62,6 +68,18 @@ class UpgradeEngine:
         self._rules.clear()
         logger.debug("Unregistered all upgrade rules")
 
+    def before_all_rules(self):
+        pass
+
+    def after_each_rule(self, rule, result):
+        pass
+
+    def after_all_rules(self, summary):
+        pass
+
+    def reset(self):
+        self._shared_cache = SharedRuleCache()
+
     # --------------------------
     # Core Execution
     # --------------------------
@@ -71,13 +89,33 @@ class UpgradeEngine:
         result: Result,
         errors: dict[str, Any],
         warnings: dict[str, Any],
-    ) -> None:
-        sev = result.severity or SeverityKind.ERROR
+        logs: List[str],
+    ) -> bool:
+        # Optional human-readable message if payload is a string
+        payload_info = (
+            f" payload={result.payload!r}" if result.payload is not None else ""
+        )
+
         error = cast(ProtocolUpgradeError, result.error)
-        if sev == SeverityKind.WARNING:
+        if result.is_warning():
             warnings.setdefault(rule_id, []).extend(error.errors)
-        else:
+            logs.append(f"[WARN] {rule_id}: {error.errors}{payload_info}")
+            return False
+
+        if result.is_error():
             errors.setdefault(rule_id, []).extend(error.errors)
+            logs.append(f"[ERROR] {rule_id}: {error.errors}{payload_info}")
+            return False
+
+        if result.is_critical():
+            errors.setdefault(rule_id, []).extend(error.errors)
+            logs.append(f"[CRITICAL] {rule_id}: {error.errors}{payload_info}")
+            return True  # HALT ENGINE
+
+        # Safety fallback
+        errors.setdefault(rule_id, []).extend(error.errors)
+        logs.append(f"[ERROR] {rule_id}: {error.errors}{payload_info}")
+        return False
 
     def apply(
         self,
@@ -85,6 +123,8 @@ class UpgradeEngine:
         fm_template: FrontMatterMeta,
         registry: Dict[str, Any],
     ) -> UpgradeSummary:
+
+        self.reset()
 
         # Deterministic ordering based on get_order(), default = 100
         ordered_rules = sorted(
@@ -115,7 +155,17 @@ class UpgradeEngine:
                 )
 
                 if Result.is_failure(result):
-                    self._route_severity(rule.get_rule_id(), result, errors, warnings)
+                    critical = self._route_severity(
+                        rule.get_rule_id(), result, errors, warnings, logs
+                    )
+                    if critical:
+                        logs.append(
+                            f"[CRITICAL] Rule {rule.get_rule_id()} encountered a critical error"
+                        )
+                        logger.error(
+                            f"Critical error in rule {rule.get_rule_id()}: {result.error}"
+                        )
+                        break
                 else:
                     # Rule succeeded — update artifact reference
                     current_artifact = result.data
@@ -136,3 +186,7 @@ class UpgradeEngine:
         )
 
         return summary
+
+    def _register_default_rules(self) -> None:
+        """Register the default set of processes with this processor."""
+        self.register_rule(RuleContinuumPhaseUpgrade)

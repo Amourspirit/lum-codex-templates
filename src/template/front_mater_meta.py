@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any, TypeVar, overload
+import copy
 import yaml
 from .obsidian_editor import ObsidianEditor
 from ..config.pkg_config import PkgConfig
@@ -29,9 +30,11 @@ class FrontMatterMeta:
         if self._frontmatter is None:
             new_instance._frontmatter = {}
         else:
-            new_instance._frontmatter = self._frontmatter.copy()
-
-        new_instance._content = self._content
+            new_instance._frontmatter = copy.deepcopy(self._frontmatter)
+        # Deep copy is not need here but if we ever change content to support structured
+        # Markdown blocks or embedded metadata, this will become unsafe.
+        # It costs nothing now and guarantees correctness later.
+        new_instance._content = copy.deepcopy(self._content)
         new_instance.config = self.config
         new_instance._sha256 = self._sha256
         return new_instance
