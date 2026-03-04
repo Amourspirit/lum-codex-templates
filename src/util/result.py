@@ -1,10 +1,10 @@
 from __future__ import annotations
-from typing import Generic, TypeVar, Union, Any, TypeIs
+from typing import TypeVar, Union, Any, TypeIs, cast
 from .severity_kind import SeverityKind
 from .result_base import ResultBase, T
 
-E = TypeVar("E", bound=BaseException | None, covariant=True)  # Type for error value
-E_Failure = TypeVar("E_Failure", bound=BaseException, covariant=True)
+E = TypeVar("E", bound=BaseException | None)  # Type for error value
+E_Failure = TypeVar("E_Failure", bound=BaseException)
 T_Success = TypeVar("T_Success")
 
 # F-bounded type for concrete subclasses
@@ -12,7 +12,7 @@ Self = TypeVar("Self", bound="Result[Any, Any]")
 
 
 # Concrete Result class with Exception-bound errors
-class Result(ResultBase[T, BaseException | None], Generic[T, E]):
+class Result(ResultBase[T, E]):
     """Standard Result with Exception-bound errors."""
 
     @classmethod
@@ -57,16 +57,66 @@ class Result(ResultBase[T, BaseException | None], Generic[T, E]):
 
     @classmethod
     def is_success(
-        cls: type[Self],
-        obj: Union["Result[T_Success, None]", "Result[None, E_Failure]"],
+        cls,
+        obj: Union[
+            "Result[T_Success, None]",
+            "Result[None, E_Failure]",
+        ],
     ) -> TypeIs["Result[T_Success, None]"]:
-        """Return True if the Result represents success."""
-        return isinstance(obj, Result) and obj.error is None
+        """
+        Type guard to check if a Result instance represents success.
+
+        Static method.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents success, False otherwise
+        """
+        return isinstance(obj, Result) and obj.result_is_success()
 
     @classmethod
     def is_failure(
-        cls: type[Self],
-        obj: Union["Result[T_Success, None]", "Result[None, E_Failure]"],
+        cls,
+        obj: Union[
+            "Result[T_Success, None]",
+            "Result[None, E_Failure]",
+        ],
     ) -> TypeIs["Result[None, E_Failure]"]:
-        """Return True if the Result represents failure."""
-        return isinstance(obj, Result) and obj.error is not None
+        """
+        Type guard to check if a Result instance represents failure.
+
+        Static method.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents failure, False otherwise
+        """
+        return isinstance(obj, Result) and obj.result_is_failure()
+
+
+if __name__ == "__main__":
+    success = Result.success("Some Data")
+    failure = Result.failure(ValueError("Something went wrong"))
+    obj = cast(Union[Result[str, None], Result[None, ValueError]], success)
+    assert success.data == "Some Data"
+    assert success.error is None
+    assert failure.data is None
+    assert isinstance(failure.error, ValueError)
+
+    if Result.is_success(obj):
+        assert obj.data == "Some Data"
+        assert obj.error is None
+    else:
+        assert obj.data is None
+        assert isinstance(obj.error, ValueError)
+
+    if Result.is_failure(obj):
+        assert obj.data is None
+        assert isinstance(obj.error, ValueError)
+    else:
+        assert obj.data == "Some Data"
+        assert obj.error is None

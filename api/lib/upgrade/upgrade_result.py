@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import Generic, TypeVar, Union, Any, TypeIs
+from typing import TypeVar, Union, Any, TypeIs
 from src.util.severity_kind import SeverityKind as SeverityKind
 from src.util.result_base import ResultBase, T
 from .exceptions import UpgradeError
 
-T_E = TypeVar("T_E", bound=UpgradeError | None, covariant=True)  # Type for error value
-T_Upgrade_Failure = TypeVar("T_Upgrade_Failure", bound=UpgradeError, covariant=True)
+T_E = TypeVar("T_E", bound=UpgradeError | None)
+T_Upgrade_Failure = TypeVar("T_Upgrade_Failure", bound=UpgradeError)
 T_Upgrade_Success = TypeVar("T_Upgrade_Success")
 
 # F-bounded type for concrete subclasses
@@ -32,7 +32,7 @@ class UpgradeResult(ResultBase[T, T_E]):
             payload: Optional structured metadata
 
         Returns:
-            UpgradeResult object with error=None
+            UpgradeSuccess object with error=None
         """
         return cls(data=data, error=None, severity=severity, payload=payload)
 
@@ -54,26 +54,47 @@ class UpgradeResult(ResultBase[T, T_E]):
         Returns:
             UpgradeResult object with data=None
         """
+
         return cls(data=None, error=error, severity=severity, payload=payload)
 
     @classmethod
     def is_success(
-        cls: type[Self],
+        cls,
         obj: Union[
             "UpgradeResult[T_Upgrade_Success, None]",
             "UpgradeResult[None, T_Upgrade_Failure]",
         ],
     ) -> TypeIs["UpgradeResult[T_Upgrade_Success, None]"]:
-        """Return True if the UpgradeResult represents success."""
-        return isinstance(obj, UpgradeResult) and obj.error is None
+        """
+        Type guard to check if a Result instance represents success.
+
+        Static method.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents success, False otherwise
+        """
+        return isinstance(obj, UpgradeResult) and obj.result_is_success()
 
     @classmethod
     def is_failure(
-        cls: type[Self],
+        cls,
         obj: Union[
             "UpgradeResult[T_Upgrade_Success, None]",
             "UpgradeResult[None, T_Upgrade_Failure]",
         ],
     ) -> TypeIs["UpgradeResult[None, T_Upgrade_Failure]"]:
-        """Return True if the UpgradeResult represents failure."""
-        return isinstance(obj, UpgradeResult) and obj.error is not None
+        """
+        Type guard to check if a Result instance represents failure.
+
+        Static method.
+
+        Args:
+            obj: The Result instance to check
+
+        Returns:
+            True if the Result represents failure, False otherwise
+        """
+        return isinstance(obj, UpgradeResult) and obj.result_is_failure()
