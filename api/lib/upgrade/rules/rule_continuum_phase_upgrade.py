@@ -1,19 +1,21 @@
 from typing import Any
-from src.util.result import Result, SeverityKind
+from ..upgrade_result import UpgradeResult as Result
+from ..upgrade_result import SeverityKind
 from src.template.front_mater_meta import FrontMatterMeta
-from .protocol_upgrade_rule import ProtocolUpgradeRule
 from .rule_upgrade import RuleUpgrade
 from ..exceptions import MissingKeyError, UpgradeError
-from .shared_rule_cache import SharedRuleCache
+from .protocol_rules_cache import ProtocolRulesCache
 
 
-class RuleContinuumPhaseUpgrade(RuleUpgrade, ProtocolUpgradeRule):
+class RuleContinuumPhaseUpgrade(RuleUpgrade):
     CONTINUUM_PHASE_FIELD = "continuum_phase"
 
-    def __init__(self, shared_cache: SharedRuleCache) -> None:
+    def __init__(self, shared_cache: ProtocolRulesCache) -> None:
         super().__init__(shared_cache)
         self._rule_id = "continuum_phase_upgrade"
-        self._description = "Ensures the artifact has a valid continuum_phase."
+        self._description = (
+            f"Ensures the artifact has a valid {self.CONTINUUM_PHASE_FIELD}."
+        )
 
     def get_rule_id(self) -> str:
         return self._rule_id
@@ -32,7 +34,7 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade, ProtocolUpgradeRule):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, Exception]:
+    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]:
 
         reg_data = self._get_registry_data(registry)
         reg_cpf: dict[str, Any] | None = reg_data.get(self.CONTINUUM_PHASE_FIELD, None)
@@ -50,8 +52,8 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade, ProtocolUpgradeRule):
                     "context": "registry",
                 },
             )
-        allowed_cpf = set(reg_cpf.get("allowed_values", []))
-        if len(allowed_cpf) == 0:
+        allowed = set(reg_cpf.get("allowed_values", []))
+        if len(allowed) == 0:
             return Result.failure(
                 MissingKeyError(
                     f"Registry Missing allowed_values for {self.CONTINUUM_PHASE_FIELD}",
@@ -65,59 +67,63 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade, ProtocolUpgradeRule):
                 },
             )
 
-        default_cpf = reg_cpf.get("default_value", None)
+        default = reg_cpf.get("default_value", None)
 
-        if default_cpf not in allowed_cpf:
+        if default not in allowed:
             return Result.failure(
                 UpgradeError(
-                    f"Default continuum_phase '{default_cpf}' not allowed by registry",
+                    f"Default {self.CONTINUUM_PHASE_FIELD} '{default}' not allowed by registry",
                     self.CONTINUUM_PHASE_FIELD,
-                    f"Allowed values: {allowed_cpf}",
+                    f"Allowed values: {allowed}",
                 ),
                 severity=SeverityKind.CRITICAL,
                 payload={
-                    "default_value": default_cpf,
-                    "allowed_values": list(allowed_cpf),
+                    "default_value": default,
+                    "allowed_values": list(allowed),
                     "context": "invalid_registry_default",
                 },
             )
 
-        if fm_artifact.has_field(self.CONTINUUM_PHASE_FIELD):
+        # ---- Determine original state BEFORE modification ----
+        had_field = fm_artifact.has_field(self.CONTINUUM_PHASE_FIELD)
+
+        if had_field:
             value = fm_artifact.get_field(self.CONTINUUM_PHASE_FIELD)
-            if value not in allowed_cpf:
+            if value not in allowed:
                 return Result.failure(
                     UpgradeError(
-                        f"Invalid continuum_phase value '{value}'",
+                        f"Invalid {self.CONTINUUM_PHASE_FIELD} '{value}'",
                         self.CONTINUUM_PHASE_FIELD,
-                        f"Allowed values: {allowed_cpf}",
+                        f"Allowed: {allowed}",
                     ),
                     severity=SeverityKind.ERROR,
-                    payload={
-                        "value": value,
-                        "allowed_values": list(allowed_cpf),
-                        "context": "artifact_invalid_value",
-                    },
+                    payload={"value": value, "allowed": list(allowed)},
                 )
-            return Result.success(
-                fm_artifact,
-                payload={
-                    "continuum_phase": value,
+
+            # Valid existing value
+            self.shared_set(
+                "phase_info",
+                {
+                    "value": value,
+                    "allowed": list(allowed),
                     "source": "artifact",
-                    "valid": True,
                 },
             )
-        # Assign default if missing
-        fm_artifact.set_field(self.CONTINUUM_PHASE_FIELD, default_cpf)
 
-        # Write useful info to shared cache
+            return Result.success(
+                fm_artifact,
+                payload={f"{self.CONTINUUM_PHASE_FIELD}": value, "source": "artifact"},
+            )
+
+        # ---- Missing: assign default ----
+        fm_artifact.set_field(self.CONTINUUM_PHASE_FIELD, default)
+
         self.shared_set(
             "phase_info",
             {
-                "value": default_cpf,
-                "allowed": list(allowed_cpf),
-                "source": "default"
-                if not fm_artifact.has_field(self.CONTINUUM_PHASE_FIELD)
-                else "artifact",
+                "value": default,
+                "allowed": list(allowed),
+                "source": "default",
             },
         )
 
@@ -125,8 +131,7 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade, ProtocolUpgradeRule):
             fm_artifact,
             severity=SeverityKind.INFO,
             payload={
-                "continuum_phase": default_cpf,
+                f"{self.CONTINUUM_PHASE_FIELD}": default,
                 "source": "default_assignment",
-                "reason": "missing_in_artifact",
             },
         )

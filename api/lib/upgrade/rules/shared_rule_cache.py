@@ -1,7 +1,8 @@
 from typing import Any
+from .protocol_rules_cache import ProtocolRulesCache
 
 
-class SharedRuleCache:
+class SharedRuleCache(ProtocolRulesCache):
     """
     Shared metadata cache for all rules during a single upgrade run.
     Supports namespaced and global key-value storage.
@@ -33,6 +34,10 @@ class SharedRuleCache:
     def all(self) -> dict[str, Any]:
         """Return a shallow copy of the cache."""
         return dict(self._store)
+
+    def clear(self) -> None:
+        """Clear all items from the cache."""
+        self._store.clear()
 
     def __contains__(self, key: str) -> bool:
         return key in self._store

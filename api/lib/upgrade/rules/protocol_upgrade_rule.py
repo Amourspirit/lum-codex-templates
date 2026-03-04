@@ -1,10 +1,11 @@
-from typing import Any
-from typing import Protocol
-from api.lib.util.result import Result
+from typing import Any, Protocol, runtime_checkable
 from src.template.front_mater_meta import FrontMatterMeta
-from .shared_rule_cache import SharedRuleCache
+from ..upgrade_result import UpgradeResult as Result
+from ..exceptions import UpgradeError
+from .protocol_rules_cache import ProtocolRulesCache
 
 
+@runtime_checkable
 class ProtocolUpgradeRule(Protocol):
     def get_rule_id(self) -> str: ...
     def get_description(self) -> str: ...
@@ -17,8 +18,14 @@ class ProtocolUpgradeRule(Protocol):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, Exception]: ...
+    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]: ...
     @property
-    def shared_cache(self) -> SharedRuleCache: ...
+    def shared_cache(self) -> ProtocolRulesCache: ...
     @property
     def rule_name(self) -> str: ...
+
+
+class UpgradeRuleFactory(Protocol):
+    """Protocol for rule class constructors."""
+
+    def __call__(self, shared_cache: ProtocolRulesCache) -> ProtocolUpgradeRule: ...

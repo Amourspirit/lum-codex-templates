@@ -1,14 +1,14 @@
 from __future__ import annotations
-from typing import Any, List, Dict, Type, cast
+from typing import Any, List, Dict, cast
 from loguru import logger
-
 from src.template.front_mater_meta import FrontMatterMeta
-from .protocol_upgrade_rule import ProtocolUpgradeRule
+from ..upgrade_result import UpgradeResult as Result
 from ..exceptions import ProtocolUpgradeError
-from src.util.result import Result
+from .protocol_upgrade_rule import ProtocolUpgradeRule, UpgradeRuleFactory
 from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
 from .shared_rule_cache import SharedRuleCache
-from .rule_upgrade import RuleUpgrade
+from .protocol_rules_cache import ProtocolRulesCache
+from ..exceptions import UpgradeError
 
 
 class UpgradeSummary:
@@ -45,14 +45,14 @@ class UpgradeEngine:
 
     def __init__(self):
         self._rules: Dict[str, ProtocolUpgradeRule] = {}
-        self._shared_cache = SharedRuleCache()
+        self._shared_cache: ProtocolRulesCache = SharedRuleCache()
         self._register_default_rules()
         logger.debug("Initialized UpgradeEngine")
 
     # --------------------------
-    # Registration API
+    # Registration
     # --------------------------
-    def register_rule(self, rule_cls: Type[RuleUpgrade]) -> None:
+    def register_rule(self, rule_cls: UpgradeRuleFactory) -> None:
         instance = rule_cls(self._shared_cache)
         self._rules[instance.get_rule_id()] = instance
         logger.debug(f"Registered Upgrade Rule: {instance.get_rule_id()}")
@@ -68,20 +68,28 @@ class UpgradeEngine:
         self._rules.clear()
         logger.debug("Unregistered all upgrade rules")
 
+    def reset(self):
+        self._shared_cache.clear()
+        logger.debug("Reset UpgradeEngine state and cleared shared cache")
+
+    # --------------------------
+    # Hooks (optional overrides for custom behavior)
+    # --------------------------
     def before_all_rules(self):
         pass
 
-    def after_each_rule(self, rule, result):
+    def after_each_rule(
+        self,
+        rule: ProtocolUpgradeRule,
+        result: Result[FrontMatterMeta, None] | Result[None, UpgradeError],
+    ):
         pass
 
-    def after_all_rules(self, summary):
+    def after_all_rules(self, summary: UpgradeSummary):
         pass
-
-    def reset(self):
-        self._shared_cache = SharedRuleCache()
 
     # --------------------------
-    # Core Execution
+    # Severity routing
     # --------------------------
     def _route_severity(
         self,
@@ -117,6 +125,10 @@ class UpgradeEngine:
         logs.append(f"[ERROR] {rule_id}: {error.errors}{payload_info}")
         return False
 
+    # --------------------------
+    # Execution
+    # --------------------------
+
     def apply(
         self,
         fm_artifact: FrontMatterMeta,
@@ -125,6 +137,7 @@ class UpgradeEngine:
     ) -> UpgradeSummary:
 
         self.reset()
+        self.before_all_rules()
 
         # Deterministic ordering based on get_order(), default = 100
         ordered_rules = sorted(
@@ -171,6 +184,9 @@ class UpgradeEngine:
                     current_artifact = result.data
                     logs.append(f"[OK] Rule {rule.get_rule_id()} applied successfully")
 
+                self.after_each_rule(
+                    rule, result
+                )  # Placeholder for potential future use
             except Exception as ex:
                 # Hard catch: rules should not break the engine
                 errors.setdefault(rule.get_rule_id(), []).append(str(ex))
@@ -185,7 +201,13 @@ class UpgradeEngine:
             logs=logs,
         )
 
+        self.after_all_rules(summary)  # Placeholder for potential future use
+
         return summary
+
+    # --------------------------
+    # Default rules
+    # --------------------------
 
     def _register_default_rules(self) -> None:
         """Register the default set of processes with this processor."""

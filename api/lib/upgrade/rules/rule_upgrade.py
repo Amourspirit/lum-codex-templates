@@ -1,14 +1,15 @@
 from abc import abstractmethod
 from typing import Any
-from src.util.result import Result
 from src.template.front_mater_meta import FrontMatterMeta
+from ..upgrade_result import UpgradeResult as Result
+from ..exceptions import UpgradeError
 from .protocol_upgrade_rule import ProtocolUpgradeRule
-from .shared_rule_cache import SharedRuleCache
+from .protocol_rules_cache import ProtocolRulesCache
 
 
 class RuleUpgrade(ProtocolUpgradeRule):
-    def __init__(self, shared_cache: SharedRuleCache) -> None:
-        self._local_cache = {}
+    def __init__(self, shared_cache: ProtocolRulesCache) -> None:
+        self._local_cache: dict[str, Any] = {}
         self._shared_cache = shared_cache
 
     @abstractmethod
@@ -116,21 +117,25 @@ class RuleUpgrade(ProtocolUpgradeRule):
 
     @property
     def rule_name(self) -> str:
-        """Return the rule's name, which is either its description or its ID if no description is provided."""
-        return self.get_description() or self.get_rule_id()
+        """Human-friendly rule name."""
+        desc = self.get_description()
+        return desc if desc and desc.strip() else self.get_rule_id()
 
     # region Shared cache (namespaced)
     @property
-    def shared_cache(self) -> SharedRuleCache:
+    def shared_cache(self) -> ProtocolRulesCache:
         """Provides access to the shared cache for all rules."""
         return self._shared_cache
 
     def shared_set(self, key: str, value: Any) -> None:
         """
-        Set a value in the shared cache with a namespaced key.
+            Set a value in the shared cache.
 
         Args:
             key (str): The key to store the value under.
+                The key should not contain any namespace prefix,
+                as it will be automatically namespaced using the
+                rule ID to avoid conflicts with other rules.
             value (Any): The value to store in the shared cache.
 
         Returns:
@@ -146,6 +151,18 @@ class RuleUpgrade(ProtocolUpgradeRule):
         self.shared_cache.set_item(namespaced, value)
 
     def shared_get(self, key: str, default=None) -> Any:
+        """
+        Retrieve a value from the shared cache using a key.
+
+        Args:
+            key (str): The key to retrieve from the shared cache.
+                The key should not contain any namespace prefix, as it will be automatically namespaced.
+            default (Any, optional): The default value to return if the key is not found. Defaults to None.
+
+        Returns:
+            Any: The value associated with the key, or the default value if the key does not exist.
+        """
+
         namespaced = f"{self.get_rule_id()}::{key}"
         return self.shared_cache.get(namespaced, default)
 
@@ -157,4 +174,4 @@ class RuleUpgrade(ProtocolUpgradeRule):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, Exception]: ...
+    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]: ...
