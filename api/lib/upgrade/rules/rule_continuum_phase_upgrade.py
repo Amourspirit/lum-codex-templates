@@ -1,13 +1,19 @@
-from typing import Any
-from ..upgrade_result import UpgradeResult as Result
-from ..upgrade_result import SeverityKind
-from src.template.front_mater_meta import FrontMatterMeta
-from .rule_upgrade import RuleUpgrade
+from typing import TypedDict, List, Any, cast
 from ..exceptions import MissingKeyError, UpgradeError
+from ..upgrade_result import SeverityKind
+from ..upgrade_result import UpgradeResult as Result
 from .protocol_rules_cache import ProtocolRulesCache
+from .rule_upgrade import RuleUpgrade
+from src.template.front_mater_meta import FrontMatterMeta
 
 
-class RuleContinuumPhaseUpgrade(RuleUpgrade):
+class PhaseInfo(TypedDict):
+    value: str
+    allowed: List[str]
+    source: str
+
+
+class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
     CONTINUUM_PHASE_FIELD = "continuum_phase"
 
     def __init__(self, shared_cache: ProtocolRulesCache) -> None:
@@ -67,7 +73,7 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade):
                 },
             )
 
-        default = reg_cpf.get("default_value", None)
+        default = cast(str | None, reg_cpf.get("default_value", None))
 
         if default not in allowed:
             return Result.failure(
@@ -113,6 +119,20 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade):
             return Result.success(
                 fm_artifact,
                 payload={f"{self.CONTINUUM_PHASE_FIELD}": value, "source": "artifact"},
+            )
+
+        if default is None:
+            return Result.failure(
+                UpgradeError(
+                    f"{self.CONTINUUM_PHASE_FIELD} missing and no default provided",
+                    self.CONTINUUM_PHASE_FIELD,
+                    f"the default_value is missing. Allowed values: {allowed}",
+                ),
+                severity=SeverityKind.ERROR,
+                payload={
+                    "allowed_values": list(allowed),
+                    "context": "missing_field_no_default",
+                },
             )
 
         # ---- Missing: assign default ----

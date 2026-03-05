@@ -1,14 +1,16 @@
 from abc import abstractmethod
-from typing import Any
+from typing import Any, TypeVar, Generic
 from src.template.front_mater_meta import FrontMatterMeta
 from ..upgrade_result import UpgradeResult as Result
 from ..exceptions import UpgradeError
 from .protocol_upgrade_rule import ProtocolUpgradeRule
 from .protocol_rules_cache import ProtocolRulesCache
 
+C = TypeVar("C")  # Cache type variable
 
-class RuleUpgrade(ProtocolUpgradeRule):
-    def __init__(self, shared_cache: ProtocolRulesCache) -> None:
+
+class RuleUpgrade(ProtocolUpgradeRule[C], Generic[C]):
+    def __init__(self, shared_cache: ProtocolRulesCache[C]) -> None:
         self._local_cache: dict[str, Any] = {}
         self._shared_cache = shared_cache
 
@@ -72,8 +74,8 @@ class RuleUpgrade(ProtocolUpgradeRule):
         """
         key = "registry_metadata"
         if key in self.shared_cache:
-            item = self.shared_cache.get(key)
-            return item
+            item = self.shared_cache[key]
+            return item  # type: ignore
 
         reg = registry.get("metadata", registry)
         self.shared_cache.set_item("registry_metadata", reg)
@@ -123,11 +125,11 @@ class RuleUpgrade(ProtocolUpgradeRule):
 
     # region Shared cache (namespaced)
     @property
-    def shared_cache(self) -> ProtocolRulesCache:
+    def shared_cache(self) -> ProtocolRulesCache[C]:
         """Provides access to the shared cache for all rules."""
         return self._shared_cache
 
-    def shared_set(self, key: str, value: Any) -> None:
+    def shared_set(self, key: str, value: C) -> None:
         """
             Set a value in the shared cache.
 
@@ -150,7 +152,7 @@ class RuleUpgrade(ProtocolUpgradeRule):
         namespaced = f"{self.get_rule_id()}::{key}"
         self.shared_cache.set_item(namespaced, value)
 
-    def shared_get(self, key: str, default=None) -> Any:
+    def shared_get(self, key: str, default: C | None = None) -> C | None:
         """
         Retrieve a value from the shared cache using a key.
 

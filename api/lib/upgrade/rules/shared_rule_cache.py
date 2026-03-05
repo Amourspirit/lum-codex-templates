@@ -1,8 +1,10 @@
-from typing import Any
+from typing import Any, TypeVar, Generic
 from .protocol_rules_cache import ProtocolRulesCache
 
+C = TypeVar("C")  # Cache type variable
 
-class SharedRuleCache(ProtocolRulesCache):
+
+class SharedRuleCache(Generic[C], ProtocolRulesCache[C]):
     """
     Shared metadata cache for all rules during a single upgrade run.
     Supports namespaced and global key-value storage.
@@ -11,9 +13,9 @@ class SharedRuleCache(ProtocolRulesCache):
     """
 
     def __init__(self):
-        self._store: dict[str, Any] = {}
+        self._store: dict[str, C] = {}
 
-    def get_item(self, key: str) -> Any:
+    def get_item(self, key: str) -> C:
         """Retrieve an item from the cache by key. Raises KeyError if the key does not exist."""
         if key not in self._store:
             raise KeyError(f"SharedRuleCache: key '{key}' not found.")
@@ -27,11 +29,11 @@ class SharedRuleCache(ProtocolRulesCache):
         """Set a value in the cache for a specific key."""
         self._store[key] = value
 
-    def get(self, key: str, default: Any = None) -> Any:
+    def get(self, key: str, default: C | None = None) -> C | None:
         """Retrieve an item from the cache by key, returning a default value if the key does not exist."""
         return self._store.get(key, default)
 
-    def all(self) -> dict[str, Any]:
+    def all(self) -> dict[str, C]:
         """Return a shallow copy of the cache."""
         return dict(self._store)
 
@@ -42,10 +44,10 @@ class SharedRuleCache(ProtocolRulesCache):
     def __contains__(self, key: str) -> bool:
         return key in self._store
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> C:
         return self.get_item(key)
 
-    def namespace(self, ns: str) -> dict[str, Any]:
+    def namespace(self, ns: str) -> dict[str, C]:
         """
         Retrieve all key-value pairs belonging to a specific namespace.
         This method filters the internal store to return only items whose keys
@@ -56,7 +58,7 @@ class SharedRuleCache(ProtocolRulesCache):
             ns (str): The namespace identifier to filter by.
 
         Returns:
-            dict[str, Any]: A dictionary containing all key-value pairs in the
+            dict[str, C]: A dictionary containing all key-value pairs in the
                 specified namespace, with the namespace prefix removed from the keys.
 
         Example:
