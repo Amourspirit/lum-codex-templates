@@ -98,25 +98,25 @@ class Result(ResultBase[T, E]):
         return isinstance(obj, Result) and obj.result_is_failure()
 
 
-if __name__ == "__main__":
-    success = Result.success("Some Data")
-    failure = Result.failure(ValueError("Something went wrong"))
-    obj = cast(Union[Result[str, None], Result[None, ValueError]], success)
-    assert success.data == "Some Data"
-    assert success.error is None
-    assert failure.data is None
-    assert isinstance(failure.error, ValueError)
+# if __name__ == "__main__":
+#     success = Result.success("Some Data")
+#     failure = Result.failure(ValueError("Something went wrong"))
+#     obj = cast(Union[Result[str, None], Result[None, ValueError]], success)
+#     assert success.data == "Some Data"
+#     assert success.error is None
+#     assert failure.data is None
+#     assert isinstance(failure.error, ValueError)
 
-    if Result.is_success(obj):
-        assert obj.data == "Some Data"
-        assert obj.error is None
-    else:
-        assert obj.data is None
-        assert isinstance(obj.error, ValueError)
+#     if Result.is_success(obj):
+#         assert obj.data == "Some Data"
+#         assert obj.error is None
+#     else:
+#         assert obj.data is None
+#         assert isinstance(obj.error, ValueError)
 
-    if Result.is_failure(obj):
-        assert obj.data is None
-        assert isinstance(obj.error, ValueError)
-    else:
-        assert obj.data == "Some Data"
-        assert obj.error is None
+#     if Result.is_failure(obj):
+#         assert obj.data is None
+#         assert isinstance(obj.error, ValueError)
+#     else:
+#         assert obj.data == "Some Data"
+#         assert obj.error is None

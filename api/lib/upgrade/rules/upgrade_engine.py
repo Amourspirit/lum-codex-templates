@@ -3,14 +3,12 @@ from typing import Any, List, Dict, cast, TypeVar, Generic
 from loguru import logger
 from src.template.front_mater_meta import FrontMatterMeta
 from ..upgrade_result import UpgradeResult as Result
-from ..exceptions import ProtocolUpgradeError
 from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
 from .shared_rule_cache import SharedRuleCache
 from ..exceptions import UpgradeError
 from ..types import PhaseInfo
 from ..protocols import (
     ProtocolUpgradeRule,
-    ProtocolUpgradeRuleSharedCache,
     UpgradeRuleFactory,
     UpgradeRuleSharedCacheFactory,
     ProtocolRulesCache,
@@ -136,7 +134,7 @@ class UpgradeEngine(Generic[C]):
     def _route_severity(
         self,
         rule_id: str,
-        result: Result,
+        result: Result[None, UpgradeError],
         errors: dict[str, Any],
         warnings: dict[str, Any],
         logs: List[str],
@@ -146,7 +144,7 @@ class UpgradeEngine(Generic[C]):
             f" payload={result.payload!r}" if result.payload is not None else ""
         )
 
-        error = cast(ProtocolUpgradeError, result.error)
+        error = result.error
         if result.is_warning():
             warnings.setdefault(rule_id, []).extend(error.errors)
             logs.append(f"[WARN] {rule_id}: {error.errors}{payload_info}")
