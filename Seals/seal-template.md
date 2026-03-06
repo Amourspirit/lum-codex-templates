@@ -49,6 +49,7 @@ threshold_flags_registry_scope:
   - artifact_level  # Additional artifact-specific checks (e.g., linking to unstable glyphs or dreamline distortions) are expected.
   - template_level  # These flags are inherent to all uses of this seal certificate template.
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

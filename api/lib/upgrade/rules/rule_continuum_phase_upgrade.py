@@ -1,14 +1,17 @@
-from typing import Any, cast
-from ..exceptions import MissingKeyError, UpgradeError
+from typing import Any
+from ..exceptions import UpgradeError
 from ..types import PhaseInfo
 from ..upgrade_result import SeverityKind
-from ..upgrade_result import UpgradeResult as Result
+from ..upgrade_result import UpgradeResult
 from ..protocols.protocol_rules_cache import ProtocolRulesCache
 from .rule_upgrade import RuleUpgrade
 from src.template.front_mater_meta import FrontMatterMeta
+from src.util.result import Result
+from ...const import CONTINUUM_DATE_TIME
 
 
 class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
+    RULE_ORDER = 100
     CONTINUUM_PHASE_FIELD = "continuum_phase"
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]) -> None:
@@ -24,10 +27,12 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
     def get_description(self) -> str:
         return self._description
 
-    def get_order(self) -> int:
-        return 100  # default
-
-    def should_run(self, fm_artifact, fm_template, registry) -> bool:
+    def should_run(
+        self,
+        fm_artifact: FrontMatterMeta,
+        fm_template: FrontMatterMeta,
+        registry: dict[str, Any],
+    ) -> bool:
         return True
 
     def apply(
@@ -35,55 +40,22 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]:
+    ) -> UpgradeResult[FrontMatterMeta, None] | UpgradeResult[None, UpgradeError]:
 
         reg_data = self._get_registry_data(registry)
-        reg_cpf: dict[str, Any] | None = reg_data.get(self.CONTINUUM_PHASE_FIELD, None)
+        reg_result = self._get_field_data(reg_data, self.CONTINUUM_PHASE_FIELD)
+        if UpgradeResult.is_failure(reg_result):
+            return UpgradeResult.failure(reg_result.error)
 
-        if reg_cpf is None:
-            return Result.failure(
-                MissingKeyError(
-                    f"Registry Missing {self.CONTINUUM_PHASE_FIELD} configuration",
-                    self.CONTINUUM_PHASE_FIELD,
-                    f"Registry must specify {self.CONTINUUM_PHASE_FIELD} configuration for upgrade.",
-                ),
-                severity=SeverityKind.CRITICAL,
-                payload={
-                    "missing_field": self.CONTINUUM_PHASE_FIELD,
-                    "context": "registry",
-                },
-            )
-        allowed = set(reg_cpf.get("allowed_values", []))
-        if len(allowed) == 0:
-            return Result.failure(
-                MissingKeyError(
-                    f"Registry Missing allowed_values for {self.CONTINUUM_PHASE_FIELD}",
-                    self.CONTINUUM_PHASE_FIELD,
-                    f"Registry must specify allowed values for {self.CONTINUUM_PHASE_FIELD}.",
-                ),
-                severity=SeverityKind.CRITICAL,
-                payload={
-                    "field": self.CONTINUUM_PHASE_FIELD,
-                    "issue": "no_allowed_values",
-                },
-            )
+        field_data = reg_result.data
 
-        default = cast(str | None, reg_cpf.get("default_value", None))
+        allowed_result = self._get_allowed_values(
+            field_data, self.CONTINUUM_PHASE_FIELD
+        )
+        if UpgradeResult.is_failure(allowed_result):
+            return UpgradeResult.failure(allowed_result.error)
 
-        if default not in allowed:
-            return Result.failure(
-                UpgradeError(
-                    f"Default {self.CONTINUUM_PHASE_FIELD} '{default}' not allowed by registry",
-                    self.CONTINUUM_PHASE_FIELD,
-                    f"Allowed values: {allowed}",
-                ),
-                severity=SeverityKind.CRITICAL,
-                payload={
-                    "default_value": default,
-                    "allowed_values": list(allowed),
-                    "context": "invalid_registry_default",
-                },
-            )
+        allowed = allowed_result.data
 
         # ---- Determine original state BEFORE modification ----
         had_field = fm_artifact.has_field(self.CONTINUUM_PHASE_FIELD)
@@ -91,14 +63,18 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
         if had_field:
             value = fm_artifact.get_field(self.CONTINUUM_PHASE_FIELD)
             if value not in allowed:
-                return Result.failure(
+                return UpgradeResult.failure(
                     UpgradeError(
                         f"Invalid {self.CONTINUUM_PHASE_FIELD} '{value}'",
                         self.CONTINUUM_PHASE_FIELD,
                         f"Allowed: {allowed}",
                     ),
                     severity=SeverityKind.ERROR,
-                    payload={"value": value, "allowed": list(allowed)},
+                    payload={
+                        "value": value,
+                        "allowed": list(allowed),
+                        "artifact": fm_artifact,
+                    },
                 )
 
             # Valid existing value
@@ -111,24 +87,41 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
                 },
             )
 
-            return Result.success(
+            return UpgradeResult.success(
                 fm_artifact,
-                payload={f"{self.CONTINUUM_PHASE_FIELD}": value, "source": "artifact"},
+                payload={
+                    f"{self.CONTINUUM_PHASE_FIELD}": value,
+                    "source": "artifact",
+                    "artifact": fm_artifact,
+                },
             )
 
-        if default is None:
-            return Result.failure(
+        date_result = fm_artifact.entry_date
+        if Result.is_failure(date_result):
+            return UpgradeResult.failure(
                 UpgradeError(
-                    f"{self.CONTINUUM_PHASE_FIELD} missing and no default provided",
-                    self.CONTINUUM_PHASE_FIELD,
-                    f"the default_value is missing. Allowed values: {allowed}",
+                    f"Existing Template is missing or invalid entry_date for default {self.CONTINUUM_PHASE_FIELD} assignment",
+                    "entry_date",
+                    "Required for default assignment when field is missing",
                 ),
                 severity=SeverityKind.ERROR,
                 payload={
-                    "allowed_values": list(allowed),
-                    "context": "missing_field_no_default",
+                    "error": str(date_result.error),
+                    "artifact": fm_artifact,
                 },
             )
+
+        entry_date = date_result.data
+        if entry_date < CONTINUUM_DATE_TIME:
+            default = "pre"
+        else:
+            default_result = self._get_default_value(
+                field_data, self.CONTINUUM_PHASE_FIELD, allowed
+            )
+            if UpgradeResult.is_failure(default_result):
+                return UpgradeResult.failure(default_result.error)
+
+            default = default_result.data
 
         # ---- Missing: assign default ----
         fm_artifact.set_field(self.CONTINUUM_PHASE_FIELD, default)
@@ -142,11 +135,13 @@ class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
             },
         )
 
-        return Result.success(
+        return UpgradeResult.success(
             fm_artifact,
             severity=SeverityKind.INFO,
             payload={
                 f"{self.CONTINUUM_PHASE_FIELD}": default,
                 "source": "default_assignment",
+                "entry_date": entry_date.isoformat(),
+                "artifact": fm_artifact,
             },
         )

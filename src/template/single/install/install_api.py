@@ -1,4 +1,3 @@
-from datetime import datetime
 import json
 from typing import Any
 from pathlib import Path
@@ -200,6 +199,45 @@ class InstallAPI:
         sorted_registry.update(cp)
         return sorted_registry
 
+    def _get_sorted_meta_fields(self, fm: FrontMatterMeta) -> FrontMatterMeta:
+        sort_order_identity = [
+            "template_registry",
+            "registry_version",
+            "continuum_phase",
+            "template_id",
+        ]
+        sort_order_structural = [
+            "template_type",
+            "template_version",
+            "template_filename",
+            "template_hash",
+            "template_strict_integrity",
+            "template_hash_enforcement",
+            "audit",
+            "placeholder_rules",
+            "autofill",
+            "conditionals",
+            "invocation_agents",
+        ]
+        sort_order_execution = [
+            "canonical_mode",
+            "fail_on_unknown_field",
+            "fail_on_unresolved_field_placeholder",
+            "allow_prompt_placeholders",
+            "allow_inference",
+            "fail_on_field_mismatch",
+            "render_contract",
+        ]
+        fm_cp = fm.copy()
+        data = fm_cp.frontmatter
+        sorted_meta_fields = {}
+        for key in sort_order_identity + sort_order_structural + sort_order_execution:
+            if key in data:
+                sorted_meta_fields[key] = data.pop(key)
+        sorted_meta_fields.update(data)
+        fm_cp.frontmatter = sorted_meta_fields
+        return fm_cp
+
     def install_single(self, template_type: str) -> None:
         if template_type not in self._manifest["templates"]:
             raise ValueError(
@@ -220,7 +258,9 @@ class InstallAPI:
         self._ensure_cbib()
         print(f"Installing template '{template_type}' to {dest_path}")
 
-        fm.write_template(fm.file_path)
+        sorted_fm = self._get_sorted_meta_fields(fm)
+        sorted_fm._compute_sha256()  # Recompute hash after sorting
+        sorted_fm.write_template(sorted_fm.file_path)
         registry_path = dest_path / "registry.json"
         sorted_registry = self._get_sorted_registry(registry)
         with registry_path.open("w", encoding="utf-8") as f:

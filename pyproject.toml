@@ -116,6 +116,20 @@ api_installer_template_cleanup_fields=[
     "upnote_categories",
 ]
 
+[tool.project.config.template.single]
+# the current role prompts are likely
+# - "[[prompt:Choose from registry → metadata_fields → <field_name> → allowed_values]]"
+# prompt_metadata_fields are the fields that need to be rewritten to match the expected format for single.
+# - "[[prompt:Choose from registry → fields → <field_name> → allowed_values]]"
+# prompt_metadata_fields is used in src.template.process_single.engines.templates.template_base
+
+prompt_metadata_fields=[
+    "continuum_phase",
+    "roles_authority",
+    "roles_visibility",
+    "roles_function",
+    "roles_action",
+]
 
 [tool.project.config.template.field_placeholder_delimiters]
 open="[["

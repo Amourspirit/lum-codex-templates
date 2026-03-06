@@ -6,8 +6,8 @@
         "template_type": "field_cert_seal",
         "template_file": "template.md",
         "version": "2.12",
-        "hash": "9fc71330ceecf7ee55e534b77de8efcaa14ed24d9897e69308001ba8ba36cdfa",
-        "template_hash": "9fc71330ceecf7ee55e534b77de8efcaa14ed24d9897e69308001ba8ba36cdfa",
+        "hash": "c7e7eefa86b07fe4cf62f280c58aaad0f54f54e320aadb553c8e140980cf1d8b",
+        "template_hash": "c7e7eefa86b07fe4cf62f280c58aaad0f54f54e320aadb553c8e140980cf1d8b",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-28T20:38:39.464435-05:00",
+    "installed_at": "2026-03-06T12:53:43.255555-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

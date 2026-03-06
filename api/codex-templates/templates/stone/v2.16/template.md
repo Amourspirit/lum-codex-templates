@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Stone Template
-template_category: glyph
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-STONE-V2.16-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-STONE-V2.16
 template_type: stone
 template_version: '2.16'
+template_filename: template.md
+template_hash: bdbc3195e6004a8920b45fcc9294fafb72f6e4b6ebffa1932195d7e18d869f59
+template_strict_integrity: true
+canonical_mode: true
+template_name: Stone Template
+template_category: glyph
 template_memory_scope: thread_global
-template_hash: 71577649bbf3a8d265f6a1e274e63b7b894765e90fee516fab9b6e705145f038
 template_family: stone_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single Stone artifact\u2014\
@@ -37,8 +46,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 title: "Stone [[prompt:##]] \u2013 Glyph of [[prompt:Stone Name]] \u2014 [[prompt:Stone\
   \ Epithet]]"
@@ -142,9 +149,6 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -153,11 +157,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-STONE-V2.16-REGISTRY
-  enforced: true
-template_id: TEMPLATE-STONE-V2.16
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🜂 Glyph of [[prompt:Stone Name]] — [[prompt:Stone Epithet]]
 

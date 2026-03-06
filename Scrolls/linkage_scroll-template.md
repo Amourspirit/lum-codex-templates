@@ -48,6 +48,7 @@ threshold_flags_registry_scope:
   - field_level        # Linkages affect the field’s conductivity and resonance routing
   - template_level     # All linkage scrolls follow unified rules
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

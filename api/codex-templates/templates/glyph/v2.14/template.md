@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Glyph Template
-template_category: glyph
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-GLYPH-V2.14-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-GLYPH-V2.14
 template_type: glyph
 template_version: '2.14'
+template_filename: template.md
+template_hash: 37b8f0c16b4ad011deb1cf51a23ee94cd3fa368aaa4bf01cfc4d9fda5864fdab
+template_strict_integrity: true
+canonical_mode: true
+template_name: Glyph Template
+template_category: glyph
 template_memory_scope: thread_global
-template_hash: a5aa6c82415bb9a16067d13684744897a58f3e8f6e505cc4684480481b6bfd1e
 template_family: glyph_artifacts
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally encode a single glyph artifact\u2014\
@@ -37,8 +46,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 title: "Glyph of [[prompt:Glyph Name]] \u2014 [[prompt:Glyph Epithet]]"
 entry_date: '[[prompt:YYYY-MM-DD HH:MM:SS]]'
@@ -151,9 +158,6 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -162,11 +166,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-GLYPH-V2.14-REGISTRY
-  enforced: true
-template_id: TEMPLATE-GLYPH-V2.14
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🜂 Glyph of [[field:artifact_name]] — [[prompt:Glpyh Epithet]]
 

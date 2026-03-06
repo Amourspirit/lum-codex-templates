@@ -49,6 +49,7 @@ threshold_flags_registry_scope:
   - field_level        # Nodes influence the entire field and energy grid
   - template_level     # Ensures all nodes are held to the same structural ruleset
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

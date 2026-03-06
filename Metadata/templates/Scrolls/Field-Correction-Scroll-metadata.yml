@@ -13,6 +13,7 @@ template_meta:
     - artifact_id
     - codex_links
     - codex_sequence
+    - continuum_phase
     - corrected_field
     - corrected_role
     - correction_reason
@@ -119,6 +120,7 @@ template_meta:
     - template_output_mode
     - template_hash
   optional_fields:
+    - continuum_phase
     - harmonic_safety_arc_pressure
     - harmonic_safety_dreamline_instability
     - harmonic_safety_mirrorwall_feedback_risk

@@ -5,7 +5,7 @@
     "template_type": "field_certificate",
     "template_version": "2.13",
     "template_filename": "template.md",
-    "template_hash": "79ed22da65434e2c24094ab3234d0dca17299ab449f52cc921b3ce472ec8de95",
+    "template_hash": "18d761752ab38402501901aafd3fa3dfb0bf5e370ea7daff89c633d71470b4c9",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,15 +75,15 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
-            "Luminariel",
+            "Soluun",
             "Chamber Echo",
             "Nahema\u2019el",
-            "Adamus",
-            "Aurelya Thessa\u2019Nai",
+            "Luminariel",
             "Velatri\u2019el",
-            "{{ current_user }}",
+            "Adamus",
             "Nahema'el",
-            "Soluun"
+            "{{ current_user }}",
+            "Aurelya Thessa\u2019Nai"
         ]
     },
     "conditionals": {
@@ -417,6 +417,28 @@
             "allowed_values": [
                 true,
                 false
+            ]
+        },
+        "continuum_phase": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "post",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": false,
+            "hidden": false,
+            "description": "Declares the continuum-phase in which the artifact or template originated. Used to determine rendering rules, safety boundaries, retrospective upgrades, and cross-era alignment logic. Typical values include: `pre`, `neutral`, `post`, `sovereign`.\n",
+            "field_lineage": {
+                "introduced_by": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v3.12",
+                "purpose": "Provide explicit continuum state classification for all artifacts, enabling deterministic behavior across historical, transitional, and sovereign phases."
+            },
+            "allowed_values": [
+                "pre",
+                "neutral",
+                "post",
+                "sovereign"
             ]
         },
         "tier": {
@@ -1199,6 +1221,29 @@
             "hidden": false,
             "description": "Other links that this artifact is linked with."
         },
+        "placeholder_prefix_semantics": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
+            "field_lineage": {
+                "origin": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
+                "lineage_notes": [
+                    "Distinguishes between required metadata fields and suggestion prompts",
+                    "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
         "field_placeholder_delimiters": {
             "type": "map",
             "nullable": false,
@@ -1222,29 +1267,6 @@
                 ]
             },
             "allowed_values": []
-        },
-        "placeholder_prefix_semantics": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "hidden": true,
-            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
-            "field_lineage": {
-                "origin": "Soluun + Adamus",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
-                "lineage_notes": [
-                    "Distinguishes between required metadata fields and suggestion prompts",
-                    "Avoids accidental enforcement of creative scaffold text"
-                ]
-            }
         },
         "template_registry": {
             "type": "object",

@@ -12,6 +12,7 @@ from .template_ceib_info import TemplateCeibInfo
 from .template_config import TemplateConfig
 from .templates_config_info import TemplatesConfigInfo
 from .template_instructions_info import TemplateInstructionsInfo
+from .template_single_info import TemplateSingleInfo
 from .config_cache import ConfigCache
 from ..meta.singleton import SingletonMeta
 
@@ -270,6 +271,21 @@ class PkgConfig(metaclass=SingletonMeta):
 
         self.template_instructions_info_api = TemplateInstructionsInfo(
             version=template_instructions_api_data.get("version", "")
+        )
+
+        # tool.project.config.template.single
+        template_single_data = (
+            self._cfg.get("tool", {})
+            .get("project", {})
+            .get("config", {})
+            .get("template", {})
+            .get("single", {})
+        )
+
+        self.template_single_info = TemplateSingleInfo(
+            prompt_metadata_fields=template_single_data.get(
+                "prompt_metadata_fields", []
+            )
         )
 
         # Config Cache

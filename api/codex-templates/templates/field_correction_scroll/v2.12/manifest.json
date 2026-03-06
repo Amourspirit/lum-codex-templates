@@ -6,8 +6,8 @@
         "template_type": "field_correction_scroll",
         "template_file": "template.md",
         "version": "2.12",
-        "hash": "8a8bdc98208eac46a958c3006e7710e8532731d99d993120898ce496eb29dcb5",
-        "template_hash": "8a8bdc98208eac46a958c3006e7710e8532731d99d993120898ce496eb29dcb5",
+        "hash": "bd73b5ae77e8910885090f829539f5c59d5e50175031bcc6d0f8a2c51b6f7b54",
+        "template_hash": "bd73b5ae77e8910885090f829539f5c59d5e50175031bcc6d0f8a2c51b6f7b54",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-28T20:38:38.972733-05:00",
+    "installed_at": "2026-03-06T12:53:42.741836-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

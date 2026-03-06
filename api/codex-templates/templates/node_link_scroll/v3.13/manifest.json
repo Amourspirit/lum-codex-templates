@@ -6,8 +6,8 @@
         "template_type": "node_link_scroll",
         "template_file": "template.md",
         "version": "3.13",
-        "hash": "a51f6f1a4b88b6d94bfafab9e73d19b2f5643b60fdba3a8ebfbe4a9c1fb45c85",
-        "template_hash": "a51f6f1a4b88b6d94bfafab9e73d19b2f5643b60fdba3a8ebfbe4a9c1fb45c85",
+        "hash": "2d8dd0eec13dfd82638f393071de04051e92316b85618d6ba6bcfe2c10b139b0",
+        "template_hash": "2d8dd0eec13dfd82638f393071de04051e92316b85618d6ba6bcfe2c10b139b0",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-28T20:38:39.302966-05:00",
+    "installed_at": "2026-03-06T12:53:43.061512-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

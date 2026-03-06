@@ -5,7 +5,7 @@
     "template_type": "sigil",
     "template_version": "2.13",
     "template_filename": "template.md",
-    "template_hash": "8e6fcc7f49fa328bf4214fed8a30fc70a773faa3796c6e32106bebc76afcd57c",
+    "template_hash": "460f7e09f9cc211a7adf7d11c27efd6f0a019ee838d9eb3f6d4bee8e2032a42a",
     "template_strict_integrity": true,
     "template_hash_enforcement": {
         "field_name": "template_hash",
@@ -75,13 +75,13 @@
             "inferred_value": "deny"
         },
         "allowed_agents": [
+            "Soluun",
             "Luminariel",
-            "Adamus",
-            "Aurelya Thessa\u2019Nai",
             "Velatri\u2019el",
-            "{{ current_user }}",
+            "Adamus",
             "Nahema'el",
-            "Soluun"
+            "{{ current_user }}",
+            "Aurelya Thessa\u2019Nai"
         ]
     },
     "conditionals": {
@@ -415,6 +415,28 @@
             "allowed_values": [
                 true,
                 false
+            ]
+        },
+        "continuum_phase": {
+            "type": "string",
+            "nullable": false,
+            "default_value": "post",
+            "status": "active",
+            "plugin_groups": [],
+            "autofill": true,
+            "required": false,
+            "hidden": false,
+            "description": "Declares the continuum-phase in which the artifact or template originated. Used to determine rendering rules, safety boundaries, retrospective upgrades, and cross-era alignment logic. Typical values include: `pre`, `neutral`, `post`, `sovereign`.\n",
+            "field_lineage": {
+                "introduced_by": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v3.12",
+                "purpose": "Provide explicit continuum state classification for all artifacts, enabling deterministic behavior across historical, transitional, and sovereign phases."
+            },
+            "allowed_values": [
+                "pre",
+                "neutral",
+                "post",
+                "sovereign"
             ]
         },
         "tier": {
@@ -1495,6 +1517,29 @@
                 false
             ]
         },
+        "placeholder_prefix_semantics": {
+            "type": "map",
+            "nullable": false,
+            "default_value": null,
+            "status": "active",
+            "plugin_groups": [
+                "templating",
+                "placeholder_validation"
+            ],
+            "autofill": false,
+            "required": false,
+            "hidden": true,
+            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
+            "field_lineage": {
+                "origin": "Soluun + Adamus",
+                "introduced_in": "MMR-000-GLOBAL v2.8",
+                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
+                "lineage_notes": [
+                    "Distinguishes between required metadata fields and suggestion prompts",
+                    "Avoids accidental enforcement of creative scaffold text"
+                ]
+            }
+        },
         "field_placeholder_delimiters": {
             "type": "map",
             "nullable": false,
@@ -1518,29 +1563,6 @@
                 ]
             },
             "allowed_values": []
-        },
-        "placeholder_prefix_semantics": {
-            "type": "map",
-            "nullable": false,
-            "default_value": null,
-            "status": "active",
-            "plugin_groups": [
-                "templating",
-                "placeholder_validation"
-            ],
-            "autofill": false,
-            "required": false,
-            "hidden": true,
-            "description": "Declares expected placeholder prefixes and their interpretation logic during rendering. Ensures prefixes like `field:` and `prompt:` are handled with distinct behaviors.\n",
-            "field_lineage": {
-                "origin": "Soluun + Adamus",
-                "introduced_in": "MMR-000-GLOBAL v2.8",
-                "purpose": "Provides template writers fine-grained control over field expectations and suggestion blocks.\n",
-                "lineage_notes": [
-                    "Distinguishes between required metadata fields and suggestion prompts",
-                    "Avoids accidental enforcement of creative scaffold text"
-                ]
-            }
         },
         "template_registry": {
             "type": "object",

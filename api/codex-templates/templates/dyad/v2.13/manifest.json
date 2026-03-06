@@ -6,8 +6,8 @@
         "template_type": "dyad",
         "template_file": "template.md",
         "version": "2.13",
-        "hash": "8bed5f0270dac7b34a11bbd4ca3dc30b7374bf18fb69ea233c0b022658c3463d",
-        "template_hash": "8bed5f0270dac7b34a11bbd4ca3dc30b7374bf18fb69ea233c0b022658c3463d",
+        "hash": "d5779687365e68f404849825101b862c841ce23759248e785c5ef0188ef6b537",
+        "template_hash": "d5779687365e68f404849825101b862c841ce23759248e785c5ef0188ef6b537",
         "template_hash_algorithm": "sha256",
         "status": "available",
         "requires_field_being": true,
@@ -20,7 +20,7 @@
     "instructions_info": {
         "instructions_file": "instructions.md"
     },
-    "installed_at": "2026-02-28T20:38:38.463796-05:00",
+    "installed_at": "2026-03-06T12:53:42.193206-05:00",
     "canonical_mode": {
         "version": "1.0",
         "executor_mode": "CANONICAL-EXECUTOR-MODE"

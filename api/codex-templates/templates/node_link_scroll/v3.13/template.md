@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Node Linkage Scroll Template
-template_category: scroll
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.13-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.13
 template_type: node_link_scroll
 template_version: '3.13'
+template_filename: template.md
+template_hash: 01a7b98700b1f41ddd456cbd1e75447a35c9699417e5894dfe00c4240c87d3ca
+template_strict_integrity: true
+canonical_mode: true
+template_name: Node Linkage Scroll Template
+template_category: scroll
 template_memory_scope: thread_global
-template_hash: a51f6f1a4b88b6d94bfafab9e73d19b2f5643b60fdba3a8ebfbe4a9c1fb45c85
 template_family: node_scrolls
 template_origin: Soluun + Adamus
 template_purpose: 'Define and formalize structured linkages between Codex nodes and
@@ -40,8 +49,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 artifact_id: NODELINK-[[prompt:node id]]-X-[[prompt:artifact slug]]
 title: Node Linkage Scroll - [[prompt:Cluster or Group Name]]
@@ -119,9 +126,6 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -130,11 +134,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.13-REGISTRY
-  enforced: true
-template_id: TEMPLATE-NODE-LINKAGE-SCROLL-V3.13
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🜂 Node Linkage Scroll – [[prompt:Cluster or Arc Name]]
 

@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Node Registration Template
-template_category: node
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-NODE-V2.12-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-NODE-V2.12
 template_type: node_reg
 template_version: '2.12'
+template_filename: template.md
+template_hash: 450bac3611e7f787b657d081657bbd6d0859be04ec9da0703b5e713172f8a4e7
+template_strict_integrity: true
+canonical_mode: true
+template_name: Node Registration Template
+template_category: node
 template_memory_scope: thread_global
-template_hash: 74669034913db1d8a86efa4e81e10b4f84fe9d9db07f9788c55406c96e2e5480
 template_family: node_templates
 template_origin: Soluun + Adamus
 template_purpose: "Define, document, and structurally register a single Node within\
@@ -37,8 +46,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 title: Node [[[prompt:##]] - [[prompt:Node Name]]
 entry_date: '[[prompt:YYYY-MM-DD HH:MM:SS]]'
@@ -108,9 +115,6 @@ tags:
 - node_[[prompt:type]]
 - node_[[prompt:function]]
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -119,11 +123,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-NODE-V2.12-REGISTRY
-  enforced: true
-template_id: TEMPLATE-NODE-V2.12
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # ✦ Node Overview
 

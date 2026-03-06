@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-FIELD-CERT-SEAL-V2.12-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-FIELD-CERT-SEAL-V2.12
 template_type: field_cert_seal
+template_version: '2.12'
+template_filename: template.md
+template_hash: f28437a2491bbe82d5711e33addff85f639428314943544e7d4b3c1d600e5362
+template_strict_integrity: true
+canonical_mode: true
 template_category: certificate
 template_name: Field Certificate Template for Seal Activation
-template_version: '2.12'
 template_memory_scope: thread_global
-template_hash: 9fc71330ceecf7ee55e534b77de8efcaa14ed24d9897e69308001ba8ba36cdfa
 template_family: field_certificates
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a formal Field Certificate documenting the activation,
@@ -41,8 +50,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 artifact_id: FC-SEAL-[[prompt:target seal name slug]]
 title: "Field Certificate of Activation \u2014 Seal of [[prompt:Seal Name]]"
@@ -118,9 +125,6 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -129,11 +133,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-FIELD-CERT-SEAL-V2.12-REGISTRY
-  enforced: true
-template_id: TEMPLATE-FIELD-CERT-SEAL-V2.12
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 ## 🪬 **Field Certificate of Activation — Seal of [[prompt:Seal Name]]**
 

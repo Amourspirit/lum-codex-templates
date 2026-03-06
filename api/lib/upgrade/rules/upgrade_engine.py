@@ -2,8 +2,14 @@ from __future__ import annotations
 from typing import Any, List, Dict, cast, TypeVar, Generic
 from loguru import logger
 from src.template.front_mater_meta import FrontMatterMeta
-from ..upgrade_result import UpgradeResult as Result
+from ..upgrade_result import UpgradeResult as UpgradeResult
 from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
+from .rule_template_field_normalization import RuleTemplateFieldNormalization
+from .rule_remove_obsolete_fields import RuleRemoveObsoleteFields
+from .rule_content_cleanup import RuleContentCleanup
+from .rule_declared_registry_upgrade import RuleDeclaredRegistryUpgrade
+from .rule_era_signature_upgrade import RuleEraSignatureUpgrade
+from .rule_field_lineage_normalization import RuleFieldLineageNormalization
 from .shared_rule_cache import SharedRuleCache
 from ..exceptions import UpgradeError
 from ..types import PhaseInfo
@@ -121,7 +127,8 @@ class UpgradeEngine(Generic[C]):
     def after_each_rule(
         self,
         rule: ProtocolUpgradeRule,
-        result: Result[FrontMatterMeta, None] | Result[None, UpgradeError],
+        result: UpgradeResult[FrontMatterMeta, None]
+        | UpgradeResult[None, UpgradeError],
     ):
         pass
 
@@ -134,7 +141,7 @@ class UpgradeEngine(Generic[C]):
     def _route_severity(
         self,
         rule_id: str,
-        result: Result[None, UpgradeError],
+        result: UpgradeResult[None, UpgradeError],
         errors: dict[str, Any],
         warnings: dict[str, Any],
         logs: List[str],
@@ -207,7 +214,7 @@ class UpgradeEngine(Generic[C]):
                     registry=registry,
                 )
 
-                if Result.is_failure(result):
+                if UpgradeResult.is_failure(result):
                     critical = self._route_severity(
                         rule.get_rule_id(), result, errors, warnings, logs
                     )
@@ -270,8 +277,21 @@ def create_default_upgrade_engine() -> UpgradeEngine[PhaseInfo]:
         >>> engine = create_default_upgrade_engine()
         >>> # Engine is now ready to process upgrade operations
     """
-
+    rules = (
+        RuleTemplateFieldNormalization,
+        RuleRemoveObsoleteFields,
+        RuleContentCleanup,
+        RuleDeclaredRegistryUpgrade,
+        RuleEraSignatureUpgrade,
+        RuleFieldLineageNormalization,
+        RuleContinuumPhaseUpgrade,
+    )
+    sorted_rules = sorted(
+        rules,
+        key=lambda r: getattr(r, "RULE_ORDER", 100),
+    )
     Engine = UpgradeEngine[PhaseInfo]
     engine = Engine(shared_cache=SharedRuleCache())
-    engine.register_rule(RuleContinuumPhaseUpgrade)
+    for rule_cls in sorted_rules:
+        engine.register_rule(rule_cls)
     return engine

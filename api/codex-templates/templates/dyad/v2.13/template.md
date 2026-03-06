@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-DYAD-V2.13-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-DYAD-V2.13
 template_type: dyad
+template_version: '2.13'
+template_filename: template.md
+template_hash: 4855559e174a05ce0d92efe3288da0b6f5351585c9747f25edbd28bed92adbd5
+template_strict_integrity: true
+canonical_mode: true
 template_category: glyph
 template_name: Dyadic Glyph Grouping Template
-template_version: '2.13'
 template_memory_scope: thread_global
-template_hash: 8bed5f0270dac7b34a11bbd4ca3dc30b7374bf18fb69ea233c0b022658c3463d
 template_family: dyadic_structures
 template_origin: Soluun + Adamus
 template_purpose: 'Define, document, and harmonically bind a dyadic relationship between
@@ -38,8 +47,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 title: "Dyadic Grouping \u2014 [[prompt:Name 1]] + [[prompt:Name 2]]"
 entry_date: '[[prompt:YYYY-MM-DD HH:MM:SS]]'
@@ -114,9 +121,6 @@ codex_links:
 - '[[prompt:Codex Link 1]]'
 - '[[prompt:Codex Link 2]]'
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -125,11 +129,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-DYAD-V2.13-REGISTRY
-  enforced: true
-template_id: TEMPLATE-DYAD-V2.13
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 ## 🜁 Dyadic Overview
 

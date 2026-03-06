@@ -1,14 +1,15 @@
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, ClassVar, runtime_checkable
 from src.template.front_mater_meta import FrontMatterMeta
-from ..upgrade_result import UpgradeResult as Result
+from ..upgrade_result import UpgradeResult as UpgradeResult
 from ..exceptions import UpgradeError
 
 
 @runtime_checkable
 class ProtocolUpgradeRule(Protocol):
+    RULE_ORDER: ClassVar[int]
+
     def get_rule_id(self) -> str: ...
     def get_description(self) -> str: ...
-    def get_order(self) -> int: ...
     def should_run(
         self,
         fm_artifact: FrontMatterMeta,
@@ -20,7 +21,7 @@ class ProtocolUpgradeRule(Protocol):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]: ...
+    ) -> UpgradeResult[FrontMatterMeta, None] | UpgradeResult[None, UpgradeError]: ...
 
     @property
     def rule_name(self) -> str: ...

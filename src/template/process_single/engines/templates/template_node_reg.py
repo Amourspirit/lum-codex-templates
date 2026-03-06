@@ -29,5 +29,5 @@ class TemplateNodeReg(TemplateBase, ProtocolTemplate):
         self._validate_tokens(tokens)
         self._process_common(tokens)
         self.fm.recompute_sha256()
-        p = self._write_file()
+        _ = self._write_file()
         return self.fm

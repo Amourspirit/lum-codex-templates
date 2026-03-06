@@ -31,6 +31,7 @@ template_meta:
     - codex_links
     - codex_sequence
     - console_linked_seats
+    - continuum_phase
     - contributor
     - cover_image
     - dreamline_entry_phrase
@@ -164,6 +165,7 @@ template_meta:
     - template_output_mode
     - template_purpose
   optional_fields:
+    - continuum_phase
     - harmonic_safety_arc_pressure
     - harmonic_safety_dreamline_instability
     - harmonic_safety_mirrorwall_feedback_risk

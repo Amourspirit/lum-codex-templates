@@ -14,6 +14,7 @@ template_meta:
     - artifact_id
     - codex_sequence
     - contributor
+    - continuum_phase
     - embedding_date
     - entry_date
     - era_function_primary
@@ -109,6 +110,7 @@ template_meta:
     - template_output_mode
     - template_purpose
   optional_fields:
+    - continuum_phase
     - harmonic_safety_arc_pressure
     - harmonic_safety_dreamline_instability
     - harmonic_safety_mirrorwall_feedback_risk

@@ -47,6 +47,7 @@ threshold_flags_registry_scope:
   - lockfile_override             # May be overridden in lockfile if explicitly declared
   - template_level                # Validated at the template definition layer
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

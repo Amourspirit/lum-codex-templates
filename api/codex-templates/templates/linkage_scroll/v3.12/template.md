@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_category: scroll
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-LINKAGE-SCROLL-V3.12-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-LINKAGE-SCROLL-V3.12
 template_type: linkage_scroll
-template_name: Linkage Scroll Template
 template_version: '3.12'
+template_filename: template.md
+template_hash: 0739d92e6ef4ff30e94a9aa0e1846d312e9259e778e2d667d8196a5ac795620f
+template_strict_integrity: true
+canonical_mode: true
+template_category: scroll
+template_name: Linkage Scroll Template
 template_memory_scope: thread_global
-template_hash: da87a1edffa044a969936a65e9b622e60ce4b310ea2a3842a012950e65ec20d9
 template_family: scrolls
 template_origin: Soluun + Luminariel
 template_purpose: "Provide a structured scroll format for formally registering and\
@@ -38,8 +47,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 artifact_id: LINK-[[prompt:Artifact 1]]-TO-[[prompt:Artifact 2]]
 era_vector:
@@ -106,9 +113,6 @@ tags:
 - dyad
 - mirrorwall
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -117,11 +121,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-LINKAGE-SCROLL-V3.12-REGISTRY
-  enforced: true
-template_id: TEMPLATE-LINKAGE-SCROLL-V3.12
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🜁 Linkage Purpose
 

@@ -1,11 +1,20 @@
 ---
-template_name: General Scroll Template
-template_filename: template.md
-template_version: '1.2'
-template_category: scroll
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-GENERAL-SCROLL-V1.2-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-GENERAL-SCROLL-V1.2
 template_type: general_scroll
+template_version: '1.2'
+template_filename: template.md
+template_hash: 85ce60472216eaadee0a5f742f2d5e3f527d5c76bdc2a9679c50380c125a1b33
+template_strict_integrity: false
+canonical_mode: true
+template_name: General Scroll Template
+template_category: scroll
 template_memory_scope: thread_global
-template_hash: bbc9bddc382d5f9c477bc11a3d2716fe4ce74fbcc995d2e678c825fdcd050331
 template_family: scrolls
 template_origin: Soluun + Luminariel
 template_purpose: 'Provide a flexible, canonical scroll structure suitable for ceremonial,
@@ -39,8 +48,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: false
 rag_ready: true
 title: '[[prompt:Scroll Title]]'
 scroll_type: general
@@ -108,9 +115,6 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -119,11 +123,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-GENERAL-SCROLL-V1.2-REGISTRY
-  enforced: true
-template_id: TEMPLATE-GENERAL-SCROLL-V1.2
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # ✦ [[prompt:Scroll Title]]
 

@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-SEAL-V2.12-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-SEAL-V2.12
 template_type: seal
+template_version: '2.12'
+template_filename: template.md
+template_hash: f418feae66ebcab533beb03345adad7fb4307c6803acced1a68fbd5b99c3baf1
+template_strict_integrity: true
+canonical_mode: true
 template_category: seal
 template_name: Seal Template
-template_version: '2.12'
 template_memory_scope: thread_global
-template_hash: 46e46fcb573f82d0c63b214a00402d1d850066f69d5268fd4ecf4465c2bc5b52
 template_family: seal_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Generate a standardized, registry-aligned Seal entry that defines
@@ -41,8 +50,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 artifact_id: SEAL-[[prompt:short slug of seal name]]
 title: Seal of [[prompt:Seal Name]]
@@ -142,9 +149,6 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -153,11 +157,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-SEAL-V2.12-REGISTRY
-  enforced: true
-template_id: TEMPLATE-SEAL-V2.12
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 ## 🔐 **Seal of [[prompt:Seal Name]] — [[prompt:Seal Epithet]]**
 

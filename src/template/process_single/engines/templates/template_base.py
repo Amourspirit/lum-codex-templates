@@ -1,8 +1,9 @@
+from hmac import new
 from typing import Any
 from pathlib import Path
-from ....main_registry import MainRegistry
-from .....config.pkg_config import PkgConfig
-from ....front_mater_meta import FrontMatterMeta
+from src.template.main_registry import MainRegistry
+from src.config.pkg_config import PkgConfig
+from src.template.front_mater_meta import FrontMatterMeta
 
 
 class TemplateBase:
@@ -57,20 +58,15 @@ class TemplateBase:
         # the current role prompts are likely - "[[prompt:Choose from registry → metadata_fields → roles_authority → allowed_values]]"
         # for single, api, and mcp we want fields and not metadata_fields
         # this is because single, api and mcp use individual registry files.
-        roles = (
-            "roles_authority",
-            "roles_visibility",
-            "roles_function",
-            "roles_action",
-        )
-        for role in roles:
-            if self.fm.has_field(role):
-                self.fm.set_field(
-                    role,
-                    [
-                        f"[[prompt:Choose from registry → fields → {role} → allowed_values]]"
-                    ],
-                )
+        fields = self.config.template_single_info.prompt_metadata_fields
+        for field in fields:
+            if self.fm.has_field(field):
+                value = self.fm.get_field(field)
+                new_val = f"[[prompt:Choose from registry → fields → {field} → allowed_values]]"
+                if isinstance(value, list):
+                    self.fm.set_field(field, [new_val])
+                else:
+                    self.fm.set_field(field, new_val)
         # result["batch_number"] = str(self.main_registry.build_version)
         # self.fm.set_field("batch_number", str(self.main_registry.build_version))
 
@@ -80,11 +76,52 @@ class TemplateBase:
             / f"{self.fm.template_type}-template-v{self.fm.template_version}.md"
         )
 
+    def _get_sorted_meta_fields(self) -> dict:
+        sort_order_identity = [
+            "template_registry",
+            "registry_version",
+            "continuum_phase",
+            "template_id",
+        ]
+        sort_order_structural = [
+            "template_type",
+            "template_version",
+            "template_filename",
+            "template_hash",
+            "template_strict_integrity",
+            "template_hash_enforcement",
+            "audit",
+            "placeholder_rules",
+            "autofill",
+            "conditionals",
+            "invocation_agents",
+        ]
+        sort_order_execution = [
+            "canonical_mode",
+            "fail_on_unknown_field",
+            "fail_on_unresolved_field_placeholder",
+            "allow_prompt_placeholders",
+            "allow_inference",
+            "fail_on_field_mismatch",
+            "render_contract",
+        ]
+        fm_cp = self.fm.copy()
+        data = fm_cp.frontmatter
+        sorted_meta_fields = {}
+        for key in sort_order_identity + sort_order_structural + sort_order_execution:
+            if key in data:
+                sorted_meta_fields[key] = data.pop(key)
+        sorted_meta_fields.update(data)
+        return sorted_meta_fields
+
     def _write_file(self) -> Path:
         output_path = self._get_file_path()
-        self.fm.file_path = output_path
-        self.fm.recompute_sha256()
-        self.fm.write_template(output_path)
+        sorted_meta_fields = self._get_sorted_meta_fields()
+        fm = self.fm.copy()
+        fm.frontmatter = sorted_meta_fields
+        fm.file_path = output_path
+        fm.recompute_sha256()
+        fm.write_template(output_path)
         # print(f"Generated registry file: {output_path.name}")
         return output_path
 

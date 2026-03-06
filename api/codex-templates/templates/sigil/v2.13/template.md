@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Sigil Template
-template_category: sigil
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-SIGIL-V2.13-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-SIGIL-V2.13
 template_type: sigil
 template_version: '2.13'
+template_filename: template.md
+template_hash: 8b5b6c7598fdae0a1e2a954535e04c216080195577738e9ac72f8ebbc28f4b4f
+template_strict_integrity: true
+canonical_mode: true
+template_name: Sigil Template
+template_category: sigil
 template_memory_scope: thread_global
-template_hash: 8e6fcc7f49fa328bf4214fed8a30fc70a773faa3796c6e32106bebc76afcd57c
 template_family: sigil_artifacts
 template_origin: Soluun + Adamus
 template_purpose: 'Define the canonical structure for Codex sigils, supporting breath-activated,
@@ -41,8 +50,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 artifact_id: SIGIL-[[prompt:short slug of sigil name]]
 title: '[[prompt:Title for sigil]]'
@@ -141,9 +148,6 @@ codex_links:
 - '[[prompt:Codex Link 2]]'
 cartographer_echo_noted: true
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -152,11 +156,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-SIGIL-V2.13-REGISTRY
-  enforced: true
-template_id: TEMPLATE-SIGIL-V2.13
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🕯️ **[[field:artifact_name]]** — _[[prompt:Sigil Epithet]]_
 

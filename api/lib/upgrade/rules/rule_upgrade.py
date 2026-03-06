@@ -1,17 +1,18 @@
 from abc import abstractmethod
 from typing import Any, TypeVar, Generic, cast
-from src.template.front_mater_meta import FrontMatterMeta
-from ..upgrade_result import UpgradeResult as Result
-from ..exceptions import UpgradeError
+from ..exceptions import MissingKeyError, UpgradeError
 from ..protocols import ProtocolRulesCache
 from ..protocols import ProtocolUpgradeRuleSharedCache
-# from ..protocols import ProtocolUpgradeRule
-# from ..protocols import ProtocolSharedCache
+from ..upgrade_result import SeverityKind
+from ..upgrade_result import UpgradeResult as UpgradeResult
+from src.template.front_mater_meta import FrontMatterMeta
 
 C = TypeVar("C")  # Cache type variable
 
 
 class RuleUpgrade(ProtocolUpgradeRuleSharedCache[C], Generic[C]):
+    RULE_ORDER = 100
+
     def __init__(self, shared_cache: ProtocolRulesCache[C]) -> None:
         self._local_cache: dict[str, Any] = {}
         self._shared_cache = shared_cache
@@ -21,10 +22,6 @@ class RuleUpgrade(ProtocolUpgradeRuleSharedCache[C], Generic[C]):
 
     @abstractmethod
     def get_description(self) -> str: ...
-
-    def get_order(self) -> int:
-        """Gets the order that the rule is to be run"""
-        return 100  # default
 
     def should_run(
         self,
@@ -119,6 +116,209 @@ class RuleUpgrade(ProtocolUpgradeRuleSharedCache[C], Generic[C]):
 
         self._local_cache[key] = value
 
+    def _get_field_data(
+        self, reg_data: dict[str, Any], field: str
+    ) -> UpgradeResult[dict[str, Any], None] | UpgradeResult[None, MissingKeyError]:
+        """
+        Retrieve field data from registry configuration.
+        Attempts to extract a specific field from the registry data dictionary.
+        If the field is missing, returns a failure Result with a MissingKeyError.
+
+        Args:
+            reg_data (dict[str, Any]): The registry data dictionary containing configuration.
+            field (str): The name of the field to retrieve from the registry data.
+
+        Returns:
+            Result[dict[str, Any], None] | Result[None, MissingKeyError]:
+                - On success: A Result containing the field data dictionary.
+                - On failure: A Result containing a MissingKeyError with CRITICAL severity
+                  and context information about the missing field.
+
+        Raises:
+            None: Errors are returned as Result objects rather than raised.
+        """
+
+        reg: dict[str, Any] | None = reg_data.get(field, None)
+        if reg is None:
+            return UpgradeResult.failure(
+                MissingKeyError(
+                    f"Registry Missing {field} configuration",
+                    field,
+                    f"Registry must specify {field} configuration for upgrade.",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "missing_field": field,
+                    "context": "registry",
+                },
+            )
+        return UpgradeResult.success(reg)
+
+    def _get_allowed_values(
+        self, field_data: dict[str, Any], field: str
+    ) -> UpgradeResult[set[str], None] | UpgradeResult[None, UpgradeError]:
+        """
+        Retrieve and validate the allowed values for a given field from field data.
+        This method extracts the set of allowed values from the field data dictionary
+        and validates that at least one allowed value exists. If no allowed values are
+        found, it returns a critical error result.
+
+        Args:
+            field_data (dict[str, Any]): Dictionary containing field configuration,
+                including an optional "allowed_values" key with a list of valid values.
+            field (str): The name of the field for which allowed values are being retrieved.
+
+        Returns:
+            Result[set[str], None] | Result[None, UpgradeError]:
+                - On success: A Result containing a set of allowed values for the field.
+                - On failure: A Result containing an UpgradeError with CRITICAL severity,
+                  indicating that no allowed values were found in the registry for the field.
+
+        Note:
+            The failure payload includes the field name and issue type for debugging purposes.
+        """
+
+        allowed = set(field_data.get("allowed_values", []))
+        if len(allowed) == 0:
+            return UpgradeResult.failure(
+                UpgradeError(
+                    f"Registry Missing allowed_values for {field}",
+                    field,
+                    f"Registry must specify allowed values for {field}.",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "field": field,
+                    "issue": "no_allowed_values",
+                },
+            )
+        return UpgradeResult.success(allowed)
+
+    def _get_default_value(
+        self, field_data: dict[str, Any], field: str, allowed: set[str] | None = None
+    ) -> UpgradeResult[str, None] | UpgradeResult[None, UpgradeError]:
+        """
+        Retrieve and validate the default value for a field from field data.
+        This method extracts the default value from the provided field data dictionary
+        and validates it against the allowed values if specified.
+        Args:
+            field_data: Dictionary containing field metadata including the default_value.
+            field: Name of the field being validated.
+            allowed: Optional set of allowed values for the field. If provided, the
+                default value must be present in this set.
+        Returns:
+            UpgradeResult containing either:
+                - Success with the validated default value (str)
+                - Failure with an UpgradeError if:
+                    * No default_value is found in field_data (CRITICAL severity)
+                    * The default value is not in the allowed set (CRITICAL severity)
+        Raises:
+            None: All errors are returned as UpgradeResult failures rather than raised.
+        """
+
+        default = cast(str | None, field_data.get("default_value", None))
+        if default is None:
+            return UpgradeResult.failure(
+                UpgradeError(
+                    f"Registry Missing default_value for {field} and not default provided by artifact",
+                    field,
+                    f"Registry must specify a default value for {field}.",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "field": field,
+                    "issue": "no_default_value",
+                },
+            )
+
+        if allowed is not None and default not in allowed:
+            return UpgradeResult.failure(
+                UpgradeError(
+                    f"Default {field} '{default}' not allowed by registry",
+                    field,
+                    f"Allowed values: {allowed}",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "default_value": default,
+                    "allowed_values": list(allowed),
+                    "context": "invalid_registry_default",
+                },
+            )
+        return UpgradeResult.success(default)
+
+    def _get_reg_required_fields(
+        self, reg_data: dict[str, Any]
+    ) -> UpgradeResult[list[str], None] | UpgradeResult[None, UpgradeError]:
+        fields: dict[str, Any] | None = reg_data.get("fields", None)
+        key = "_required_fields"
+        if key in self._local_cache:
+            item = cast(list[str], self._local_cache[key])
+            return UpgradeResult.success(item)
+
+        if fields is None:
+            return UpgradeResult.failure(
+                UpgradeError(
+                    "Registry Missing fields configuration",
+                    "fields",
+                    "Registry must specify fields configuration for upgrade.",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "missing_field": "fields",
+                    "context": "registry",
+                },
+            )
+        required_fields = [f for f, v in fields.items() if v.get("required", False)]
+        self._local_cache[key] = required_fields
+        return UpgradeResult.success(required_fields)
+
+    def _get_reg_all_fields(
+        self, reg_data: dict[str, Any]
+    ) -> UpgradeResult[set[str], None] | UpgradeResult[None, UpgradeError]:
+        fields: dict[str, Any] | None = reg_data.get("fields", None)
+        key = "_all_fields"
+        if key in self._local_cache:
+            item = cast(set[str], self._local_cache[key])
+            return UpgradeResult.success(item)
+
+        if fields is None:
+            return UpgradeResult.failure(
+                UpgradeError(
+                    "Registry Missing fields configuration",
+                    "fields",
+                    "Registry must specify fields configuration for upgrade.",
+                ),
+                severity=SeverityKind.CRITICAL,
+                payload={
+                    "missing_field": "fields",
+                    "context": "registry",
+                },
+            )
+        all_fields = set(fields.keys())
+        self._local_cache[key] = all_fields
+        return UpgradeResult.success(all_fields)
+
+    def _get_reg_fields(
+        self, reg_data: dict[str, Any]
+    ) -> UpgradeResult[dict[str, Any], None] | UpgradeResult[None, UpgradeError]:
+        key = "fields"
+        if key in reg_data:
+            item = cast(dict[str, Any], reg_data[key])
+            return UpgradeResult.success(item)
+        return UpgradeResult.failure(
+            UpgradeError(
+                "Registry Missing fields configuration",
+                "fields",
+                "Registry must specify fields configuration for upgrade.",
+            ),
+            severity=SeverityKind.CRITICAL,
+            payload={
+                "missing_field": "fields",
+                "context": "registry",
+            },
+        )
+
     @property
     def rule_name(self) -> str:
         """Human-friendly rule name."""
@@ -178,4 +378,4 @@ class RuleUpgrade(ProtocolUpgradeRuleSharedCache[C], Generic[C]):
         fm_artifact: FrontMatterMeta,
         fm_template: FrontMatterMeta,
         registry: dict[str, Any],
-    ) -> Result[FrontMatterMeta, None] | Result[None, UpgradeError]: ...
+    ) -> UpgradeResult[FrontMatterMeta, None] | UpgradeResult[None, UpgradeError]: ...

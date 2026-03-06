@@ -25,6 +25,7 @@ template_meta:
     - ceremony_tags
     - codex_links
     - codex_sequence
+    - continuum_phase
     - contributor
     - cover_image
     - embedding_date
@@ -141,6 +142,7 @@ template_meta:
     - template_output_mode
     - template_purpose
   optional_fields:
+    - continuum_phase
     - harmonic_safety_arc_pressure
     - harmonic_safety_dreamline_instability
     - harmonic_safety_mirrorwall_feedback_risk

@@ -46,6 +46,7 @@ threshold_flags_registry_scope:
   - field_level     # Local field logic (e.g., dreamline integrations or breath protocols) may override or modify how threshold flags are interpreted.
   - template_level  # These flags are enforced generally across all sigils using this template.
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

@@ -52,6 +52,7 @@ threshold_flags_registry_scope:
   - field_level               # Also enforced across the field whenever certificate is invoked
   - template_level            # Flags apply at the template definition layer
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

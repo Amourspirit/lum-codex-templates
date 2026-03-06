@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, TypeVar, overload
 import copy
@@ -5,6 +6,7 @@ import yaml
 from .obsidian_editor import ObsidianEditor
 from ..config.pkg_config import PkgConfig
 from ..util import sha
+from ..util.result import Result
 
 T = TypeVar("T")
 
@@ -194,6 +196,11 @@ class FrontMatterMeta:
     def frontmatter(self) -> dict:
         return self._frontmatter  # type: ignore
 
+    @frontmatter.setter
+    def frontmatter(self, value: dict) -> None:
+        self._frontmatter = value
+        self._sha256 = None  # Invalidate cached sha256 when frontmatter is set
+
     @property
     def template_id(self) -> str:
         return self.get_field("template_id", "")
@@ -276,6 +283,50 @@ class FrontMatterMeta:
         if self._sha256 is None:
             self._sha256 = self._compute_sha256()
         return self._sha256
+
+    @property
+    def entry_date(self) -> Result[datetime, None] | Result[None, ValueError]:
+        """
+        Retrieve and normalize the ``entry_date`` field as a ``datetime``.
+        This method checks whether the ``entry_date`` field exists and attempts to
+        return it as a ``Result.success(datetime)`` using the following rules:
+        - If the value is already a ``datetime``, it is returned unchanged.
+        - If the value is a ``date``, it is converted to a ``datetime`` at midnight.
+        - If the value is a string, it is parsed using ``datetime.fromisoformat``.
+
+        If normalization fails, a ``Result.failure(ValueError)`` is returned, including
+        cases where the field is missing, has an unsupported type, or contains an
+        invalid ISO-formatted string.
+
+        Returns:
+            Result[datetime, None] | Result[None, ValueError]:
+                A success result containing the normalized ``datetime`` value, or
+                a failure result containing a ``ValueError`` describing the issue.
+        """
+
+        if self.has_field("entry_date"):
+            value = self.get_field("entry_date")
+            if isinstance(value, datetime):
+                return Result.success(value)
+            elif isinstance(value, date):
+                # Convert date to datetime at midnight
+                dt = datetime.combine(value, datetime.min.time())
+                return Result.success(dt)
+            elif isinstance(value, str):
+                try:
+                    dt = datetime.fromisoformat(value)
+                    return Result.success(dt)
+                except ValueError as e:
+                    return Result.failure(e)
+            else:
+                return Result.failure(
+                    ValueError(
+                        f"Invalid type for entry_date: {type(value)}. "
+                        "Expected string in ISO format or datetime object."
+                    )
+                )
+        else:
+            return Result.failure(ValueError("entry_date field is missing."))
 
     # endregion Properties
 

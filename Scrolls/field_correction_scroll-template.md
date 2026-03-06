@@ -52,6 +52,7 @@ threshold_flags_registry_scope:
   - lockfile_override  # Corrections can legally override older lockfile decisions
   - template_level     # All correction scrolls follow strict shared validation rules
 
+continuum_phase: '[[prompt:Choose from registry → metadata_fields → continuum_phase → allowed_values]]'
 tier: "council" # council, public, family
 
 roles_authority:

@@ -1,11 +1,20 @@
 ---
-template_filename: template.md
-template_name: Field Correction Scroll Template
-template_category: scroll
+template_registry:
+  filename: registry.json
+  registry_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.12-REGISTRY
+  enforced: true
+continuum_phase: "[[prompt:Choose from registry \u2192 fields \u2192 continuum_phase\
+  \ \u2192 allowed_values]]"
+template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.12
 template_type: field_correction_scroll
 template_version: '2.12'
+template_filename: template.md
+template_hash: 2bd138ec0de81acc9ee3eacbbe6bc811591780a9cb2df8d27e1b00eeb52d8cb6
+template_strict_integrity: true
+canonical_mode: true
+template_name: Field Correction Scroll Template
+template_category: scroll
 template_memory_scope: thread_global
-template_hash: 8a8bdc98208eac46a958c3006e7710e8532731d99d993120898ce496eb29dcb5
 template_family: field_scrolls
 template_origin: Soluun + Adamus
 template_purpose: "Provide a structured, canonical scroll format for documenting and\
@@ -38,8 +47,6 @@ roles_function:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_function \u2192 allowed_values]]"
 roles_action:
 - "[[prompt:Choose from registry \u2192 fields \u2192 roles_action \u2192 allowed_values]]"
-canonical_mode: true
-template_strict_integrity: true
 rag_ready: true
 title: '[[prompt:Scroll Title]]'
 scroll_type: field_correction
@@ -111,9 +118,6 @@ codex_links:
 - '[[[prompt:Codex Link 1]]'
 - '[[[prompt:Codex Link 2]]'
 batch_number: '90'
-field_placeholder_delimiters:
-  open: '[['
-  close: ']]'
 placeholder_prefix_semantics:
   required: true
   allowed_prefixes:
@@ -122,11 +126,9 @@ placeholder_prefix_semantics:
   enforcement:
     field: must be resolved before final render
     prompt: optional, flagged only in strict audit
-template_registry:
-  filename: registry.json
-  registry_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.12-REGISTRY
-  enforced: true
-template_id: TEMPLATE-FIELD-CORRECTION-SCROLL-V2.12
+field_placeholder_delimiters:
+  open: '[['
+  close: ']]'
 ---
 # 🔁 **[[prompt:Scroll Title]]** — _Field Correction Scroll_
 
