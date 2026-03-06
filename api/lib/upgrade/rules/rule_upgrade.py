@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any, TypeVar, Generic
+from typing import Any, TypeVar, Generic, cast
 from src.template.front_mater_meta import FrontMatterMeta
 from ..upgrade_result import UpgradeResult as Result
 from ..exceptions import UpgradeError
@@ -74,8 +74,8 @@ class RuleUpgrade(ProtocolUpgradeRule[C], Generic[C]):
         """
         key = "registry_metadata"
         if key in self.shared_cache:
-            item = self.shared_cache[key]
-            return item  # type: ignore
+            item = cast(dict[str, Any], self.shared_cache[key])
+            return item
 
         reg = registry.get("metadata", registry)
         self.shared_cache.set_item("registry_metadata", reg)

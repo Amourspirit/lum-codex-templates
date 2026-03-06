@@ -1,5 +1,6 @@
-from typing import TypedDict, List, Any, cast
+from typing import Any, cast
 from ..exceptions import MissingKeyError, UpgradeError
+from ..types import PhaseInfo
 from ..upgrade_result import SeverityKind
 from ..upgrade_result import UpgradeResult as Result
 from .protocol_rules_cache import ProtocolRulesCache
@@ -7,16 +8,10 @@ from .rule_upgrade import RuleUpgrade
 from src.template.front_mater_meta import FrontMatterMeta
 
 
-class PhaseInfo(TypedDict):
-    value: str
-    allowed: List[str]
-    source: str
-
-
 class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
     CONTINUUM_PHASE_FIELD = "continuum_phase"
 
-    def __init__(self, shared_cache: ProtocolRulesCache) -> None:
+    def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]) -> None:
         super().__init__(shared_cache)
         self._rule_id = "continuum_phase_upgrade"
         self._description = (

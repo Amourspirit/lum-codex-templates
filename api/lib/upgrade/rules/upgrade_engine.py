@@ -9,6 +9,7 @@ from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
 from .shared_rule_cache import SharedRuleCache
 from .protocol_rules_cache import ProtocolRulesCache
 from ..exceptions import UpgradeError
+from ..types import PhaseInfo
 
 C = TypeVar("C")  # Cache type variable
 
@@ -213,4 +214,27 @@ class UpgradeEngine(Generic[C]):
 
     def _register_default_rules(self) -> None:
         """Register the default set of processes with this processor."""
-        self.register_rule(cast(UpgradeRuleFactory[C], RuleContinuumPhaseUpgrade))
+        # self.register_rule(cast(UpgradeRuleFactory[C], RuleContinuumPhaseUpgrade))
+        pass
+
+
+def create_default_upgrade_engine() -> UpgradeEngine[PhaseInfo]:
+    """
+    Create and configure a default upgrade engine with standard rules.
+    This function initializes an UpgradeEngine instance parameterized with PhaseInfo
+    and registers the default set of upgrade rules required for phase upgrades.
+
+    Returns:
+        UpgradeEngine[PhaseInfo]: A configured upgrade engine instance with the
+            RuleContinuumPhaseUpgrade rule registered and ready to process phase
+            upgrade operations.
+
+    Example:
+        >>> engine = create_default_upgrade_engine()
+        >>> # Engine is now ready to process upgrade operations
+    """
+
+    Engine = UpgradeEngine[PhaseInfo]
+    engine = Engine()
+    engine.register_rule(RuleContinuumPhaseUpgrade)
+    return engine
