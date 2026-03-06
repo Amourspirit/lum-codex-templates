@@ -3,13 +3,15 @@ from typing import Any, TypeVar, Generic, cast
 from src.template.front_mater_meta import FrontMatterMeta
 from ..upgrade_result import UpgradeResult as Result
 from ..exceptions import UpgradeError
-from .protocol_upgrade_rule import ProtocolUpgradeRule
-from .protocol_rules_cache import ProtocolRulesCache
+from ..protocols import ProtocolRulesCache
+from ..protocols import ProtocolUpgradeRuleSharedCache
+# from ..protocols import ProtocolUpgradeRule
+# from ..protocols import ProtocolSharedCache
 
 C = TypeVar("C")  # Cache type variable
 
 
-class RuleUpgrade(ProtocolUpgradeRule[C], Generic[C]):
+class RuleUpgrade(ProtocolUpgradeRuleSharedCache[C], Generic[C]):
     def __init__(self, shared_cache: ProtocolRulesCache[C]) -> None:
         self._local_cache: dict[str, Any] = {}
         self._shared_cache = shared_cache

@@ -1,5 +1,5 @@
 from typing import Any, TypeVar, Generic
-from .protocol_rules_cache import ProtocolRulesCache
+from ..protocols.protocol_rules_cache import ProtocolRulesCache
 
 C = TypeVar("C")  # Cache type variable
 

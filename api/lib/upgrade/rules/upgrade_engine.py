@@ -4,12 +4,17 @@ from loguru import logger
 from src.template.front_mater_meta import FrontMatterMeta
 from ..upgrade_result import UpgradeResult as Result
 from ..exceptions import ProtocolUpgradeError
-from .protocol_upgrade_rule import ProtocolUpgradeRule, UpgradeRuleFactory
 from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
 from .shared_rule_cache import SharedRuleCache
-from .protocol_rules_cache import ProtocolRulesCache
 from ..exceptions import UpgradeError
 from ..types import PhaseInfo
+from ..protocols import (
+    ProtocolUpgradeRule,
+    ProtocolUpgradeRuleSharedCache,
+    UpgradeRuleFactory,
+    UpgradeRuleSharedCacheFactory,
+    ProtocolRulesCache,
+)
 
 C = TypeVar("C")  # Cache type variable
 
@@ -46,17 +51,51 @@ class UpgradeEngine(Generic[C]):
     UpgradeEngine applies ordered upgrade rules to a FrontMatter artifact.
     """
 
-    def __init__(self):
-        self._rules: Dict[str, ProtocolUpgradeRule[C]] = {}
-        self._shared_cache: ProtocolRulesCache[C] = SharedRuleCache()
+    def __init__(self, shared_cache: ProtocolRulesCache[C]) -> None:
+        self._rules: Dict[str, ProtocolUpgradeRule] = {}
+        self._shared_cache: ProtocolRulesCache[C] = shared_cache
         self._register_default_rules()
         logger.debug("Initialized UpgradeEngine")
 
     # --------------------------
     # Registration
     # --------------------------
-    def register_rule(self, rule_cls: UpgradeRuleFactory[C]) -> None:
-        instance = rule_cls(self._shared_cache)
+    def _create_rule_instance(
+        self, rule_cls: UpgradeRuleFactory | UpgradeRuleSharedCacheFactory
+    ) -> ProtocolUpgradeRule:
+        """
+        Create a rule instance from either:
+        - factory() -> ProtocolUpgradeRule
+        - factory(shared_cache) -> ProtocolUpgradeRule
+        """
+        candidate: Any
+        try:
+            candidate = cast(UpgradeRuleSharedCacheFactory, rule_cls)(
+                self._shared_cache
+            )
+        except TypeError:
+            candidate = cast(UpgradeRuleFactory, rule_cls)()
+
+        # Structural guard for clearer runtime errors.
+        required = (
+            "get_rule_id",
+            "get_description",
+            "get_order",
+            "should_run",
+            "apply",
+        )
+        missing = [name for name in required if not hasattr(candidate, name)]
+        if missing:
+            raise TypeError(
+                f"Registered rule factory did not produce a ProtocolUpgradeRule. Missing: {missing}"
+            )
+
+        return cast(ProtocolUpgradeRule, candidate)
+
+    def register_rule(
+        self, rule_cls: UpgradeRuleFactory | UpgradeRuleSharedCacheFactory
+    ) -> None:
+        instance = self._create_rule_instance(rule_cls)
         self._rules[instance.get_rule_id()] = instance
         logger.debug(f"Registered Upgrade Rule: {instance.get_rule_id()}")
 
@@ -235,6 +274,6 @@ def create_default_upgrade_engine() -> UpgradeEngine[PhaseInfo]:
     """
 
     Engine = UpgradeEngine[PhaseInfo]
-    engine = Engine()
+    engine = Engine(shared_cache=SharedRuleCache())
     engine.register_rule(RuleContinuumPhaseUpgrade)
     return engine

@@ -3,7 +3,7 @@ from ..exceptions import MissingKeyError, UpgradeError
 from ..types import PhaseInfo
 from ..upgrade_result import SeverityKind
 from ..upgrade_result import UpgradeResult as Result
-from .protocol_rules_cache import ProtocolRulesCache
+from ..protocols.protocol_rules_cache import ProtocolRulesCache
 from .rule_upgrade import RuleUpgrade
 from src.template.front_mater_meta import FrontMatterMeta
 
