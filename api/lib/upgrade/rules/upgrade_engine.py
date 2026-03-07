@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, List, Dict, cast, TypeVar, Generic
 from loguru import logger
 from src.template.front_mater_meta import FrontMatterMeta
+from api.lib.protocols import ProtocolRulesCache
 from ..upgrade_result import UpgradeResult as UpgradeResult
 from .rule_continuum_phase_upgrade import RuleContinuumPhaseUpgrade
 from .rule_template_field_normalization import RuleTemplateFieldNormalization
@@ -21,8 +22,8 @@ from ..protocols import (
     ProtocolUpgradeRule,
     UpgradeRuleFactory,
     UpgradeRuleSharedCacheFactory,
-    ProtocolRulesCache,
 )
+
 
 C = TypeVar("C")  # Cache type variable
 
@@ -88,7 +89,7 @@ class UpgradeEngine(Generic[C]):
         required = (
             "get_rule_id",
             "get_description",
-            "get_order",
+            "RULE_ORDER",
             "should_run",
             "apply",
         )
@@ -190,14 +191,14 @@ class UpgradeEngine(Generic[C]):
         self.reset()
         self.before_all_rules()
 
-        # Deterministic ordering based on get_order(), default = 100
+        # Deterministic ordering based on RULE_ORDER, default = 100
         ordered_rules = sorted(
-            self._rules.values(), key=lambda r: getattr(r, "get_order", lambda: 100)()
+            self._rules.values(), key=lambda r: getattr(r, "RULE_ORDER", lambda: 100)()
         )
 
-        errors: Dict[str, List[str]] = {}
-        warnings: Dict[str, List[str]] = {}
-        logs: List[str] = []
+        errors: dict[str, list[str]] = {}
+        warnings: dict[str, list[str]] = {}
+        logs: list[str] = []
 
         # Clone artifact to avoid side-effect mutation
         current_artifact = fm_artifact.copy()

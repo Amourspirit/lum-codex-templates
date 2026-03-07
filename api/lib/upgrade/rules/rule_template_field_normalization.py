@@ -1,7 +1,7 @@
 from typing import Any
+from api.lib.protocols import ProtocolRulesCache
 from src.template.front_mater_meta import FrontMatterMeta
 from ..exceptions import UpgradeError
-from ..protocols.protocol_rules_cache import ProtocolRulesCache
 from ..types import PhaseInfo
 from ..upgrade_result import UpgradeResult, SeverityKind
 from .rule_upgrade import RuleUpgrade

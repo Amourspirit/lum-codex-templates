@@ -2,7 +2,7 @@ from typing import Any
 
 from src.template.front_mater_meta import FrontMatterMeta
 from src.config.pkg_config import PkgConfig
-from .verify_rules.verify_rules import VerifyRules
+from .verify_rules.verify_engine import VerifySummary, create_default_verify_engine
 from ..util.result import Result
 
 
@@ -16,7 +16,7 @@ class VerifyMetaFields:
 
         self._registry = registry
         self._fm = fm
-        self._verify_rules = VerifyRules()
+        self._verify_rules = create_default_verify_engine()
 
     def _get_filtered_required_fields(self) -> set[str]:
         required_fields: set[str] = set()
@@ -172,8 +172,8 @@ class VerifyMetaFields:
                 }
         return incorrect_types
 
-    def _get_verify_rules(self, fm: FrontMatterMeta) -> dict[str, dict[str, list[str]]]:
-        return self._verify_rules.validate(fm, self._registry)
+    def _get_verify_rules(self, fm: FrontMatterMeta) -> VerifySummary:
+        return self._verify_rules.apply(fm, self._registry)
 
     def verify(self) -> Result[dict[str, Any], None] | Result[None, Exception]:
         """
@@ -214,12 +214,11 @@ class VerifyMetaFields:
             if incorrect_type_fields:
                 result["incorrect_type_fields"] = incorrect_type_fields
             verify_rule_results = self._get_verify_rules(self._fm)
-            field_errors_key = "Field Errors"
-            field_warnings_key = "Field Warnings"
-            if field_errors_key in verify_rule_results:
-                result["rule_errors"] = verify_rule_results[field_errors_key]
-            if field_warnings_key in verify_rule_results:
-                result["rule_warnings"] = verify_rule_results[field_warnings_key]
+            if verify_rule_results.errors:
+                result["rule_errors"] = verify_rule_results.errors
+            if verify_rule_results.warnings:
+                result["rule_warnings"] = verify_rule_results.warnings
+
             return Result.success(result)
         except Exception as e:
             return Result.failure(e)
