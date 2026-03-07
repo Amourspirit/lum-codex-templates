@@ -16,7 +16,7 @@ OBSOLETE_FIELD_SAFEKEEP = {
 
 
 class RuleRemoveObsoleteFields(RuleUpgrade[PhaseInfo]):
-    RULE_ORDER = 100
+    RULE_ORDER = 140
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]):
         super().__init__(shared_cache)

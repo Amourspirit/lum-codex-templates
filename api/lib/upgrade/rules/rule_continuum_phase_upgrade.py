@@ -11,7 +11,7 @@ from ...const import CONTINUUM_DATE_TIME
 
 
 class RuleContinuumPhaseUpgrade(RuleUpgrade[PhaseInfo]):
-    RULE_ORDER = 100
+    RULE_ORDER = 10
     CONTINUUM_PHASE_FIELD = "continuum_phase"
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]) -> None:

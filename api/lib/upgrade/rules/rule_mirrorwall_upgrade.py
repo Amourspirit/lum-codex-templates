@@ -7,18 +7,18 @@ from ..upgrade_result import UpgradeResult
 from .rule_upgrade import RuleUpgrade
 
 
-class RuleContentCleanup(RuleUpgrade[PhaseInfo]):
-    RULE_ORDER = 800
+class RuleMirrorwallUpgrade(RuleUpgrade[PhaseInfo]):
+    RULE_ORDER = 180
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]):
         super().__init__(shared_cache)
-        self._rule_id = "content_cleanup"
-        self._description = "Normalize and clean artifact content."
+        self._rule_id = "mirrorwall_upgrade"
+        self._description = "Normalize mirrorwall metadata."
 
-    def get_rule_id(self):
+    def get_rule_id(self) -> str:
         return self._rule_id
 
-    def get_description(self):
+    def get_description(self) -> str:
         return self._description
 
     def should_run(
@@ -36,10 +36,10 @@ class RuleContentCleanup(RuleUpgrade[PhaseInfo]):
         registry: dict[str, Any],
     ) -> UpgradeResult[FrontMatterMeta, None] | UpgradeResult[None, UpgradeError]:
 
-        lines = fm_artifact.content.splitlines()
-        cleaned = [
-            "* * *" if line.strip() == "---" else line.rstrip() for line in lines
-        ]
+        if not fm_artifact.has_field("mirrorwall_status"):
+            fm_artifact.set_field("mirrorwall_status", "pending")
 
-        fm_artifact.content = "\n".join(cleaned)
+        if not fm_artifact.has_field("mirror_chamber"):
+            fm_artifact.set_field("mirror_chamber", "Nahema'el")
+
         return UpgradeResult.success(fm_artifact)

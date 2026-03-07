@@ -7,19 +7,13 @@ from ..upgrade_result import UpgradeResult
 from .rule_upgrade import RuleUpgrade
 
 
-class RuleContentCleanup(RuleUpgrade[PhaseInfo]):
-    RULE_ORDER = 800
+class RuleHashRecomputeUpgrade(RuleUpgrade[PhaseInfo]):
+    RULE_ORDER = 900
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]):
         super().__init__(shared_cache)
-        self._rule_id = "content_cleanup"
-        self._description = "Normalize and clean artifact content."
-
-    def get_rule_id(self):
-        return self._rule_id
-
-    def get_description(self):
-        return self._description
+        self._rule_id = "hash_recompute"
+        self._description = "Recompute SHA256 hash after upgrade."
 
     def should_run(
         self,
@@ -29,6 +23,12 @@ class RuleContentCleanup(RuleUpgrade[PhaseInfo]):
     ) -> bool:
         return True
 
+    def get_rule_id(self) -> str:
+        return self._rule_id
+
+    def get_description(self) -> str:
+        return self._description
+
     def apply(
         self,
         fm_artifact: FrontMatterMeta,
@@ -36,10 +36,5 @@ class RuleContentCleanup(RuleUpgrade[PhaseInfo]):
         registry: dict[str, Any],
     ) -> UpgradeResult[FrontMatterMeta, None] | UpgradeResult[None, UpgradeError]:
 
-        lines = fm_artifact.content.splitlines()
-        cleaned = [
-            "* * *" if line.strip() == "---" else line.rstrip() for line in lines
-        ]
-
-        fm_artifact.content = "\n".join(cleaned)
+        fm_artifact.recompute_sha256()
         return UpgradeResult.success(fm_artifact)

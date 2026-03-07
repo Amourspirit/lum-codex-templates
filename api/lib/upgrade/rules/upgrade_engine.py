@@ -10,6 +10,10 @@ from .rule_content_cleanup import RuleContentCleanup
 from .rule_declared_registry_upgrade import RuleDeclaredRegistryUpgrade
 from .rule_era_signature_upgrade import RuleEraSignatureUpgrade
 from .rule_field_lineage_normalization import RuleFieldLineageNormalization
+from .rule_artifact_id_normalization import RuleArtifactIdNormalization
+from .rule_hash_recompute_upgrade import RuleHashRecomputeUpgrade
+from .rule_backfill_entry_date import RuleBackfillEntryDate
+from .rule_mirrorwall_upgrade import RuleMirrorwallUpgrade
 from .shared_rule_cache import SharedRuleCache
 from ..exceptions import UpgradeError
 from ..types import PhaseInfo
@@ -285,6 +289,10 @@ def create_default_upgrade_engine() -> UpgradeEngine[PhaseInfo]:
         RuleEraSignatureUpgrade,
         RuleFieldLineageNormalization,
         RuleContinuumPhaseUpgrade,
+        RuleArtifactIdNormalization,
+        RuleHashRecomputeUpgrade,
+        RuleBackfillEntryDate,
+        RuleMirrorwallUpgrade,
     )
     sorted_rules = sorted(
         rules,

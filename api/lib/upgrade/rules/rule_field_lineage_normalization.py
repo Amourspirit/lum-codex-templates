@@ -17,7 +17,7 @@ LINEAGE_MIGRATIONS = {
 
 class RuleFieldLineageNormalization(RuleUpgrade[PhaseInfo]):
     # Handles deprecated → new field names.
-    RULE_ORDER = 100
+    RULE_ORDER = 150
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]):
         super().__init__(shared_cache)

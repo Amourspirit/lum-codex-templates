@@ -8,7 +8,7 @@ from .rule_upgrade import RuleUpgrade
 
 
 class RuleArtifactTemplateBindingUpgrade(RuleUpgrade[PhaseInfo]):
-    RULE_ORDER = 100
+    RULE_ORDER = 120
 
     def __init__(self, shared_cache: ProtocolRulesCache[PhaseInfo]):
         super().__init__(shared_cache)
