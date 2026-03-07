@@ -11,14 +11,14 @@ class UpgradeTemplate:
         template_fm: FrontMatterMeta,
         registry: dict[str, Any],
     ):
-        self._upgrade_fm = upgrade_fm
+        self._artifact_fm = upgrade_fm
         self._template_fm = template_fm
         self._registry = registry
 
     def apply_upgrade(self) -> dict[str, Any]:
 
         engine = create_default_upgrade_engine()
-        summary = engine.apply(self._upgrade_fm, self._template_fm, self._registry)
+        summary = engine.apply(self._artifact_fm, self._template_fm, self._registry)
         if summary.errors:
             errors_list: set[str] = set()
             for name, errors in summary.errors.items():

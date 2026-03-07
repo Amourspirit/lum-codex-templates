@@ -4,7 +4,6 @@ from src.template.front_mater_meta import FrontMatterMeta
 from src.util.severity_kind import SeverityKind
 from ..verify_result import VerifyResult
 from .rule_verify import RuleVerify
-from .types import PhaseInfo
 from ..exceptions import (
     VerifyError,
     MissingKeyError,
