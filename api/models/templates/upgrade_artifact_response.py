@@ -88,6 +88,22 @@ class UpgradeArtifactResponse(BaseModel):
             description="Indicates if the content includes Front-Matter, default is True.",
         ),
     ] = True
+    warnings: Annotated[
+        list[str],
+        Field(
+            default_factory=list,
+            title="Warnings",
+            description="List of warnings generated during the upgrade process.",
+        ),
+    ] = []
+    logs: Annotated[
+        list[str],
+        Field(
+            default_factory=list,
+            title="Logs",
+            description="List of logs generated during the upgrade process.",
+        ),
+    ] = []
 
 
 class UpgradeArtifactMcpResponse(UpgradeArtifactResponse):

@@ -718,14 +718,26 @@ def _upgrade_to_template(
             error=e,
         )
         raise e
+    try:
+        registry = _get_template_registry(upgrade_fm.template_type, new_version)
+    except Exception as e:
+        logger.error(
+            "Error loading registry for type {template_type} and version {version}: {error}",
+            template_type=upgrade_fm.template_type,
+            version=new_version,
+            error=e,
+        )
+        raise e
 
     try:
         upgrade_template = UpgradeTemplate(
-            upgrade_fm=upgrade_fm, template_fm=template_fm
+            upgrade_fm=upgrade_fm, template_fm=template_fm, registry=registry
         )
         upgraded_dict = upgrade_template.apply_upgrade()
         upgraded_fm: FrontMatterMeta = upgraded_dict["frontmatter"]
         extra_fields = upgraded_dict["extra_fields"]
+        logs = upgraded_dict.get("logs", [])
+        warnings = upgraded_dict.get("warnings", [])
     except Exception as e:
         logger.error("Error applying upgrade: {error}", error=e)
         raise e
@@ -743,6 +755,8 @@ def _upgrade_to_template(
         "artifact_name": submission.artifact_name.strip(),
         "upgraded_at": dt_now.isoformat(),
         "extra_fields": extra_fields,
+        "logs": logs,
+        "warnings": warnings,
     }
 
     try:

@@ -1,5 +1,7 @@
 from typing import Any
 from src.template.front_mater_meta import FrontMatterMeta
+from .rules.upgrade_engine import create_default_upgrade_engine
+from .exceptions import UpgradeError
 
 
 class UpgradeTemplate:
@@ -7,48 +9,36 @@ class UpgradeTemplate:
         self,
         upgrade_fm: FrontMatterMeta,
         template_fm: FrontMatterMeta,
+        registry: dict[str, Any],
     ):
         self._upgrade_fm = upgrade_fm
         self._template_fm = template_fm
-
-    def _cleanup_content(self, content: str) -> str:
-        """Cleanup content by removing extra new lines."""
-        lines = content.splitlines()
-        # replace all lines that are --- with * * *
-        cleaned_lines = [line if line.strip() != "---" else "* * *" for line in lines]
-        return "\n".join(cleaned_lines)
+        self._registry = registry
 
     def apply_upgrade(self) -> dict[str, Any]:
-        new_fm = self._upgrade_fm.copy()
-        new_fm.content = self._cleanup_content(new_fm.content)
-        template_fields = set()
-        for key, value in self._template_fm.frontmatter.items():
-            template_fields.add(key)
-            if key not in new_fm.frontmatter:
-                new_fm.set_field(key, value)
+
+        engine = create_default_upgrade_engine()
+        summary = engine.apply(self._upgrade_fm, self._template_fm, self._registry)
+        if summary.errors:
+            errors_list: set[str] = set()
+            for name, errors in summary.errors.items():
+                for err in errors:
+                    errors_list.add(f"Name '{name}': {str(err)}")
+            raise UpgradeError(
+                "Upgrade failed with errors",
+                "field_errors",
+                errors=list(errors_list),
+            )
+
+        new_fm = summary.artifact
+        template_fields = set(self._template_fm.frontmatter.keys())
+
         new_fm_fields = set(new_fm.frontmatter.keys())
         extra_fields = new_fm_fields - template_fields
-        fields = set(
-            [
-                "template_category",
-                "template_family",
-                "template_filename",
-                "template_hash",
-                "template_name",
-                "template_type",
-                "template_version",
-            ]
-        )
-        for field in fields:
-            value = self._template_fm.get_field(field)
-            new_fm.set_field(field, value)
-
-        new_fm.template_version = self._template_fm.template_version.lstrip("v")
-        if self._upgrade_fm.template_id:
-            new_fm.template_id = self._template_fm.template_id
-        # new_fm.template_id = self._template_fm.template_id
 
         return {
             "frontmatter": new_fm,
             "extra_fields": extra_fields,
+            "warnings": summary.warnings,
+            "logs": summary.logs,
         }
